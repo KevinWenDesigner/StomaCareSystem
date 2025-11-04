@@ -1,0 +1,153 @@
+<!--nurse-app/pages/dashboard/dashboard.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">工作台</text>
+    <text class="page-subtitle">欢迎回来，{{nurseInfo.name}}</text>
+  </view>
+
+  <!-- 快速统计 -->
+  <view class="stats-section">
+    <view class="stats-grid">
+      <view class="stat-card">
+        <view class="stat-icon">👥</view>
+        <view class="stat-content">
+          <text class="stat-number">{{dashboardStats.patients}}</text>
+          <text class="stat-label">管理患者</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">📋</view>
+        <view class="stat-content">
+          <text class="stat-number">{{dashboardStats.tasks}}</text>
+          <text class="stat-label">待办任务</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">📊</view>
+        <view class="stat-content">
+          <text class="stat-number">{{dashboardStats.assessments}}</text>
+          <text class="stat-label">今日评估</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">🎯</view>
+        <view class="stat-content">
+          <text class="stat-number">{{dashboardStats.score}}</text>
+          <text class="stat-label">护理评分</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近患者 -->
+  <view class="patients-section">
+    <view class="section-header">
+      <text class="section-title">最近患者</text>
+      <button class="view-all-btn" bindtap="viewAllPatients">
+        <text class="btn-text">查看全部</text>
+      </button>
+    </view>
+    
+    <view wx:if="{{recentPatients.length === 0}}" class="empty-state">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">暂无患者</text>
+      <text class="empty-subtext">开始管理您的患者</text>
+    </view>
+    
+    <view wx:else class="patients-list">
+      <view wx:for="{{recentPatients}}" wx:key="id" class="patient-item">
+        <view class="patient-card" bindtap="viewPatientDetail" data-id="{{item.id}}">
+          <view class="patient-avatar">
+            <text class="avatar-text">{{item.name.charAt(0)}}</text>
+          </view>
+          <view class="patient-content">
+            <text class="patient-name">{{item.name}}</text>
+            <text class="patient-info">{{item.age}}岁 · {{item.gender}} · {{item.careDays}}天</text>
+            <text class="patient-status">状态: {{item.status}}</text>
+          </view>
+          <view class="patient-actions">
+            <button class="action-btn" data-id="{{item.id}}" bindtap="contactPatient">
+              <text class="action-text">联系</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待办任务 -->
+  <view class="tasks-section">
+    <view class="section-header">
+      <text class="section-title">待办任务</text>
+      <text class="section-subtitle">今日待处理</text>
+    </view>
+    
+    <view wx:if="{{pendingTasks.length === 0}}" class="empty-state">
+      <text class="empty-icon">✅</text>
+      <text class="empty-text">今日无待办</text>
+      <text class="empty-subtext">继续保持高效工作</text>
+    </view>
+    
+    <view wx:else class="tasks-list">
+      <view wx:for="{{pendingTasks}}" wx:key="id" class="task-item">
+        <view class="task-card">
+          <view class="task-header">
+            <text class="task-title">{{item.title}}</text>
+            <view class="task-priority priority-{{item.priority}}">
+              <text class="priority-text">{{getPriorityText(item.priority)}}</text>
+            </view>
+          </view>
+          
+          <text class="task-description">{{item.description}}</text>
+          
+          <view class="task-meta">
+            <text class="task-patient">患者: {{item.patientName}}</text>
+            <text class="task-time">{{item.dueTime}}</text>
+          </view>
+          
+          <view class="task-actions">
+            <button class="task-btn" data-id="{{item.id}}" bindtap="completeTask">
+              <text class="btn-text">完成任务</text>
+            </button>
+            <button class="task-btn outline" data-id="{{item.id}}" bindtap="viewTaskDetail">
+              <text class="btn-text">查看详情</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 护理提醒 -->
+  <view class="reminders-section">
+    <view class="section-header">
+      <text class="section-title">护理提醒</text>
+      <text class="section-subtitle">重要提醒</text>
+    </view>
+    
+    <view wx:if="{{reminders.length === 0}}" class="empty-state">
+      <text class="empty-icon">⏰</text>
+      <text class="empty-text">暂无提醒</text>
+      <text class="empty-subtext">设置护理提醒</text>
+    </view>
+    
+    <view wx:else class="reminders-list">
+      <view wx:for="{{reminders}}" wx:key="id" class="reminder-item">
+        <view class="reminder-card">
+          <view class="reminder-icon">⏰</view>
+          <view class="reminder-content">
+            <text class="reminder-title">{{item.title}}</text>
+            <text class="reminder-time">{{item.time}}</text>
+          </view>
+          <button class="reminder-btn" data-id="{{item.id}}" bindtap="dismissReminder">
+            <text class="btn-text">已读</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

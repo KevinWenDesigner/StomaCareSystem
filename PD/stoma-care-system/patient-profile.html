@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>患者端 - 个人中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .status-bar {
+            height: 44px;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .profile-card {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin: 20px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.3);
+        }
+        .menu-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 8px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.2s;
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .menu-item:hover {
+            background-color: #f8fafc;
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+        .tab-item.active {
+            color: #6366f1;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+        .emergency-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            transition: all 0.2s;
+            margin: 20px;
+            width: calc(100% - 40px);
+        }
+        .emergency-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.6);
+        }
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: #e2e8f0;
+            border-radius: 14px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+        .toggle-switch.active {
+            background: #6366f1;
+        }
+        .toggle-switch::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS状态栏 -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="flex items-center space-x-3">
+            <span class="font-semibold text-lg">个人中心</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-bell text-xl text-gray-600"></i>
+            <i class="fas fa-cog text-xl text-gray-600"></i>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="pb-20">
+        <!-- 个人信息卡片 -->
+        <div class="profile-card">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" 
+                 class="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white" alt="患者头像">
+            
+            <div class="text-xl font-bold mb-2">张阿姨</div>
+            <div class="text-sm opacity-90 mb-4">65岁 · 造口护理患者</div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="text-xl font-bold">156</div>
+                    <div class="text-xs opacity-80">使用天数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-xl font-bold">24</div>
+                    <div class="text-xs opacity-80">拍照次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-xl font-bold">12</div>
+                    <div class="text-xs opacity-80">学习课程</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 一键求助按钮 -->
+        <button class="emergency-btn">
+            <i class="fas fa-phone-alt mr-2"></i>
+            一键求助
+        </button>
+
+        <!-- 健康档案 -->
+        <div class="menu-card">
+            <h3 class="text-lg font-semibold mb-4">健康档案</h3>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-blue-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">基本信息</div>
+                        <div class="text-sm text-gray-500">姓名、年龄、联系方式</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-stethoscope text-green-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">医疗信息</div>
+                        <div class="text-sm text-gray-500">造口类型、手术日期</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-pills text-purple-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">用药记录</div>
+                        <div class="text-sm text-gray-500">当前用药和过敏史</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- 护理设置 -->
+        <div class="menu-card">
+            <h3 class="text-lg font-semibold mb-4">护理设置</h3>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-bell text-orange-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">提醒设置</div>
+                        <div class="text-sm text-gray-500">护理提醒时间</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-friends text-red-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">家属绑定</div>
+                        <div class="text-sm text-gray-500">已绑定：王先生</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-md text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">护士联系</div>
+                        <div class="text-sm text-gray-500">李护士</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- 应用设置 -->
+        <div class="menu-card">
+            <h3 class="text-lg font-semibold mb-4">应用设置</h3>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-text-height text-blue-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">字体大小</div>
+                        <div class="text-sm text-gray-500">大字体模式</div>
+                    </div>
+                </div>
+                <div class="toggle-switch active"></div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-volume-up text-green-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">语音播报</div>
+                        <div class="text-sm text-gray-500">自动语音提示</div>
+                    </div>
+                </div>
+                <div class="toggle-switch active"></div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-download text-purple-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">离线下载</div>
+                        <div class="text-sm text-gray-500">自动下载学习内容</div>
+                    </div>
+                </div>
+                <div class="toggle-switch"></div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-red-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">隐私设置</div>
+                        <div class="text-sm text-gray-500">数据使用权限</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- 帮助与支持 -->
+        <div class="menu-card">
+            <h3 class="text-lg font-semibold mb-4">帮助与支持</h3>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-question-circle text-blue-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">使用帮助</div>
+                        <div class="text-sm text-gray-500">操作指南和常见问题</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-headset text-green-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">客服联系</div>
+                        <div class="text-sm text-gray-500">24小时在线客服</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-star text-orange-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">评价应用</div>
+                        <div class="text-sm text-gray-500">给我们评分和建议</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+            
+            <div class="menu-item">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-info-circle text-gray-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">关于我们</div>
+                        <div class="text-sm text-gray-500">版本信息 v1.0.0</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span>首页</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-camera text-xl mb-1"></i>
+            <span>拍照</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-book-medical text-xl mb-1"></i>
+            <span>记录</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-graduation-cap text-xl mb-1"></i>
+            <span>学习</span>
+        </div>
+        <div class="tab-item active">
+            <i class="fas fa-user text-xl mb-1"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <script>
+        // 菜单项点击
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                console.log('菜单项点击');
+            });
+        });
+
+        // 开关切换
+        document.querySelectorAll('.toggle-switch').forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+            });
+        });
+
+        // 紧急求助按钮
+        document.querySelector('.emergency-btn').addEventListener('click', function() {
+            console.log('紧急求助');
+        });
+
+        // 底部标签栏切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.querySelector('span').textContent;
+                showNotification(`正在切换到${page}页面...`);
+                
+                // 页面跳转逻辑
+                setTimeout(() => {
+                    switch(page) {
+                        case '首页':
+                            window.location.href = './patient-home.html';
+                            break;
+                        case '拍照':
+                            window.location.href = './patient-camera.html';
+                            break;
+                        case '记录':
+                            window.location.href = './patient-diary.html';
+                            break;
+                        case '学习':
+                            window.location.href = './patient-education.html';
+                            break;
+                    }
+                }, 1000);
+            });
+        });
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="text-sm font-medium">${text}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

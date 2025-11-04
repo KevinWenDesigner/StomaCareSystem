@@ -1,0 +1,214 @@
+<!--patient-app/pages/education/emergency-study/emergency-study.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">{{course.title}}</text>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 应急处理学习内容 -->
+  <view wx:else class="study-content">
+    <!-- 学习进度 -->
+    <view class="progress-section">
+      <view class="progress-header">
+        <text class="progress-title">学习进度</text>
+        <text class="progress-percent">{{studyProgress}}%</text>
+      </view>
+      
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{studyProgress}}%"></view>
+      </view>
+      
+      <text class="progress-text">已完成 {{studyProgress}}%</text>
+    </view>
+
+    <!-- 当前章节 -->
+    <view wx:if="{{course.chapters && course.chapters[currentChapter]}}" class="chapter-section">
+      <view class="chapter-header">
+        <text class="chapter-title">第{{currentChapter + 1}}章：{{course.chapters[currentChapter].title}}</text>
+        <text class="chapter-duration">{{course.chapters[currentChapter].duration}}</text>
+      </view>
+      
+      <view class="chapter-content">
+        <view class="content-card">
+          <text class="content-title">应急处理指导</text>
+          <text class="content-text">
+            这里是第{{currentChapter + 1}}章的应急处理内容。请仔细学习以下紧急情况处理知识和应对方法，完成后点击"完成学习"按钮。
+          </text>
+          
+          <!-- 应急知识 -->
+          <view class="emergency-knowledge">
+            <view class="knowledge-item">
+              <text class="knowledge-icon">🚨</text>
+              <text class="knowledge-text">保持冷静是应急处理的关键</text>
+            </view>
+            <view class="knowledge-item">
+              <text class="knowledge-icon">📞</text>
+              <text class="knowledge-text">及时联系医护人员获取指导</text>
+            </view>
+            <view class="knowledge-item">
+              <text class="knowledge-icon">🏥</text>
+              <text class="knowledge-text">严重情况应立即就医</text>
+            </view>
+            <view class="knowledge-item">
+              <text class="knowledge-icon">📋</text>
+              <text class="knowledge-text">记录症状变化便于医生诊断</text>
+            </view>
+          </view>
+          
+          <!-- 应急建议 -->
+          <view class="emergency-tips">
+            <text class="tips-title">💡 应急处理建议</text>
+            <view class="tips-list">
+              <text class="tip-item">• 保持冷静，不要惊慌</text>
+              <text class="tip-item">• 评估情况严重程度</text>
+              <text class="tip-item">• 采取适当应急措施</text>
+              <text class="tip-item">• 必要时及时就医</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 章节列表 -->
+    <view wx:if="{{course.chapters}}" class="chapters-section">
+      <view class="section-header">
+        <text class="section-title">应急章节</text>
+        <text class="section-subtitle">共{{course.chapters.length}}个章节</text>
+      </view>
+      
+      <view class="chapters-list">
+        <view wx:for="{{course.chapters}}" wx:key="id" 
+              class="chapter-item {{index === currentChapter ? 'active' : ''}} {{item.completed ? 'completed' : ''}}"
+              bindtap="startChapter" data-index="{{index}}">
+          <view class="chapter-info">
+            <view class="chapter-header">
+              <text class="chapter-number">第{{item.id}}章</text>
+              <text class="chapter-duration">{{item.duration}}</text>
+            </view>
+            <text class="chapter-title">{{item.title}}</text>
+          </view>
+          
+          <view class="chapter-status">
+            <text wx:if="{{item.completed}}" class="status-completed">已完成</text>
+            <text wx:elif="{{index === currentChapter}}" class="status-current">学习中</text>
+            <text wx:else class="status-pending">待学习</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 紧急情况模拟弹窗 -->
+    <view wx:if="{{showEmergencySimulation}}" class="simulation-modal">
+      <view class="modal-overlay" bindtap="closeEmergencySimulation"></view>
+      <view class="modal-content">
+        <view class="simulation-header">
+          <text class="simulation-title">🚨 紧急情况模拟</text>
+          <text class="simulation-subtitle">测试您的应急处理能力</text>
+        </view>
+        
+        <view class="simulation-content">
+          <view class="simulation-info">
+            <text class="info-title">模拟说明</text>
+            <text class="info-text">
+              完成课程学习后，您可以通过应急演练来测试自己的应急处理能力。
+              演练将模拟真实的紧急情况，帮助您掌握正确的应对方法。
+            </text>
+          </view>
+          
+          <view class="simulation-options">
+            <button class="simulation-btn primary" bindtap="startEmergencyDrill">
+              <text class="btn-text">开始应急演练</text>
+            </button>
+            <button class="simulation-btn secondary" bindtap="closeEmergencySimulation">
+              <text class="btn-text">关闭</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 应急演练弹窗 -->
+    <view wx:if="{{showEmergencyDrill}}" class="drill-modal">
+      <view class="modal-overlay" bindtap="closeEmergencyDrill"></view>
+      <view class="modal-content">
+        <view wx:if="{{emergencyScenario}}" class="drill-content">
+          <!-- 演练场景 -->
+          <view wx:if="{{drillStep < emergencyScenario.steps.length}}" class="scenario-section">
+            <view class="scenario-header">
+              <text class="scenario-title">{{emergencyScenario.title}}</text>
+              <text class="scenario-desc">{{emergencyScenario.description}}</text>
+            </view>
+            
+            <view class="symptoms-list">
+              <text class="symptoms-title">症状表现：</text>
+              <view wx:for="{{emergencyScenario.symptoms}}" wx:key="*this" class="symptom-item">
+                <text class="symptom-text">• {{item}}</text>
+              </view>
+            </view>
+            
+            <!-- 当前步骤 -->
+            <view class="current-step">
+              <view class="step-header">
+                <text class="step-title">步骤 {{emergencyScenario.steps[drillStep].step}}</text>
+                <text class="step-desc">{{emergencyScenario.steps[drillStep].title}}</text>
+              </view>
+              
+              <text class="step-instruction">{{emergencyScenario.steps[drillStep].description}}</text>
+              
+              <view class="step-options">
+                <view wx:for="{{emergencyScenario.steps[drillStep].options}}" wx:key="text" 
+                      class="option-item" bindtap="selectDrillOption" data-option-index="{{index}}">
+                  <text class="option-text">{{item.text}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 演练结果 -->
+          <view wx:else class="drill-result">
+            <view class="result-header">
+              <text class="result-title">演练完成</text>
+              <text class="result-subtitle">您的应急处理能力评估</text>
+            </view>
+            
+            <view class="score-section">
+              <text class="score-title">演练得分</text>
+              <text class="score-value">{{drillScore}}分</text>
+              <text class="score-max">满分：{{emergencyScenario.steps.length * 10}}分</text>
+            </view>
+            
+            <view class="result-feedback">
+              <text wx:if="{{drillScore >= 80}}" class="feedback-text">优秀！您具备良好的应急处理能力</text>
+              <text wx:elif="{{drillScore >= 60}}" class="feedback-text">良好！建议继续学习提高应急处理技能</text>
+              <text wx:else class="feedback-text">需要加强学习，建议重新学习相关章节</text>
+            </view>
+            
+            <button class="result-btn" bindtap="closeEmergencyDrill">
+              <text class="btn-text">完成</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button wx:if="{{!isCompleted && course.chapters && course.chapters[currentChapter] && !showEmergencySimulation}}" 
+            class="action-btn primary" bindtap="completeChapter">
+      <text class="btn-text">完成学习</text>
+    </button>
+    <button wx:else class="action-btn secondary" bindtap="goBack">
+      <text class="btn-text">返回课程</text>
+    </button>
+  </view>
+</view> 

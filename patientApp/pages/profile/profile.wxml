@@ -1,0 +1,231 @@
+<!--patient-app/pages/profile/profile.wxml-->
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-avatar" bindtap="chooseAvatar">
+      <!-- 如果有微信头像则显示，否则显示文字头像 -->
+      <image wx:if="{{userInfo.avatarUrl}}" class="avatar-image" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+      <text wx:else class="avatar-text">{{userInfo.name.charAt(0)}}</text>
+    </view>
+    <view class="user-info">
+      <!-- 优先显示微信昵称，如果没有则显示手动输入的姓名 -->
+      <text class="user-name">{{userInfo.nickName || userInfo.name}}</text>
+      <text class="user-desc">{{userInfo.age}}岁 · {{userInfo.gender}}</text>
+      <text class="user-care">护理天数: {{userInfo.careDays}}天</text>
+    </view>
+    <button class="edit-btn" bindtap="showEditModal">
+      <text class="btn-text">编辑</text>
+    </button>
+  </view>
+
+  <!-- 微信用户信息获取区域 -->
+  <view wx:if="{{!hasUserInfo && canIUseGetUserProfile}}" class="wechat-info-section">
+    <view class="section-header">
+      <text class="section-title">微信信息</text>
+      <text class="section-subtitle">获取您的微信头像和昵称</text>
+    </view>
+    
+    <view class="wechat-info-card">
+      <view class="wechat-info-content">
+        <text class="wechat-info-desc">点击下方按钮获取您的微信头像和昵称，让您的个人资料更加完整</text>
+      </view>
+      <button class="wechat-info-btn" bindtap="getUserProfile">
+        <text class="btn-text">获取微信信息</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 健康数据 -->
+  <view class="health-section">
+    <view class="section-header">
+      <text class="section-title">健康数据</text>
+      <text class="section-subtitle">您的健康状况</text>
+    </view>
+    
+    <view class="health-grid">
+      <view class="health-card">
+        <view class="health-icon">📊</view>
+        <view class="health-content">
+          <text class="health-number">{{healthData.assessments}}</text>
+          <text class="health-label">评估次数</text>
+        </view>
+      </view>
+      
+      <view class="health-card">
+        <view class="health-icon">📝</view>
+        <view class="health-content">
+          <text class="health-number">{{healthData.records}}</text>
+          <text class="health-label">症状记录</text>
+        </view>
+      </view>
+      
+      <view class="health-card">
+        <view class="health-icon">📚</view>
+        <view class="health-content">
+          <text class="health-number">{{healthData.lessons}}</text>
+          <text class="health-label">学习课程</text>
+        </view>
+      </view>
+      
+      <view class="health-card">
+        <view class="health-icon">🎯</view>
+        <view class="health-content">
+          <text class="health-number">{{healthData.score}}</text>
+          <text class="health-label">健康评分</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="section-header">
+      <text class="section-title">功能菜单</text>
+      <text class="section-subtitle">常用功能</text>
+    </view>
+    
+    <view class="menu-list">
+      <view class="menu-item" bindtap="viewHealthReport">
+        <view class="menu-icon">📋</view>
+        <view class="menu-content">
+          <text class="menu-title">健康报告</text>
+          <text class="menu-desc">查看详细的健康分析报告</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+      
+      <view class="menu-item" bindtap="viewCarePlan">
+        <view class="menu-icon">📅</view>
+        <view class="menu-content">
+          <text class="menu-title">护理计划</text>
+          <text class="menu-desc">查看个性化护理计划</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+      
+      <view class="menu-item" bindtap="viewReminders">
+        <view class="menu-icon">⏰</view>
+        <view class="menu-content">
+          <text class="menu-title">提醒设置</text>
+          <text class="menu-desc">管理护理提醒和通知</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+      
+      <view class="menu-item" bindtap="viewFamily">
+        <view class="menu-icon">👨‍👩‍👧‍👦</view>
+        <view class="menu-content">
+          <text class="menu-title">家属管理</text>
+          <text class="menu-desc">管理家属联系人和权限</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设置选项 -->
+  <view class="settings-section">
+    <view class="section-header">
+      <text class="section-title">设置</text>
+      <text class="section-subtitle">应用设置</text>
+    </view>
+    
+    <view class="settings-list">
+      <view class="setting-item" bindtap="viewPrivacy">
+        <view class="setting-icon">🔒</view>
+        <view class="setting-content">
+          <text class="setting-title">隐私设置</text>
+          <text class="setting-desc">管理数据隐私和权限</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+      
+      <view class="setting-item" bindtap="viewHelp">
+        <view class="setting-icon">❓</view>
+        <view class="setting-content">
+          <text class="setting-title">帮助中心</text>
+          <text class="setting-desc">常见问题和使用指南</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+      
+      <view class="setting-item" bindtap="viewAbout">
+        <view class="setting-icon">ℹ️</view>
+        <view class="setting-content">
+          <text class="setting-title">关于我们</text>
+          <text class="setting-desc">应用信息和版本</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+      
+      <view class="setting-item" bindtap="contactSupport">
+        <view class="setting-icon">💬</view>
+        <view class="setting-content">
+          <text class="setting-title">联系客服</text>
+          <text class="setting-desc">获取专业支持和帮助</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="logout">
+      <text class="btn-text">退出登录</text>
+    </button>
+  </view>
+
+  <!-- 编辑个人信息模态框 -->
+  <view wx:if="{{showEditModal}}" class="modal-overlay">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">编辑个人信息</text>
+        <text class="modal-close" bindtap="closeEditModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">姓名</text>
+          <input class="form-input" placeholder="请输入姓名" 
+                 value="{{editUserInfo.name}}" bindinput="inputEditUser" data-field="name" />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">年龄</text>
+          <input class="form-input" placeholder="请输入年龄" 
+                 value="{{editUserInfo.age}}" bindinput="inputEditUser" data-field="age" type="number" />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">性别</text>
+          <view class="gender-selector">
+            <view class="gender-option {{editUserInfo.gender === '男' ? 'selected' : ''}}"
+                  bindtap="selectGender" data-gender="男">
+              <text class="option-text">男</text>
+            </view>
+            <view class="gender-option {{editUserInfo.gender === '女' ? 'selected' : ''}}"
+                  bindtap="selectGender" data-gender="女">
+              <text class="option-text">女</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">护理天数</text>
+          <input class="form-input" placeholder="请输入护理天数" 
+                 value="{{editUserInfo.careDays}}" bindinput="inputEditUser" data-field="careDays" type="number" />
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="modal-btn secondary" bindtap="closeEditModal">
+          <text class="btn-text">取消</text>
+        </button>
+        <button class="modal-btn primary" bindtap="saveEdit">
+          <text class="btn-text">保存</text>
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

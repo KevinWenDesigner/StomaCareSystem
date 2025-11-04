@@ -1,0 +1,594 @@
+/* patient-app/pages/diary/diary.wxss */
+
+.container {
+  padding: 32rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  min-height: 100vh;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 48rpx;
+}
+
+.page-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  display: block;
+  margin-bottom: 16rpx;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.page-subtitle {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  font-weight: 500;
+}
+
+/* 快速记录 */
+.quick-record {
+  margin-bottom: 48rpx;
+}
+
+.record-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.record-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.edit-badge {
+  background: #FEF3C7;
+  color: #D97706;
+  font-size: 20rpx;
+  font-weight: 600;
+  padding: 4rpx 8rpx;
+  border-radius: 6rpx;
+  border: 1rpx solid #F59E0B;
+}
+
+.record-date {
+  font-size: 28rpx;
+  color: var(--gray-500);
+}
+
+/* 症状表单 */
+.symptom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.form-label {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.selection-count {
+  font-size: 24rpx;
+  color: #3B82F6;
+  font-weight: 500;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+/* 疼痛等级 */
+.pain-scale {
+  display: flex;
+  gap: 12rpx;
+}
+
+.pain-item {
+  flex: 1;
+  background: #F3F4F6;
+  border-radius: 12rpx;
+  padding: 20rpx 16rpx;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2rpx solid transparent;
+  cursor: pointer;
+}
+
+.pain-item.active {
+  background: #3B82F6;
+  color: #FFFFFF;
+  border-color: #3B82F6;
+}
+
+.pain-item:active {
+  transform: scale(0.95);
+}
+
+.pain-number {
+  font-size: 36rpx;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.pain-desc {
+  font-size: 24rpx;
+  display: block;
+}
+
+/* 症状标签 */
+.symptom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.symptom-tag {
+  background: #F3F4F6;
+  border-radius: 12rpx;
+  padding: 16rpx 24rpx;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2rpx solid transparent;
+  cursor: pointer;
+  color: #374151;
+  position: relative;
+  overflow: hidden;
+  transform: scale(1);
+}
+
+/* 选中状态 - 增强视觉效果 */
+.symptom-tag.selected {
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%) !important;
+  color: #FFFFFF !important;
+  border-color: #3B82F6 !important;
+  border-width: 2rpx !important;
+  border-style: solid !important;
+  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4) !important;
+  transform: scale(1.08) !important;
+  font-weight: 700 !important;
+  position: relative;
+}
+
+/* 选中状态添加勾选图标 */
+.symptom-tag.selected::before {
+  content: "✓";
+  position: absolute;
+  top: 4rpx;
+  right: 8rpx;
+  font-size: 20rpx;
+  font-weight: bold;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 24rpx;
+  height: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  animation: pulse 2s infinite;
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 选中状态的文字样式 */
+.symptom-tag.selected .tag-text {
+  font-weight: 700;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
+}
+
+.symptom-tag-active {
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%) !important;
+  color: #FFFFFF !important;
+  border-color: #3B82F6 !important;
+  border-width: 2rpx !important;
+  border-style: solid !important;
+  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4) !important;
+  transform: scale(1.08) !important;
+  font-weight: 700 !important;
+  position: relative;
+}
+
+.symptom-tag.active {
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%) !important;
+  color: #FFFFFF !important;
+  border-color: #3B82F6 !important;
+  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4) !important;
+  transform: scale(1.08) !important;
+  font-weight: 700 !important;
+  position: relative;
+}
+
+.symptom-tag:active {
+  transform: scale(0.95);
+}
+
+.tag-text {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.symptom-tag.small {
+  padding: 8rpx 16rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  color: #FFFFFF;
+  border: 1rpx solid #3B82F6;
+  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.3);
+  font-weight: 600;
+}
+
+.symptom-tag.small .tag-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* 文本域 */
+.form-textarea {
+  width: 100%;
+  min-height: 120rpx;
+  max-height: 200rpx;
+  padding: 24rpx;
+  border: 2rpx solid var(--gray-200);
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: var(--gray-800);
+  background: #FFFFFF;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  resize: none;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.form-textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(59, 130, 246, 0.1);
+}
+
+/* 操作按钮容器 */
+.action-buttons {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+/* 提交按钮 */
+.submit-btn {
+  background: var(--primary-color);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.submit-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
+}
+
+/* 取消按钮 */
+.cancel-btn {
+  background: #F3F4F6;
+  color: #374151;
+  border: 2rpx solid #D1D5DB;
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.cancel-btn:active {
+  transform: scale(0.95);
+  background: #E5E7EB;
+}
+
+/* 统计概览 */
+.stats-section {
+  margin-bottom: 48rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20rpx);
+  transition: all 0.3s ease;
+}
+
+.stat-card:active {
+  transform: scale(0.98);
+}
+
+.stat-icon {
+  font-size: 56rpx;
+  margin-right: 24rpx;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  display: block;
+}
+
+/* 历史记录 */
+.history-section {
+  margin-bottom: 48rpx;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 16rpx;
+}
+
+.filter-tab {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12rpx;
+  padding: 12rpx 24rpx;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10rpx);
+}
+
+.filter-tab.active {
+  background: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.filter-tab:active {
+  transform: scale(0.95);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80rpx 32rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  backdrop-filter: blur(20rpx);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.empty-subtext {
+  font-size: 28rpx;
+  color: var(--gray-500);
+  display: block;
+}
+
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.record-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.record-item:active {
+  transform: scale(0.98);
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.record-date {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.record-pain {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.pain-label {
+  font-size: 24rpx;
+  color: var(--gray-500);
+}
+
+.pain-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.record-symptoms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.record-note {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin-bottom: 24rpx;
+  display: block;
+}
+
+.record-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.action-btn {
+  background: var(--primary-color);
+  color: #FFFFFF;
+}
+
+.action-btn.danger {
+  background: var(--danger-color);
+  color: #FFFFFF;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .container {
+    padding: 24rpx;
+  }
+  
+  .record-card {
+    padding: 24rpx;
+  }
+  
+  .form-textarea {
+    padding: 20rpx;
+    font-size: 26rpx;
+  }
+  
+  .pain-scale {
+    gap: 8rpx;
+  }
+  
+  .pain-item {
+    padding: 16rpx 12rpx;
+  }
+  
+  .pain-number {
+    font-size: 32rpx;
+  }
+  
+  .pain-desc {
+    font-size: 22rpx;
+  }
+} 

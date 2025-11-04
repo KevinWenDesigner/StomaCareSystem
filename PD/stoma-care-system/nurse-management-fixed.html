@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>护理管理端 - 护士工作管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            padding: 0 40px;
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin: 24px 0;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .stat-item:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .nurse-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 16px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .nurse-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .nurse-status {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-online {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-busy {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .task-progress {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .chart-container {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            margin: 24px 0;
+            padding: 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0,0,0,0.1);
+            padding: 40px 0;
+            overflow-y: auto;
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 32px;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        
+        .sidebar-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-right: 3px solid #667eea;
+        }
+        
+        .content-area {
+            margin-left: 280px;
+            padding: 40px;
+        }
+        
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 6px;
+            margin: 0 0 24px 0;
+        }
+        
+        .filter-tab {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .filter-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nurse-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+        
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .task-item {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .page-content {
+            display: block;
+        }
+        
+        .page-content.hidden {
+            display: none;
+        }
+        
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            .content-area {
+                margin-left: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .content-area {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="header">
+        <div class="flex items-center justify-between h-20">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-tie text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">护理管理端</h1>
+                    <p class="text-sm text-gray-500">护士工作管理系统</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-bell text-gray-600 text-xl"></i>
+                    <span class="bg-red-500 text-white text-xs rounded-full px-2 py-1">3</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face" 
+                         class="w-10 h-10 rounded-full" alt="管理员头像">
+                    <div>
+                        <div class="font-semibold text-gray-800">李主任</div>
+                        <div class="text-sm text-gray-500">护理部主任</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="px-8 mb-8">
+            <h2 class="text-xl font-bold text-gray-800">管理菜单</h2>
+        </div>
+        
+        <div class="sidebar-item active">
+            <i class="fas fa-tachometer-alt mr-4 text-lg"></i>
+            <span>工作看板</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-users mr-4 text-lg"></i>
+            <span>护士管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-user-injured mr-4 text-lg"></i>
+            <span>患者管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-tasks mr-4 text-lg"></i>
+            <span>任务分配</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-line mr-4 text-lg"></i>
+            <span>绩效分析</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-calendar-alt mr-4 text-lg"></i>
+            <span>排班管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-graduation-cap mr-4 text-lg"></i>
+            <span>培训管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cog mr-4 text-lg"></i>
+            <span>系统设置</span>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="content-area">
+        <!-- 工作看板页面 -->
+        <div id="dashboard-page" class="page-content">
+            <!-- 总体统计 -->
+            <div class="stats-card">
+                <h3 class="section-title">总体统计</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="text-4xl font-bold mb-2">24</div>
+                        <div class="text-lg opacity-90">在线护士</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="text-4xl font-bold mb-2">156</div>
+                        <div class="text-lg opacity-90">管理患者</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="text-4xl font-bold mb-2">89%</div>
+                        <div class="text-lg opacity-90">任务完成率</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="text-4xl font-bold mb-2">4.8</div>
+                        <div class="text-lg opacity-90">平均评分</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作绩效趋势 -->
+            <div class="chart-container">
+                <div class="flex items-center justify-between mb-8 relative z-10">
+                    <h3 class="text-2xl font-bold">工作绩效趋势</h3>
+                    <span class="text-lg opacity-90">最近7天</span>
+                </div>
+                
+                <div class="relative z-10">
+                    <div class="flex justify-between items-end h-48">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 80px;"></div>
+                            <span class="text-sm opacity-80">周一</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 110px;"></div>
+                            <span class="text-sm opacity-80">周二</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 95px;"></div>
+                            <span class="text-sm opacity-80">周三</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 125px;"></div>
+                            <span class="text-sm opacity-80">周四</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 115px;"></div>
+                            <span class="text-sm opacity-80">周五</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 100px;"></div>
+                            <span class="text-sm opacity-80">周六</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 bg-white rounded-t mb-3" style="height: 135px;"></div>
+                            <span class="text-sm opacity-80">周日</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 护士管理 -->
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">护士管理</h3>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">全部护士</div>
+                        <div class="filter-tab">在线护士</div>
+                        <div class="filter-tab">忙碌护士</div>
+                        <div class="filter-tab">离线护士</div>
+                    </div>
+                </div>
+                
+                <div class="nurse-grid">
+                    <!-- 护士卡片1 -->
+                    <div class="nurse-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-4">
+                                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=60&h=60&fit=crop&crop=face" 
+                                     class="w-16 h-16 rounded-full" alt="护士头像">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">李护士</div>
+                                    <div class="text-base text-gray-500">造口护理专家</div>
+                                </div>
+                            </div>
+                            <div class="nurse-status status-online">在线</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">12</div>
+                                <div class="text-sm text-gray-500">管理患者</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">95%</div>
+                                <div class="text-sm text-gray-500">任务完成</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600">4.9</div>
+                                <div class="text-sm text-gray-500">患者评分</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-base text-gray-600 mb-2">
+                                <span>今日任务进度</span>
+                                <span>8/10</span>
+                            </div>
+                            <div class="task-progress">
+                                <div class="progress-fill" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 护士卡片2 -->
+                    <div class="nurse-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-4">
+                                <img src="https://images.unsplash.com/photo-1594824488872-0b1b3d4c4e8f?w=60&h=60&fit=crop&crop=face" 
+                                     class="w-16 h-16 rounded-full" alt="护士头像">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">王护士</div>
+                                    <div class="text-base text-gray-500">资深护理师</div>
+                                </div>
+                            </div>
+                            <div class="nurse-status status-busy">忙碌</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">15</div>
+                                <div class="text-sm text-gray-500">管理患者</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">88%</div>
+                                <div class="text-sm text-gray-500">任务完成</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600">4.7</div>
+                                <div class="text-sm text-gray-500">患者评分</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-base text-gray-600 mb-2">
+                                <span>今日任务进度</span>
+                                <span>7/9</span>
+                            </div>
+                            <div class="task-progress">
+                                <div class="progress-fill" style="width: 78%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 护士卡片3 -->
+                    <div class="nurse-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-4">
+                                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=60&h=60&fit=crop&crop=face" 
+                                     class="w-16 h-16 rounded-full" alt="护士头像">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">张护士</div>
+                                    <div class="text-base text-gray-500">护理师</div>
+                                </div>
+                            </div>
+                            <div class="nurse-status status-offline">离线</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">8</div>
+                                <div class="text-sm text-gray-500">管理患者</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">92%</div>
+                                <div class="text-sm text-gray-500">任务完成</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600">4.8</div>
+                                <div class="text-sm text-gray-500">患者评分</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-base text-gray-600 mb-2">
+                                <span>今日任务进度</span>
+                                <span>6/6</span>
+                            </div>
+                            <div class="task-progress">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务分配 -->
+            <div class="stats-card">
+                <h3 class="section-title">任务分配</h3>
+                <div class="task-grid">
+                    <div class="task-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-lg font-semibold text-gray-800">新患者入院</div>
+                                    <div class="text-base text-gray-500">患者：刘先生，造口护理</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">分配给</div>
+                                <div class="text-lg font-semibold text-blue-600">李护士</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-phone text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-lg font-semibold text-gray-800">紧急随访</div>
+                                    <div class="text-base text-gray-500">患者：张阿姨，高风险</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">分配给</div>
+                                <div class="text-lg font-semibold text-green-600">王护士</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <div class="text-lg font-semibold text-gray-800">患者教育</div>
+                                    <div class="text-base text-gray-500">患者：陈女士，新造口</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">分配给</div>
+                                <div class="text-lg font-semibold text-purple-600">张护士</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 护士管理页面 -->
+        <div id="nurse-management-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">护士管理</h3>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-plus mr-2"></i>添加护士
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- 护士详情卡片 -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=60&h=60&fit=crop&crop=face" 
+                                     class="w-16 h-16 rounded-full" alt="护士头像">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">李护士</div>
+                                    <div class="text-base text-gray-500">造口护理专家</div>
+                                    <div class="text-sm text-blue-600">工号：N001</div>
+                                </div>
+                            </div>
+                            <div class="nurse-status status-online">在线</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                <div class="text-2xl font-bold text-blue-600">12</div>
+                                <div class="text-sm text-gray-600">管理患者</div>
+                            </div>
+                            <div class="text-center p-3 bg-green-50 rounded-lg">
+                                <div class="text-2xl font-bold text-green-600">95%</div>
+                                <div class="text-sm text-gray-600">完成率</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                <i class="fas fa-eye mr-1"></i>查看详情
+                            </button>
+                            <button class="flex-1 bg-green-100 text-green-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors">
+                                <i class="fas fa-edit mr-1"></i>编辑
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <img src="https://images.unsplash.com/photo-1594824488872-0b1b3d4c4e8f?w=60&h=60&fit=crop&crop=face" 
+                                     class="w-16 h-16 rounded-full" alt="护士头像">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">王护士</div>
+                                    <div class="text-base text-gray-500">资深护理师</div>
+                                    <div class="text-sm text-blue-600">工号：N002</div>
+                                </div>
+                            </div>
+                            <div class="nurse-status status-busy">忙碌</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                <div class="text-2xl font-bold text-blue-600">15</div>
+                                <div class="text-sm text-gray-600">管理患者</div>
+                            </div>
+                            <div class="text-center p-3 bg-green-50 rounded-lg">
+                                <div class="text-2xl font-bold text-green-600">88%</div>
+                                <div class="text-sm text-gray-600">完成率</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                <i class="fas fa-eye mr-1"></i>查看详情
+                            </button>
+                            <button class="flex-1 bg-green-100 text-green-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors">
+                                <i class="fas fa-edit mr-1"></i>编辑
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=60&h=60&fit=crop&crop=face" 
+                                     class="w-16 h-16 rounded-full" alt="护士头像">
+                                <div>
+                                    <div class="text-xl font-semibold text-gray-800">张护士</div>
+                                    <div class="text-base text-gray-500">护理师</div>
+                                    <div class="text-sm text-blue-600">工号：N003</div>
+                                </div>
+                            </div>
+                            <div class="nurse-status status-offline">离线</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                <div class="text-2xl font-bold text-blue-600">8</div>
+                                <div class="text-sm text-gray-600">管理患者</div>
+                            </div>
+                            <div class="text-center p-3 bg-green-50 rounded-lg">
+                                <div class="text-2xl font-bold text-green-600">92%</div>
+                                <div class="text-sm text-gray-600">完成率</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                <i class="fas fa-eye mr-1"></i>查看详情
+                            </button>
+                            <button class="flex-1 bg-green-100 text-green-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors">
+                                <i class="fas fa-edit mr-1"></i>编辑
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 患者管理页面 -->
+        <div id="patient-management-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">患者管理</h3>
+                    <div class="flex space-x-4">
+                        <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-plus mr-2"></i>新增患者
+                        </button>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-download mr-2"></i>导出数据
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full bg-white rounded-lg shadow-lg">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">患者信息</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">造口类型</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">负责护士</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">风险等级</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">最后随访</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                                             class="w-10 h-10 rounded-full" alt="患者头像">
+                                        <div>
+                                            <div class="font-semibold text-gray-800">刘先生</div>
+                                            <div class="text-sm text-gray-500">男 | 65岁</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">结肠造口</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=32&h=32&fit=crop&crop=face" 
+                                             class="w-8 h-8 rounded-full" alt="护士头像">
+                                        <span class="text-sm text-gray-700">李护士</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">中风险</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">2024-01-15</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" 
+                                             class="w-10 h-10 rounded-full" alt="患者头像">
+                                        <div>
+                                            <div class="font-semibold text-gray-800">张阿姨</div>
+                                            <div class="text-sm text-gray-500">女 | 58岁</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">回肠造口</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <img src="https://images.unsplash.com/photo-1594824488872-0b1b3d4c4e8f?w=32&h=32&fit=crop&crop=face" 
+                                             class="w-8 h-8 rounded-full" alt="护士头像">
+                                        <span class="text-sm text-gray-700">王护士</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">高风险</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">2024-01-14</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            <i class="fas fa-eye mr-1"></i>查看
+                                        </button>
+                                        <button class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                            <i class="fas fa-edit mr-1"></i>编辑
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务分配页面 -->
+        <div id="task-assignment-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">任务分配</h3>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-plus mr-2"></i>新建任务
+                    </button>
+                </div>
+                
+                <!-- 待分配任务 -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-4">待分配任务</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">紧急随访</div>
+                                        <div class="text-sm text-gray-500">患者：张阿姨</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">紧急</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">患者报告造口周围出现红肿，需要立即评估处理。</p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">创建时间：2024-01-15 14:30</div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    分配任务
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">新患者入院</div>
+                                        <div class="text-sm text-gray-500">患者：陈先生</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">普通</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">新患者入院，需要进行造口护理评估和健康教育。</p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">创建时间：2024-01-15 10:15</div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    分配任务
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 进行中任务 -->
+                <div>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-4">进行中任务</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">患者教育</div>
+                                        <div class="text-sm text-gray-500">患者：李女士</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">进行中</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">进行造口护理知识教育，包括日常护理要点和注意事项。</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>进度</span>
+                                    <span>60%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">负责人：王护士</div>
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-stethoscope text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">定期随访</div>
+                                        <div class="text-sm text-gray-500">患者：刘先生</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">进行中</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">进行定期随访，评估造口状况和患者恢复情况。</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>进度</span>
+                                    <span>80%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">负责人：李护士</div>
+                                <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="performance-analysis-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">绩效分析</h3>
+                    <div class="flex space-x-4">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-download mr-2"></i>导出报告
+                        </button>
+                        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-chart-bar mr-2"></i>生成图表
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 护士绩效排行 -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">护士绩效排行</h4>
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">排名</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">护士信息</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">管理患者</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">任务完成率</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">患者评分</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">综合得分</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                    <span class="text-yellow-800 font-bold">1</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face" 
+                                                     class="w-10 h-10 rounded-full" alt="护士头像">
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">李护士</div>
+                                                    <div class="text-sm text-gray-500">造口护理专家</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-lg font-semibold text-blue-600">12</td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <span class="text-lg font-semibold text-green-600 mr-2">95%</span>
+                                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-600 h-2 rounded-full" style="width: 95%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-lg font-semibold text-purple-600">4.9</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">优秀</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                                    <span class="text-gray-800 font-bold">2</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1594824488872-0b1b3d4c4e8f?w=40&h=40&fit=crop&crop=face" 
+                                                     class="w-10 h-10 rounded-full" alt="护士头像">
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">王护士</div>
+                                                    <div class="text-sm text-gray-500">资深护理师</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-lg font-semibold text-blue-600">15</td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <span class="text-lg font-semibold text-green-600 mr-2">88%</span>
+                                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-600 h-2 rounded-full" style="width: 88%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-lg font-semibold text-purple-600">4.7</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">良好</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                                    <span class="text-orange-800 font-bold">3</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=40&h=40&fit=crop&crop=face" 
+                                                     class="w-10 h-10 rounded-full" alt="护士头像">
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">张护士</div>
+                                                    <div class="text-sm text-gray-500">护理师</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-lg font-semibold text-blue-600">8</td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <span class="text-lg font-semibold text-green-600 mr-2">92%</span>
+                                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-600 h-2 rounded-full" style="width: 92%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-lg font-semibold text-purple-600">4.8</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">合格</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 月度统计 -->
+                <div>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">月度统计</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-3xl font-bold">156</div>
+                                    <div class="text-blue-100">管理患者总数</div>
+                                </div>
+                                <i class="fas fa-users text-3xl opacity-80"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-3xl font-bold">89%</div>
+                                    <div class="text-green-100">平均完成率</div>
+                                </div>
+                                <i class="fas fa-chart-line text-3xl opacity-80"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-3xl font-bold">4.8</div>
+                                    <div class="text-purple-100">平均评分</div>
+                                </div>
+                                <i class="fas fa-star text-3xl opacity-80"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-3xl font-bold">24</div>
+                                    <div class="text-orange-100">在线护士</div>
+                                </div>
+                                <i class="fas fa-user-check text-3xl opacity-80"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="schedule-management-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">排班管理</h3>
+                    <div class="flex space-x-4">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-plus mr-2"></i>新建排班
+                        </button>
+                        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-download mr-2"></i>导出排班表
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 周排班表 -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">本周排班表</h4>
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">护士</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周一</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周二</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周三</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周四</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周五</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周六</th>
+                                        <th class="px-6 py-4 text-center text-sm font-semibold text-gray-600">周日</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=32&h=32&fit=crop&crop=face" 
+                                                     class="w-8 h-8 rounded-full" alt="护士头像">
+                                                <span class="font-semibold text-gray-800">李护士</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">早班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">中班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">晚班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">早班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">中班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">休息</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">休息</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1594824488872-0b1b3d4c4e8f?w=32&h=32&fit=crop&crop=face" 
+                                                     class="w-8 h-8 rounded-full" alt="护士头像">
+                                                <span class="font-semibold text-gray-800">王护士</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">中班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">晚班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">早班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">中班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">晚班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">早班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">休息</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=32&h=32&fit=crop&crop=face" 
+                                                     class="w-8 h-8 rounded-full" alt="护士头像">
+                                                <span class="font-semibold text-gray-800">张护士</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">晚班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">早班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">中班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">晚班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">早班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">中班</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">晚班</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 班次统计 -->
+                <div>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">班次统计</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-lg font-semibold text-gray-800">早班 (8:00-16:00)</h5>
+                                <span class="text-2xl font-bold text-blue-600">12</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">已安排</span>
+                                    <span class="font-medium">8人</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">空缺</span>
+                                    <span class="font-medium text-red-600">4人</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-lg font-semibold text-gray-800">中班 (16:00-24:00)</h5>
+                                <span class="text-2xl font-bold text-green-600">10</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">已安排</span>
+                                    <span class="font-medium">10人</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">空缺</span>
+                                    <span class="font-medium text-green-600">0人</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-lg font-semibold text-gray-800">晚班 (0:00-8:00)</h5>
+                                <span class="text-2xl font-bold text-purple-600">8</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">已安排</span>
+                                    <span class="font-medium">6人</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">空缺</span>
+                                    <span class="font-medium text-red-600">2人</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="training-management-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">培训管理</h3>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-plus mr-2"></i>新建培训
+                    </button>
+                </div>
+                
+                <!-- 进行中培训 -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">进行中培训</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-graduation-cap text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">造口护理新技术培训</div>
+                                        <div class="text-sm text-gray-500">主讲：李主任</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">进行中</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">学习最新的造口护理技术和设备使用方法，提升护理质量。</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>进度</span>
+                                    <span>75%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">参与人数：18人</div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-heart text-green-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">患者心理护理培训</div>
+                                        <div class="text-sm text-gray-500">主讲：王护士长</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">进行中</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">学习如何更好地与患者沟通，提供心理支持和安慰。</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>进度</span>
+                                    <span>45%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">参与人数：15人</div>
+                                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 培训计划 -->
+                <div>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">培训计划</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-microscope text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">感染控制培训</div>
+                                        <div class="text-sm text-gray-500">主讲：感染科专家</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">计划中</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">学习造口护理中的感染预防和控制措施。</p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">计划时间：2024-01-20 14:00</div>
+                                <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    开始培训
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-tools text-orange-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-semibold text-gray-800">设备操作培训</div>
+                                        <div class="text-sm text-gray-500">主讲：设备工程师</div>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">计划中</span>
+                            </div>
+                            <p class="text-gray-600 mb-4">学习新型造口护理设备的使用方法和维护技巧。</p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">计划时间：2024-01-25 10:00</div>
+                                <button class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    开始培训
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="system-settings-page" class="page-content hidden">
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="section-title">系统设置</h3>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        <i class="fas fa-save mr-2"></i>保存设置
+                    </button>
+                </div>
+                
+                <!-- 基本设置 -->
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">基本设置</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                            <h5 class="text-lg font-semibold text-gray-800 mb-4">通知设置</h5>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800">紧急任务通知</div>
+                                        <div class="text-sm text-gray-500">接收紧急任务的实时通知</div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800">系统更新通知</div>
+                                        <div class="text-sm text-gray-500">接收系统更新和维护通知</div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800">绩效报告通知</div>
+                                        <div class="text-sm text-gray-500">接收定期绩效报告通知</div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                            <h5 class="text-lg font-semibold text-gray-800 mb-4">显示设置</h5>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800">深色模式</div>
+                                        <div class="text-sm text-gray-500">启用深色主题显示</div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800">自动刷新</div>
+                                        <div class="text-sm text-gray-500">自动刷新页面数据</div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800">动画效果</div>
+                                        <div class="text-sm text-gray-500">启用界面动画效果</div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 权限管理 -->
+                <div>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-6">权限管理</h4>
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">用户</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">角色</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">权限</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">状态</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=32&h=32&fit=crop&crop=face" 
+                                                     class="w-8 h-8 rounded-full" alt="用户头像">
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">李主任</div>
+                                                    <div class="text-sm text-gray-500">护理部主任</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">管理员</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-wrap gap-1">
+                                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">全部权限</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">活跃</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                <i class="fas fa-edit mr-1"></i>编辑
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1594824488872-0b1b3d4c4e8f?w=32&h=32&fit=crop&crop=face" 
+                                                     class="w-8 h-8 rounded-full" alt="用户头像">
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">王护士长</div>
+                                                    <div class="text-sm text-gray-500">护士长</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">护士长</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-wrap gap-1">
+                                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">护士管理</span>
+                                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">患者管理</span>
+                                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">任务分配</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">活跃</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                <i class="fas fa-edit mr-1"></i>编辑
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center space-x-3">
+                                                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=32&h=32&fit=crop&crop=face" 
+                                                     class="w-8 h-8 rounded-full" alt="用户头像">
+                                                <div>
+                                                    <div class="font-semibold text-gray-800">张护士</div>
+                                                    <div class="text-sm text-gray-500">护理师</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">护理师</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-wrap gap-1">
+                                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">患者管理</span>
+                                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">任务执行</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">离线</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                                <i class="fas fa-edit mr-1"></i>编辑
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 侧边栏菜单切换
+        document.querySelectorAll('.sidebar-item').forEach((item, index) => {
+            item.addEventListener('click', function() {
+                console.log('菜单点击:', index, this.textContent.trim());
+                
+                // 移除所有菜单项的active状态
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                // 添加当前菜单项的active状态
+                this.classList.add('active');
+                
+                // 隐藏所有页面内容
+                document.querySelectorAll('.page-content').forEach(page => {
+                    page.classList.add('hidden');
+                    console.log('隐藏页面:', page.id);
+                });
+                
+                // 显示对应的页面内容
+                const pageIds = [
+                    'dashboard-page',
+                    'nurse-management-page', 
+                    'patient-management-page',
+                    'task-assignment-page',
+                    'performance-analysis-page',
+                    'schedule-management-page',
+                    'training-management-page',
+                    'system-settings-page'
+                ];
+                
+                if (pageIds[index]) {
+                    const targetPage = document.getElementById(pageIds[index]);
+                    if (targetPage) {
+                        targetPage.classList.remove('hidden');
+                        console.log('显示页面:', pageIds[index]);
+                    } else {
+                        console.error('页面不存在:', pageIds[index]);
+                    }
+                }
+            });
+        });
+
+        // 页面加载调试
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成');
+            
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            const pageContents = document.querySelectorAll('.page-content');
+            
+            console.log('侧边栏菜单数量:', sidebarItems.length);
+            console.log('页面内容数量:', pageContents.length);
+            
+            pageContents.forEach(page => {
+                console.log('页面ID:', page.id);
+            });
+        });
+    </script>
+</body>
+</html> 

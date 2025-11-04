@@ -1,0 +1,181 @@
+<!--patient-app/pages/camera/camera.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">AI智能评估</text>
+    <text class="page-subtitle">拍照获得专业评估建议</text>
+  </view>
+
+  <!-- 自动拍照模式 -->
+  <view class="auto-capture-section">
+    <view class="auto-capture-card">
+      <view class="auto-capture-header">
+        <text class="auto-capture-title">自动拍照模式</text>
+        <text class="auto-capture-desc">3秒倒计时自动拍照，确保拍摄稳定</text>
+      </view>
+      
+      <view class="auto-capture-controls">
+        <button class="auto-capture-btn {{autoCapture ? 'active' : ''}}" bindtap="toggleAutoCapture">
+          <text class="btn-text">{{autoCapture ? '取消自动' : '开启自动'}}</text>
+        </button>
+        
+        <view wx:if="{{autoCapture}}" class="countdown-display">
+          <text class="countdown-text">{{captureCountdown}}</text>
+          <text class="countdown-label">秒后拍照</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 拍照区域 -->
+  <view class="camera-section">
+    <view class="camera-preview">
+      <view wx:if="{{!photoPath}}" class="camera-placeholder">
+        <text class="camera-icon">📷</text>
+        <text class="camera-tip">点击拍照开始评估</text>
+        <text class="camera-subtip">建议在光线充足的环境下拍摄</text>
+      </view>
+      <image wx:else src="{{photoPath}}" mode="aspectFit" class="camera-image"></image>
+    </view>
+    
+    <view class="camera-actions">
+      <button class="camera-btn" bindtap="takePhoto">
+        <text class="btn-text">拍照评估</text>
+      </button>
+      <button class="camera-btn outline" bindtap="chooseImage">
+        <text class="btn-text">选择照片</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- AI分析进度 -->
+  <view wx:if="{{isAnalyzing}}" class="analysis-section">
+    <view class="analysis-card">
+      <view class="analysis-header">
+        <text class="analysis-title">AI分析中...</text>
+        <text class="analysis-progress">{{analysisProgress}}%</text>
+      </view>
+      
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{analysisProgress}}%"></view>
+      </view>
+      
+      <view class="analysis-steps">
+        <view class="step-item {{analysisProgress >= 20 ? 'completed' : ''}}">
+          <text class="step-icon">🔍</text>
+          <text class="step-text">图像预处理</text>
+        </view>
+        <view class="step-item {{analysisProgress >= 40 ? 'completed' : ''}}">
+          <text class="step-icon">🤖</text>
+          <text class="step-text">AI识别分析</text>
+        </view>
+        <view class="step-item {{analysisProgress >= 60 ? 'completed' : ''}}">
+          <text class="step-icon">📊</text>
+          <text class="step-text">症状评估</text>
+        </view>
+        <view class="step-item {{analysisProgress >= 80 ? 'completed' : ''}}">
+          <text class="step-icon">💡</text>
+          <text class="step-text">生成建议</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 评估结果 -->
+  <view wx:if="{{assessmentResult}}" class="result-section">
+    <view class="section-header">
+      <text class="section-title">评估结果</text>
+      <text class="section-subtitle">{{assessmentTime}}</text>
+    </view>
+    
+    <view class="result-card">
+      <view class="result-header">
+        <text class="result-title">造口状态评估</text>
+        <view class="result-score score-{{assessmentResult.level}}">
+          <text class="score-text">{{assessmentResult.score}}分</text>
+        </view>
+      </view>
+      
+      <text class="result-desc">{{assessmentResult.description}}</text>
+      
+      <!-- AI分析指标 -->
+      <view class="analysis-metrics">
+        <view class="metric-item">
+          <text class="metric-label">发红程度</text>
+          <view class="metric-bar">
+            <view class="metric-fill" style="width: {{assessmentResult.analysis.redness}}%"></view>
+          </view>
+          <text class="metric-value">{{assessmentResult.analysis.redness}}%</text>
+        </view>
+        
+        <view class="metric-item">
+          <text class="metric-label">肿胀程度</text>
+          <view class="metric-bar">
+            <view class="metric-fill" style="width: {{assessmentResult.analysis.swelling}}%"></view>
+          </view>
+          <text class="metric-value">{{assessmentResult.analysis.swelling}}%</text>
+        </view>
+        
+        <view class="metric-item">
+          <text class="metric-label">感染风险</text>
+          <view class="metric-bar">
+            <view class="metric-fill" style="width: {{assessmentResult.analysis.infection}}%"></view>
+          </view>
+          <text class="metric-value">{{assessmentResult.analysis.infection}}%</text>
+        </view>
+        
+        <view class="metric-item">
+          <text class="metric-label">愈合程度</text>
+          <view class="metric-bar">
+            <view class="metric-fill" style="width: {{assessmentResult.analysis.healing}}%"></view>
+          </view>
+          <text class="metric-value">{{assessmentResult.analysis.healing}}%</text>
+        </view>
+      </view>
+      
+      <view class="result-details">
+        <view class="detail-item">
+          <text class="detail-label">评估等级</text>
+          <text class="detail-value">{{assessmentResult.levelText}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">建议措施</text>
+          <text class="detail-value">{{assessmentResult.suggestion}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">注意事项</text>
+          <text class="detail-value">{{assessmentResult.attention}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="history-section">
+    <view class="section-header">
+      <text class="section-title">历史评估</text>
+      <button class="view-all-btn" bindtap="viewHistory">
+        <text class="btn-text">查看全部</text>
+      </button>
+    </view>
+    
+    <view wx:if="{{historyList.length === 0}}" class="empty-state">
+      <text class="empty-icon">📊</text>
+      <text class="empty-text">暂无评估记录</text>
+      <text class="empty-subtext">开始拍照评估，记录您的造口状态</text>
+    </view>
+    
+    <view wx:else class="history-list">
+      <view wx:for="{{historyList}}" wx:key="id" class="history-item">
+        <view class="history-card">
+          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image"></image>
+          <view class="history-content">
+            <text class="history-time">{{item.time}}</text>
+            <text class="history-score">评分: {{item.score}}分</text>
+            <text class="history-level">{{item.levelText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

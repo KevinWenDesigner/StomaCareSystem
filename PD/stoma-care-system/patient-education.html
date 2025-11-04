@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>患者端 - 护理学习</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .status-bar {
+            height: 44px;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 8px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+        .tab-item.active {
+            color: #6366f1;
+        }
+        .category-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+            margin: 0 20px 16px 20px;
+        }
+        .category-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .category-tab.active {
+            background: white;
+            color: #6366f1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .video-thumbnail {
+            width: 100%;
+            height: 120px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-bottom: 12px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #f1f5f9;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .risk-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .risk-high {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .risk-medium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        .risk-low {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS状态栏 -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-arrow-left text-xl text-gray-600"></i>
+            <span class="font-semibold text-lg">护理学习</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-search text-xl text-gray-600"></i>
+            <i class="fas fa-download text-xl text-blue-600"></i>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="pb-20">
+        <!-- 个性化推荐 -->
+        <div class="content-card">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold">为您推荐</h3>
+                <span class="risk-badge risk-high">高风险</span>
+            </div>
+            
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=150&fit=crop" 
+                     class="video-thumbnail" alt="视频缩略图">
+                <div class="play-btn">
+                    <i class="fas fa-play"></i>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="font-semibold text-lg">紧急护理处理指南</div>
+                <div class="text-sm text-gray-500 mt-1">针对您当前的高风险状况，学习如何正确处理造口护理</div>
+            </div>
+            
+            <div class="flex items-center justify-between text-sm text-gray-500">
+                <span>时长：8分钟</span>
+                <span>观看进度：0%</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- 分类标签 -->
+        <div class="category-tabs">
+            <div class="category-tab active">全部</div>
+            <div class="category-tab">视频</div>
+            <div class="category-tab">图文</div>
+            <div class="category-tab">VR</div>
+        </div>
+
+        <!-- 教育内容列表 -->
+        <div class="space-y-3">
+            <!-- 视频内容 -->
+            <div class="content-card">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=150&fit=crop" 
+                         class="video-thumbnail" alt="视频缩略图">
+                    <div class="play-btn">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-semibold text-lg">造口袋更换教程</div>
+                    <div class="text-sm text-gray-500 mt-1">详细演示造口袋更换的完整流程和注意事项</div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>时长：12分钟</span>
+                    <span>观看进度：65%</span>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%;"></div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=150&fit=crop" 
+                         class="video-thumbnail" alt="视频缩略图">
+                    <div class="play-btn">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-semibold text-lg">皮肤清洁护理</div>
+                    <div class="text-sm text-gray-500 mt-1">学习正确的皮肤清洁方法和护理用品使用</div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>时长：6分钟</span>
+                    <span>观看进度：100%</span>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- 图文内容 -->
+            <div class="content-card">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-lg">饮食指导手册</div>
+                        <div class="text-sm text-gray-500">造口患者的饮食注意事项和营养建议</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>阅读时间：5分钟</span>
+                    <span>已阅读</span>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-lightbulb text-green-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-lg">日常护理小贴士</div>
+                        <div class="text-sm text-gray-500">实用的护理技巧和生活建议</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>阅读时间：3分钟</span>
+                    <span>未阅读</span>
+                </div>
+            </div>
+
+            <!-- VR内容 -->
+            <div class="content-card">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-vr-cardboard text-purple-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-lg">VR护理体验</div>
+                        <div class="text-sm text-gray-500">沉浸式学习造口护理操作</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>体验时间：15分钟</span>
+                    <span>未体验</span>
+                </div>
+            </div>
+
+            <!-- 语音内容 -->
+            <div class="content-card">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-headphones text-orange-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-lg">护理知识音频</div>
+                        <div class="text-sm text-gray-500">适合视力不佳患者的语音学习内容</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>时长：10分钟</span>
+                    <span>已收听</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习统计 -->
+        <div class="content-card">
+            <h3 class="text-lg font-semibold mb-4">学习统计</h3>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">12</div>
+                    <div class="text-sm text-gray-500">已学习</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">8</div>
+                    <div class="text-sm text-gray-500">已完成</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600">5</div>
+                    <div class="text-sm text-gray-500">待学习</div>
+                </div>
+            </div>
+            
+            <div class="text-sm text-gray-600">
+                根据您的风险等级，系统为您推荐了更多相关学习内容
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span>首页</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-camera text-xl mb-1"></i>
+            <span>拍照</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-book-medical text-xl mb-1"></i>
+            <span>记录</span>
+        </div>
+        <div class="tab-item active">
+            <i class="fas fa-graduation-cap text-xl mb-1"></i>
+            <span>学习</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-user text-xl mb-1"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <script>
+        // 分类标签切换
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 内容卡片点击
+        document.querySelectorAll('.content-card').forEach(card => {
+            card.addEventListener('click', function() {
+                console.log('打开学习内容');
+            });
+        });
+
+        // 播放按钮点击
+        document.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('播放视频');
+            });
+        });
+
+        // 底部标签栏切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.querySelector('span').textContent;
+                showNotification(`正在切换到${page}页面...`);
+                
+                // 页面跳转逻辑
+                setTimeout(() => {
+                    switch(page) {
+                        case '首页':
+                            window.location.href = './patient-home.html';
+                            break;
+                        case '拍照':
+                            window.location.href = './patient-camera.html';
+                            break;
+                        case '记录':
+                            window.location.href = './patient-diary.html';
+                            break;
+                        case '我的':
+                            window.location.href = './patient-profile.html';
+                            break;
+                    }
+                }, 1000);
+            });
+        });
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="text-sm font-medium">${text}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

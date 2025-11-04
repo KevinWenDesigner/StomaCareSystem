@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>患者端 - 首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .status-bar {
+            height: 44px;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .risk-card {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 20px;
+            padding: 24px;
+            margin: 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .quick-action {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 10px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .quick-action:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .quick-action:active {
+            transform: scale(0.95);
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .tab-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .tab-item.active {
+            color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .emergency-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .emergency-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(239, 68, 68, 0.6);
+        }
+        .emergency-btn:active {
+            transform: scale(0.95);
+        }
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #6366f1;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .reminder-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .reminder-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        .record-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .record-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS状态栏 -->
+    <div class="status-bar">
+        <span id="currentTime">9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="flex items-center space-x-3">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                 class="w-10 h-10 rounded-full" alt="患者头像">
+            <div>
+                <div class="font-semibold text-lg">张阿姨</div>
+                <div class="text-sm text-gray-500">造口护理患者</div>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-bell text-xl text-gray-600" id="notificationBtn"></i>
+            <i class="fas fa-cog text-xl text-gray-600" id="settingsBtn"></i>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="pb-20">
+        <!-- 风险等级卡片 -->
+        <div class="risk-card" id="riskCard">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <div class="text-2xl font-bold" id="riskLevel">高风险</div>
+                    <div class="text-sm opacity-90">需要立即关注</div>
+                </div>
+                <div class="text-4xl">⚠️</div>
+            </div>
+            <div class="text-sm opacity-90 mb-4" id="riskDescription">
+                检测到造口周围皮肤发红，建议立即联系护士进行专业评估
+            </div>
+            <button class="emergency-btn w-full" id="emergencyBtn">
+                <i class="fas fa-phone-alt mr-2"></i>
+                立即联系护士
+            </button>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="grid grid-cols-2 gap-4 mx-5 mb-6">
+            <div class="quick-action text-center" id="cameraBtn">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-camera text-2xl text-blue-600"></i>
+                </div>
+                <div class="font-semibold text-lg">拍照</div>
+                <div class="text-sm text-gray-500 mt-1">AI智能分析</div>
+            </div>
+            
+            <div class="quick-action text-center" id="diaryBtn">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-book-medical text-2xl text-green-600"></i>
+                </div>
+                <div class="font-semibold text-lg">记录</div>
+                <div class="text-sm text-gray-500 mt-1">记录日常情况</div>
+            </div>
+            
+            <div class="quick-action text-center" id="educationBtn">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-graduation-cap text-2xl text-purple-600"></i>
+                </div>
+                <div class="font-semibold text-lg">学习</div>
+                <div class="text-sm text-gray-500 mt-1">专业知识</div>
+            </div>
+            
+            <div class="quick-action text-center" id="appointmentBtn">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-calendar-check text-2xl text-orange-600"></i>
+                </div>
+                <div class="font-semibold text-lg">预约</div>
+                <div class="text-sm text-gray-500 mt-1">护士随访</div>
+            </div>
+        </div>
+
+        <!-- 今日提醒 -->
+        <div class="mx-5 mb-6">
+            <div class="font-semibold text-lg mb-3">今日提醒</div>
+            <div class="bg-white rounded-16 p-4 shadow-sm border border-gray-100">
+                <div class="reminder-item flex items-center space-x-3 mb-3 p-2 rounded-lg">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div class="font-medium">更换造口袋</div>
+                    <div class="text-sm text-gray-500 ml-auto">14:30</div>
+                </div>
+                <div class="reminder-item flex items-center space-x-3 mb-3 p-2 rounded-lg">
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div class="font-medium">皮肤清洁</div>
+                    <div class="text-sm text-gray-500 ml-auto">16:00</div>
+                </div>
+                <div class="reminder-item flex items-center space-x-3 p-2 rounded-lg">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div class="font-medium">护士随访</div>
+                    <div class="text-sm text-gray-500 ml-auto">明天 10:00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最近记录 -->
+        <div class="mx-5">
+            <div class="font-semibold text-lg mb-3">最近记录</div>
+            <div class="bg-white rounded-16 p-4 shadow-sm border border-gray-100">
+                <div class="record-item flex items-center space-x-3 mb-3 p-2 rounded-lg">
+                    <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=50&h=50&fit=crop" 
+                         class="w-12 h-12 rounded-lg" alt="照片">
+                    <div class="flex-1">
+                        <div class="font-medium">今日拍照评估</div>
+                        <div class="text-sm text-gray-500">风险等级：高风险</div>
+                    </div>
+                    <div class="text-xs text-gray-400">2小时前</div>
+                </div>
+                <div class="record-item flex items-center space-x-3 p-2 rounded-lg">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-pen text-gray-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">症状记录</div>
+                        <div class="text-sm text-gray-500">疼痛评分：6分</div>
+                    </div>
+                    <div class="text-xs text-gray-400">昨天</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item active" data-page="home">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span>首页</span>
+        </div>
+        <div class="tab-item" data-page="camera">
+            <i class="fas fa-camera text-xl mb-1"></i>
+            <span>拍照</span>
+        </div>
+        <div class="tab-item" data-page="diary">
+            <i class="fas fa-book-medical text-xl mb-1"></i>
+            <span>记录</span>
+        </div>
+        <div class="tab-item" data-page="education">
+            <i class="fas fa-graduation-cap text-xl mb-1"></i>
+            <span>学习</span>
+        </div>
+        <div class="tab-item" data-page="profile">
+            <i class="fas fa-user text-xl mb-1"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <!-- 通知弹窗 -->
+    <div class="notification" id="notification">
+        <i class="fas fa-bell mr-2"></i>
+        <span id="notificationText">您有新的护理提醒</span>
+    </div>
+
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        setInterval(updateTime, 1000);
+
+        // 底部标签切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 移除所有active类
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                // 添加active类到当前标签
+                this.classList.add('active');
+                
+                const page = this.getAttribute('data-page');
+                console.log('切换到页面:', page);
+                
+                // 这里可以添加页面切换逻辑
+                showNotification(`正在切换到${page}页面...`);
+            });
+        });
+
+        // 快速操作按钮
+        document.getElementById('cameraBtn').addEventListener('click', function() {
+            showNotification('正在打开拍照功能...');
+                            setTimeout(() => {
+                    window.location.href = './patient-camera.html';
+                }, 1000);
+        });
+
+        document.getElementById('diaryBtn').addEventListener('click', function() {
+            showNotification('正在打开症状记录...');
+                            setTimeout(() => {
+                    window.location.href = './patient-diary.html';
+                }, 1000);
+        });
+
+        document.getElementById('educationBtn').addEventListener('click', function() {
+            showNotification('正在打开学习内容...');
+                            setTimeout(() => {
+                    window.location.href = './patient-education.html';
+                }, 1000);
+        });
+
+        document.getElementById('appointmentBtn').addEventListener('click', function() {
+            showNotification('正在打开预约服务...');
+        });
+
+        // 紧急求助按钮
+        document.getElementById('emergencyBtn').addEventListener('click', function() {
+            this.innerHTML = '<div class="loading"></div> 正在连接...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-check mr-2"></i>已连接护士';
+                showNotification('已成功联系护士，请稍等...');
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-phone-alt mr-2"></i>立即联系护士';
+                    this.disabled = false;
+                }, 3000);
+            }, 2000);
+        });
+
+        // 通知按钮
+        document.getElementById('notificationBtn').addEventListener('click', function() {
+            showNotification('您有3条未读消息');
+        });
+
+        // 设置按钮
+        document.getElementById('settingsBtn').addEventListener('click', function() {
+            showNotification('正在打开设置...');
+                            setTimeout(() => {
+                    window.location.href = './patient-profile.html';
+                }, 1000);
+        });
+
+        // 提醒项点击
+        document.querySelectorAll('.reminder-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const text = this.querySelector('.font-medium').textContent;
+                showNotification(`已标记完成: ${text}`);
+                this.style.opacity = '0.5';
+                this.style.textDecoration = 'line-through';
+            });
+        });
+
+        // 记录项点击
+        document.querySelectorAll('.record-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const text = this.querySelector('.font-medium').textContent;
+                showNotification(`查看详情: ${text}`);
+            });
+        });
+
+        // 风险卡片点击
+        document.getElementById('riskCard').addEventListener('click', function() {
+            showNotification('正在刷新风险评估...');
+            
+            // 模拟风险评估更新
+            setTimeout(() => {
+                const riskLevels = ['低风险', '中风险', '高风险'];
+                const descriptions = [
+                    '皮肤状况良好，继续常规护理',
+                    '轻微发红，建议加强清洁护理',
+                    '检测到造口周围皮肤发红，建议立即联系护士进行专业评估'
+                ];
+                
+                const randomIndex = Math.floor(Math.random() * 3);
+                document.getElementById('riskLevel').textContent = riskLevels[randomIndex];
+                document.getElementById('riskDescription').textContent = descriptions[randomIndex];
+                
+                showNotification('风险评估已更新');
+            }, 2000);
+        });
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            notificationText.textContent = text;
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟数据加载
+            setTimeout(() => {
+                showNotification('欢迎回来，张阿姨！');
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

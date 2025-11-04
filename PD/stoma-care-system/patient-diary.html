@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>症状日记</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .status-bar {
+            height: 44px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-bar {
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .main-container {
+            background: #f8fafc;
+            min-height: calc(100vh - 104px);
+            border-radius: 24px 24px 0 0;
+            margin-top: -10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .record-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin: 16px 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .record-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+        
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .stat-item:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .pain-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            gap: 8px;
+        }
+        
+        .pain-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            flex: 1;
+            border: 2px solid transparent;
+        }
+        
+        .pain-item:hover {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+            transform: translateY(-2px);
+        }
+        
+        .pain-item.selected {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .symptom-tag {
+            display: inline-block;
+            padding: 10px 18px;
+            margin: 6px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .symptom-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .symptom-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .symptom-tag.selected {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+        
+        .chart-container {
+            height: 220px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 20px;
+            margin: 20px;
+            padding: 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        }
+        
+        .chart-line {
+            position: absolute;
+            bottom: 50px;
+            left: 24px;
+            right: 24px;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        
+        .chart-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            bottom: 50px;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-point:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(255,255,255,0.6);
+        }
+        
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 90px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        
+        .tab-item:hover {
+            color: #6366f1;
+            transform: translateY(-2px);
+        }
+        
+        .tab-item.active {
+            color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .voice-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .voice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .voice-btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .voice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+        }
+        
+        .voice-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .history-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: #cbd5e1;
+        }
+        
+        .history-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .save-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .save-btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+        }
+        
+        .textarea-custom {
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+        
+        .textarea-custom:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS状态栏 -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-arrow-left text-xl text-gray-600"></i>
+            <span class="font-semibold text-lg">症状日记</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-chart-line text-xl text-blue-600"></i>
+            <i class="fas fa-plus text-xl text-blue-600"></i>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="main-container pb-24">
+        <!-- 今日概览 -->
+        <div class="record-card">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="section-title">今日概览</h2>
+                <span class="text-sm text-gray-500 font-medium">2024年1月15日</span>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="text-3xl font-bold mb-1">6</div>
+                    <div class="text-sm opacity-90">疼痛评分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-3xl font-bold mb-1">2</div>
+                    <div class="text-sm opacity-90">更换次数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-3xl font-bold mb-1">中</div>
+                    <div class="text-sm opacity-90">风险等级</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 趋势图表 -->
+        <div class="chart-container">
+            <div class="flex items-center justify-between mb-6 relative z-10">
+                <h3 class="font-semibold text-lg">疼痛趋势</h3>
+                <span class="text-sm opacity-90">最近7天</span>
+            </div>
+            
+            <div class="chart-line"></div>
+            <div class="chart-point" style="left: 10%; bottom: 70px;"></div>
+            <div class="chart-point" style="left: 25%; bottom: 90px;"></div>
+            <div class="chart-point" style="left: 40%; bottom: 50px;"></div>
+            <div class="chart-point" style="left: 55%; bottom: 110px;"></div>
+            <div class="chart-point" style="left: 70%; bottom: 70px;"></div>
+            <div class="chart-point" style="left: 85%; bottom: 90px;"></div>
+            <div class="chart-point" style="left: 100%; bottom: 80px;"></div>
+            
+            <div class="absolute bottom-4 left-0 right-0 flex justify-between text-xs opacity-80 relative z-10">
+                <span>1/9</span>
+                <span>1/10</span>
+                <span>1/11</span>
+                <span>1/12</span>
+                <span>1/13</span>
+                <span>1/14</span>
+                <span>1/15</span>
+            </div>
+        </div>
+
+        <!-- 快速记录 -->
+        <div class="record-card">
+            <h3 class="section-title">快速记录</h3>
+            
+            <!-- 疼痛评分 -->
+            <div class="mb-8">
+                <div class="font-semibold mb-4 text-gray-700">疼痛评分 (1-10分)</div>
+                <div class="pain-scale">
+                    <div class="pain-item" data-score="1">
+                        <div class="text-xl mb-2">😊</div>
+                        <div class="text-xs font-medium">1分</div>
+                    </div>
+                    <div class="pain-item" data-score="2">
+                        <div class="text-xl mb-2">🙂</div>
+                        <div class="text-xs font-medium">2分</div>
+                    </div>
+                    <div class="pain-item" data-score="3">
+                        <div class="text-xl mb-2">😐</div>
+                        <div class="text-xs font-medium">3分</div>
+                    </div>
+                    <div class="pain-item" data-score="4">
+                        <div class="text-xl mb-2">😕</div>
+                        <div class="text-xs font-medium">4分</div>
+                    </div>
+                    <div class="pain-item" data-score="5">
+                        <div class="text-xl mb-2">😟</div>
+                        <div class="text-xs font-medium">5分</div>
+                    </div>
+                    <div class="pain-item selected" data-score="6">
+                        <div class="text-xl mb-2">😣</div>
+                        <div class="text-xs font-medium">6分</div>
+                    </div>
+                    <div class="pain-item" data-score="7">
+                        <div class="text-xl mb-2">😖</div>
+                        <div class="text-xs font-medium">7分</div>
+                    </div>
+                    <div class="pain-item" data-score="8">
+                        <div class="text-xl mb-2">😫</div>
+                        <div class="text-xs font-medium">8分</div>
+                    </div>
+                    <div class="pain-item" data-score="9">
+                        <div class="text-xl mb-2">😩</div>
+                        <div class="text-xs font-medium">9分</div>
+                    </div>
+                    <div class="pain-item" data-score="10">
+                        <div class="text-xl mb-2">😭</div>
+                        <div class="text-xs font-medium">10分</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 症状选择 -->
+            <div class="mb-8">
+                <div class="font-semibold mb-4 text-gray-700">症状选择</div>
+                <div class="flex flex-wrap">
+                    <div class="symptom-tag selected">发红</div>
+                    <div class="symptom-tag">瘙痒</div>
+                    <div class="symptom-tag">疼痛</div>
+                    <div class="symptom-tag">肿胀</div>
+                    <div class="symptom-tag">渗液</div>
+                    <div class="symptom-tag">异味</div>
+                </div>
+            </div>
+
+            <!-- 语音记录 -->
+            <div class="mb-8">
+                <div class="font-semibold mb-4 text-gray-700">语音记录</div>
+                <button class="voice-btn w-full">
+                    <i class="fas fa-microphone mr-3"></i>
+                    按住说话
+                </button>
+            </div>
+
+            <!-- 文字记录 -->
+            <div class="mb-8">
+                <div class="font-semibold mb-4 text-gray-700">文字记录</div>
+                <textarea 
+                    class="textarea-custom w-full resize-none" 
+                    rows="4" 
+                    placeholder="请描述您的症状和感受..."
+                >今天造口周围有些发红，感觉有点疼痛，可能是昨天活动量比较大。</textarea>
+            </div>
+
+            <!-- 保存按钮 -->
+            <button class="save-btn">
+                <i class="fas fa-save mr-2"></i>
+                保存记录
+            </button>
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="record-card">
+            <h3 class="section-title">历史记录</h3>
+            
+            <div class="space-y-4">
+                <div class="history-item">
+                    <div class="flex items-center space-x-4">
+                        <div class="history-icon bg-blue-100 text-blue-600">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">今日记录</div>
+                            <div class="text-sm text-gray-500 mt-1">疼痛评分：6分，症状：发红</div>
+                        </div>
+                        <div class="text-xs text-gray-400 font-medium">2小时前</div>
+                    </div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="flex items-center space-x-4">
+                        <div class="history-icon bg-green-100 text-green-600">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">语音记录</div>
+                            <div class="text-sm text-gray-500 mt-1">感觉今天好多了，疼痛减轻了</div>
+                        </div>
+                        <div class="text-xs text-gray-400 font-medium">昨天</div>
+                    </div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="flex items-center space-x-4">
+                        <div class="history-icon bg-orange-100 text-orange-600">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">拍照记录</div>
+                            <div class="text-sm text-gray-500 mt-1">皮肤状况良好</div>
+                        </div>
+                        <div class="text-xs text-gray-400 font-medium">2天前</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span>首页</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-camera text-xl mb-1"></i>
+            <span>拍照</span>
+        </div>
+        <div class="tab-item active">
+            <i class="fas fa-book-medical text-xl mb-1"></i>
+            <span>记录</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-graduation-cap text-xl mb-1"></i>
+            <span>学习</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-user text-xl mb-1"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <script>
+        // 疼痛评分选择
+        document.querySelectorAll('.pain-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.pain-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 症状标签选择
+        document.querySelectorAll('.symptom-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // 语音记录功能
+        const voiceBtn = document.querySelector('.voice-btn');
+        let isRecording = false;
+
+        voiceBtn.addEventListener('mousedown', function() {
+            isRecording = true;
+            this.classList.add('recording');
+            this.innerHTML = '<i class="fas fa-stop mr-3"></i>松开结束';
+        });
+
+        voiceBtn.addEventListener('mouseup', function() {
+            isRecording = false;
+            this.classList.remove('recording');
+            this.innerHTML = '<i class="fas fa-microphone mr-3"></i>按住说话';
+        });
+
+        voiceBtn.addEventListener('mouseleave', function() {
+            if (isRecording) {
+                isRecording = false;
+                this.classList.remove('recording');
+                this.innerHTML = '<i class="fas fa-microphone mr-3"></i>按住说话';
+            }
+        });
+
+        // 底部标签栏切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.querySelector('span').textContent;
+                showNotification(`正在切换到${page}页面...`);
+                
+                // 页面跳转逻辑
+                setTimeout(() => {
+                    switch(page) {
+                        case '首页':
+                            window.location.href = './patient-home.html';
+                            break;
+                        case '拍照':
+                            window.location.href = './patient-camera.html';
+                            break;
+                        case '学习':
+                            window.location.href = './patient-education.html';
+                            break;
+                        case '我的':
+                            window.location.href = './patient-profile.html';
+                            break;
+                    }
+                }, 1000);
+            });
+        });
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="text-sm font-medium">${text}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // 添加页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.record-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,177 @@
+<!--patient-app/pages/help/help.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">帮助中心</text>
+    <text class="page-subtitle">常见问题和使用指南</text>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-section">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索问题或关键词" 
+             value="{{searchKeyword}}" bindinput="onSearchInput" />
+      <text class="search-clear" wx:if="{{searchKeyword}}" bindtap="clearSearch">×</text>
+    </view>
+  </view>
+
+  <!-- 快速入口 -->
+  <view class="quick-section">
+    <view class="section-header">
+      <text class="section-title">快速入口</text>
+      <text class="section-desc">常用功能帮助</text>
+    </view>
+    
+    <view class="quick-grid">
+      <view class="quick-item" bindtap="showCameraHelp">
+        <view class="quick-icon">📷</view>
+        <text class="quick-title">拍照记录</text>
+      </view>
+      
+      <view class="quick-item" bindtap="showDiaryHelp">
+        <view class="quick-icon">📝</view>
+        <text class="quick-title">症状日记</text>
+      </view>
+      
+      <view class="quick-item" bindtap="showEducationHelp">
+        <view class="quick-icon">📚</view>
+        <text class="quick-title">学习课程</text>
+      </view>
+      
+      <view class="quick-item" bindtap="showCareHelp">
+        <view class="quick-icon">📅</view>
+        <text class="quick-title">护理计划</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 常见问题 -->
+  <view class="faq-section">
+    <view class="section-header">
+      <text class="section-title">常见问题</text>
+      <text class="section-desc">用户最关心的问题</text>
+    </view>
+    
+    <view class="faq-list">
+      <view class="faq-item" wx:for="{{faqList}}" wx:key="id" bindtap="toggleFaq" data-id="{{item.id}}">
+        <view class="faq-question">
+          <text class="question-text">{{item.question}}</text>
+          <text class="question-arrow {{item.expanded ? 'expanded' : ''}}">></text>
+        </view>
+        <view class="faq-answer {{item.expanded ? 'expanded' : ''}}">
+          <text class="answer-text">{{item.answer}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 使用指南 -->
+  <view class="guide-section">
+    <view class="section-header">
+      <text class="section-title">使用指南</text>
+      <text class="section-desc">详细的操作说明</text>
+    </view>
+    
+    <view class="guide-list">
+      <view class="guide-item" wx:for="{{guideList}}" wx:key="id" bindtap="viewGuide" data-id="{{item.id}}">
+        <view class="guide-icon">{{item.icon}}</view>
+        <view class="guide-content">
+          <text class="guide-title">{{item.title}}</text>
+          <text class="guide-desc">{{item.desc}}</text>
+        </view>
+        <view class="guide-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 联系客服 -->
+  <view class="contact-section">
+    <view class="section-header">
+      <text class="section-title">联系客服</text>
+      <text class="section-desc">获取专业帮助</text>
+    </view>
+    
+    <view class="contact-list">
+      <view class="contact-item" bindtap="callService">
+        <view class="contact-icon">📞</view>
+        <view class="contact-content">
+          <text class="contact-title">电话咨询</text>
+          <text class="contact-desc">400-123-4567 (8:00-20:00)</text>
+        </view>
+        <view class="contact-arrow">></view>
+      </view>
+      
+      <view class="contact-item" bindtap="chatService">
+        <view class="contact-icon">💬</view>
+        <view class="contact-content">
+          <text class="contact-title">在线客服</text>
+          <text class="contact-desc">实时在线解答问题</text>
+        </view>
+        <view class="contact-arrow">></view>
+      </view>
+      
+      <view class="contact-item" bindtap="emailService">
+        <view class="contact-icon">📧</view>
+        <view class="contact-content">
+          <text class="contact-title">邮件反馈</text>
+          <text class="contact-desc">support@stoma-care.com</text>
+        </view>
+        <view class="contact-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 意见反馈 -->
+  <view class="feedback-section">
+    <view class="section-header">
+      <text class="section-title">意见反馈</text>
+      <text class="section-desc">帮助我们改进产品</text>
+    </view>
+    
+    <view class="feedback-list">
+      <view class="feedback-item" bindtap="submitFeedback">
+        <view class="feedback-icon">💡</view>
+        <view class="feedback-content">
+          <text class="feedback-title">提交反馈</text>
+          <text class="feedback-desc">分享您的建议和意见</text>
+        </view>
+        <view class="feedback-arrow">></view>
+      </view>
+      
+      <view class="feedback-item" bindtap="rateApp">
+        <view class="feedback-icon">⭐</view>
+        <view class="feedback-content">
+          <text class="feedback-title">评价应用</text>
+          <text class="feedback-desc">在应用商店给我们评分</text>
+        </view>
+        <view class="feedback-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于应用 -->
+  <view class="about-section">
+    <view class="section-header">
+      <text class="section-title">关于应用</text>
+      <text class="section-desc">应用信息</text>
+    </view>
+    
+    <view class="about-list">
+      <view class="about-item">
+        <text class="about-label">应用版本</text>
+        <text class="about-value">v1.0.0</text>
+      </view>
+      
+      <view class="about-item">
+        <text class="about-label">更新时间</text>
+        <text class="about-value">2024年1月</text>
+      </view>
+      
+      <view class="about-item">
+        <text class="about-label">开发者</text>
+        <text class="about-value">造口护理团队</text>
+      </view>
+    </view>
+  </view>
+</view> 

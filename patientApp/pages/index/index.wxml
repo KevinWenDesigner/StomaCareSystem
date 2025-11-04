@@ -1,0 +1,159 @@
+<!--patient-app/pages/index/index.wxml-->
+<view class="container">
+  <!-- 未登录状态 -->
+  <view wx:if="{{!isLoggedIn}}" class="welcome-section">
+    <view class="welcome-content">
+      <view class="welcome-icon">🏥</view>
+      <text class="welcome-title">造口护理患者端</text>
+      <text class="welcome-subtitle">专业的造口护理管理平台</text>
+      <text class="welcome-desc">为您提供全方位的造口护理服务</text>
+      
+      <button class="start-btn" bindtap="simulateLogin">
+        <text class="btn-text">开始使用</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 已登录状态 -->
+  <view wx:else>
+    <!-- 页面标题 -->
+    <view class="page-header">
+      <view class="user-info-header">
+        <view class="user-avatar">
+          <!-- 如果有微信头像则显示，否则显示文字头像 -->
+          <image wx:if="{{patientInfo.avatarUrl}}" class="avatar-image" src="{{patientInfo.avatarUrl}}" mode="aspectFill"></image>
+          <text wx:else class="avatar-text">{{patientInfo.displayName.charAt(0)}}</text>
+        </view>
+        <view class="user-welcome">
+          <text class="page-subtitle">欢迎回来，{{patientInfo.displayName}}</text>
+          <text class="user-care-info">{{patientInfo.age}}岁 · {{patientInfo.gender}} · 护理{{patientInfo.careDays}}天</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快速操作 -->
+    <view class="quick-actions">
+      <view class="action-card" bindtap="goToCamera">
+        <view class="action-icon">📷</view>
+        <text class="action-title">AI评估</text>
+        <text class="action-desc">拍照获得专业建议</text>
+      </view>
+      
+      <view class="action-card" bindtap="goToDiary">
+        <view class="action-icon">📝</view>
+        <text class="action-title">症状日记</text>
+        <text class="action-desc">记录每日症状</text>
+      </view>
+      
+      <view class="action-card" bindtap="goToEducation">
+        <view class="action-icon">📚</view>
+        <text class="action-title">护理教育</text>
+        <text class="action-desc">学习护理知识</text>
+      </view>
+      
+      <view class="action-card" bindtap="goToProfile">
+        <view class="action-icon">👤</view>
+        <text class="action-title">个人中心</text>
+        <text class="action-desc">管理个人信息</text>
+      </view>
+    </view>
+
+    <!-- 今日状态 -->
+    <view class="status-section">
+      <view class="section-header">
+        <view>
+          <text class="section-title">今日状态</text>
+          <text class="section-subtitle">{{todayDate}}</text>
+        </view>
+      </view>
+      
+      <view class="status-grid">
+        <view class="status-card">
+          <view class="status-icon">📊</view>
+          <text class="status-number">{{todayStats.assessments}}</text>
+          <text class="status-label">今日评估</text>
+        </view>
+        
+        <view class="status-card">
+          <view class="status-icon">📝</view>
+          <text class="status-number">{{todayStats.records}}</text>
+          <text class="status-label">症状记录</text>
+        </view>
+        
+        <view class="status-card">
+          <view class="status-icon">📚</view>
+          <text class="status-number">{{todayStats.lessons}}</text>
+          <text class="status-label">学习课程</text>
+        </view>
+        
+        <view class="status-card">
+          <view class="status-icon">🎯</view>
+          <text class="status-number">{{todayStats.score}}</text>
+          <text class="status-label">健康评分</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 最近记录 -->
+    <view class="records-section">
+      <view class="section-header">
+        <text class="section-title">最近记录</text>
+        <button class="view-all-btn" bindtap="goToDiary">
+          <text class="btn-text">查看全部</text>
+        </button>
+      </view>
+      
+      <view wx:if="{{recentRecords.length === 0}}" class="empty-state">
+        <text class="empty-icon">📝</text>
+        <text class="empty-text">暂无记录</text>
+        <text class="empty-subtext">开始记录您的症状变化</text>
+      </view>
+      
+      <view wx:else class="records-list">
+        <view wx:for="{{recentRecords}}" wx:key="id" class="record-item">
+          <view class="record-header">
+            <text class="record-title">{{item.title}}</text>
+            <text class="record-time">{{item.time}}</text>
+          </view>
+          
+          <text class="record-desc">{{item.description}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 护理提醒 -->
+    <view class="reminders-section">
+      <view class="section-header">
+        <view>
+          <text class="section-title">护理提醒</text>
+          <text class="section-subtitle">今日待办事项</text>
+        </view>
+      </view>
+      
+      <view wx:if="{{reminders.length === 0}}" class="empty-state">
+        <text class="empty-icon">✅</text>
+        <text class="empty-text">今日无提醒</text>
+        <text class="empty-subtext">继续保持良好的护理习惯</text>
+      </view>
+      
+      <view wx:else class="reminder-list">
+        <view wx:for="{{reminders}}" wx:key="id" class="reminder-item">
+          <view class="reminder-icon">⏰</view>
+          <view class="reminder-content">
+            <text class="reminder-title">{{item.title}}</text>
+            <text class="reminder-time">{{item.time}}</text>
+          </view>
+          
+          <button wx:if="{{!item.completed}}" 
+                  class="complete-btn" 
+                  bindtap="completeReminder" 
+                  data-id="{{item.id}}">
+            <text class="btn-text">完成</text>
+          </button>
+          
+          <view wx:else class="completed-icon">✅</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

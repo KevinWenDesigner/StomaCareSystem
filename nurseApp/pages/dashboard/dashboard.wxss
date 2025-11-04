@@ -1,0 +1,438 @@
+/* nurse-app/pages/dashboard/dashboard.wxss */
+
+.container {
+  padding: 32rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 48rpx;
+}
+
+.page-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  display: block;
+  margin-bottom: 16rpx;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.page-subtitle {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  font-weight: 500;
+}
+
+/* 快速统计 */
+.stats-section {
+  margin-bottom: 48rpx;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20rpx);
+  transition: all 0.3s ease;
+}
+
+.stat-card:active {
+  transform: scale(0.98);
+}
+
+.stat-icon {
+  font-size: 56rpx;
+  margin-right: 24rpx;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  display: block;
+}
+
+/* 最近患者 */
+.patients-section {
+  margin-bottom: 48rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.view-all-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 12rpx;
+  padding: 12rpx 24rpx;
+  font-size: 28rpx;
+  color: #FFFFFF;
+  backdrop-filter: blur(10rpx);
+  transition: all 0.3s ease;
+}
+
+.view-all-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80rpx 32rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  backdrop-filter: blur(20rpx);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.empty-subtext {
+  font-size: 28rpx;
+  color: var(--gray-500);
+  display: block;
+}
+
+.patients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.patient-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.patient-item:active {
+  transform: scale(0.98);
+}
+
+.patient-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+}
+
+.avatar-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.patient-content {
+  flex: 1;
+}
+
+.patient-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.patient-info {
+  font-size: 24rpx;
+  color: var(--gray-600);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.patient-status {
+  font-size: 24rpx;
+  color: var(--primary-color);
+  font-weight: 600;
+  display: block;
+}
+
+.patient-actions {
+  margin-left: 24rpx;
+}
+
+.action-btn {
+  background: var(--primary-color);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12rpx;
+  padding: 12rpx 20rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* 待办任务 */
+.tasks-section {
+  margin-bottom: 48rpx;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.task-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.task-item:active {
+  transform: scale(0.98);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.task-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.task-priority {
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.priority-high {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+}
+
+.priority-medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-color);
+}
+
+.priority-low {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+}
+
+.task-description {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.task-patient {
+  font-size: 24rpx;
+  color: var(--gray-500);
+}
+
+.task-time {
+  font-size: 24rpx;
+  color: var(--gray-500);
+}
+
+.task-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.task-btn {
+  flex: 1;
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.task-btn {
+  background: var(--primary-color);
+  color: #FFFFFF;
+}
+
+.task-btn.outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 2rpx solid var(--primary-color);
+}
+
+.task-btn:active {
+  transform: scale(0.95);
+}
+
+/* 护理提醒 */
+.reminders-section {
+  margin-bottom: 48rpx;
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.reminder-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.reminder-item:active {
+  transform: scale(0.98);
+}
+
+.reminder-icon {
+  font-size: 48rpx;
+  margin-right: 24rpx;
+}
+
+.reminder-content {
+  flex: 1;
+}
+
+.reminder-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.reminder-time {
+  font-size: 24rpx;
+  color: var(--gray-500);
+  display: block;
+}
+
+.reminder-btn {
+  background: var(--success-color);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12rpx;
+  padding: 16rpx 24rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.reminder-btn:active {
+  transform: scale(0.95);
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .container {
+    padding: 24rpx;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16rpx;
+  }
+  
+  .stat-card {
+    padding: 28rpx;
+  }
+  
+  .patient-item {
+    padding: 28rpx;
+  }
+  
+  .task-item {
+    padding: 28rpx;
+  }
+  
+  .reminder-item {
+    padding: 28rpx;
+  }
+} 

@@ -1,0 +1,269 @@
+<!--patient-app/pages/reminders/reminders.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">提醒设置</text>
+    <view class="header-right">
+      <text class="test-btn" bindtap="testReminder">测试</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载提醒设置中...</text>
+  </view>
+
+  <!-- 提醒设置内容 -->
+  <view wx:else class="settings-content">
+    <!-- 标签页导航 -->
+    <view class="tab-navigation">
+      <view class="tab-item {{currentTab === 'reminders' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="reminders">
+        <text class="tab-text">提醒管理</text>
+      </view>
+      <view class="tab-item {{currentTab === 'notifications' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="notifications">
+        <text class="tab-text">通知设置</text>
+      </view>
+      <view class="tab-item {{currentTab === 'time' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="time">
+        <text class="tab-text">时间设置</text>
+      </view>
+    </view>
+
+    <!-- 提醒管理页面 -->
+    <view wx:if="{{currentTab === 'reminders'}}" class="reminders-section">
+      <!-- 提醒列表 -->
+      <view class="reminders-header">
+        <text class="reminders-title">提醒列表</text>
+        <text class="add-reminder-btn" bindtap="addReminder">+ 添加提醒</text>
+      </view>
+      
+      <view class="reminders-list">
+        <view wx:for="{{reminders}}" wx:key="id" 
+              class="reminder-item {{item.enabled ? 'enabled' : 'disabled'}}">
+          <view class="reminder-content">
+            <view class="reminder-header">
+              <view class="reminder-info">
+                <text class="reminder-icon">{{item.icon}}</text>
+                <view class="reminder-details">
+                  <text class="reminder-title">{{item.title}}</text>
+                  <text class="reminder-desc">{{item.description}}</text>
+                </view>
+              </view>
+              <view class="reminder-actions">
+                <view class="reminder-time">{{item.time}}</view>
+                <view class="reminder-switch" bindtap="toggleReminder" data-id="{{item.id}}">
+                  <view class="switch-track {{item.enabled ? 'enabled' : ''}}">
+                    <view class="switch-thumb {{item.enabled ? 'enabled' : ''}}"></view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            
+            <view class="reminder-footer">
+              <view class="reminder-category">
+                <text class="category-tag" data-category="{{item.category}}">
+                  {{item.categoryName}}
+                </text>
+              </view>
+              <view class="reminder-buttons">
+                <text class="edit-btn" bindtap="editReminder" data-id="{{item.id}}">编辑</text>
+                <text class="delete-btn" bindtap="deleteReminder" data-id="{{item.id}}">删除</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 通知设置页面 -->
+    <view wx:if="{{currentTab === 'notifications'}}" class="notifications-section">
+      <!-- 通知设置 -->
+      <view class="settings-card">
+        <view class="card-header">
+          <text class="card-title">通知设置</text>
+        </view>
+        
+        <view class="settings-list">
+          <view class="setting-item">
+            <view class="setting-info">
+              <text class="setting-icon">🔊</text>
+              <view class="setting-details">
+                <text class="setting-title">声音提醒</text>
+                <text class="setting-desc">播放提醒声音</text>
+              </view>
+            </view>
+            <view class="setting-switch" bindtap="toggleNotificationSetting" data-setting="sound">
+              <view class="switch-track {{notificationSettings.sound ? 'enabled' : ''}}">
+                <view class="switch-thumb {{notificationSettings.sound ? 'enabled' : ''}}"></view>
+              </view>
+            </view>
+          </view>
+          
+          <view class="setting-item">
+            <view class="setting-info">
+              <text class="setting-icon">📳</text>
+              <view class="setting-details">
+                <text class="setting-title">震动提醒</text>
+                <text class="setting-desc">设备震动提醒</text>
+              </view>
+            </view>
+            <view class="setting-switch" bindtap="toggleNotificationSetting" data-setting="vibration">
+              <view class="switch-track {{notificationSettings.vibration ? 'enabled' : ''}}">
+                <view class="switch-thumb {{notificationSettings.vibration ? 'enabled' : ''}}"></view>
+              </view>
+            </view>
+          </view>
+          
+          <view class="setting-item">
+            <view class="setting-info">
+              <text class="setting-icon">📱</text>
+              <view class="setting-details">
+                <text class="setting-title">弹窗提醒</text>
+                <text class="setting-desc">显示弹窗通知</text>
+              </view>
+            </view>
+            <view class="setting-switch" bindtap="toggleNotificationSetting" data-setting="popup">
+              <view class="switch-track {{notificationSettings.popup ? 'enabled' : ''}}">
+                <view class="switch-thumb {{notificationSettings.popup ? 'enabled' : ''}}"></view>
+              </view>
+            </view>
+          </view>
+          
+          <view class="setting-item">
+            <view class="setting-info">
+              <text class="setting-icon">🔔</text>
+              <view class="setting-details">
+                <text class="setting-title">角标提醒</text>
+                <text class="setting-desc">应用图标角标</text>
+              </view>
+            </view>
+            <view class="setting-switch" bindtap="toggleNotificationSetting" data-setting="badge">
+              <view class="switch-track {{notificationSettings.badge ? 'enabled' : ''}}">
+                <view class="switch-thumb {{notificationSettings.badge ? 'enabled' : ''}}"></view>
+              </view>
+            </view>
+          </view>
+          
+          <view class="setting-item">
+            <view class="setting-info">
+              <text class="setting-icon">🔇</text>
+              <view class="setting-details">
+                <text class="setting-title">静音模式</text>
+                <text class="setting-desc">静音时也显示提醒</text>
+              </view>
+            </view>
+            <view class="setting-switch" bindtap="toggleNotificationSetting" data-setting="silent">
+              <view class="switch-track {{notificationSettings.silent ? 'enabled' : ''}}">
+                <view class="switch-thumb {{notificationSettings.silent ? 'enabled' : ''}}"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 时间设置页面 -->
+    <view wx:if="{{currentTab === 'time'}}" class="time-section">
+      <!-- 时间范围设置 -->
+      <view class="settings-card">
+        <view class="card-header">
+          <text class="card-title">时间范围</text>
+        </view>
+        
+        <view class="time-settings">
+          <view class="time-item">
+            <view class="time-info">
+              <text class="time-icon">🌅</text>
+              <view class="time-details">
+                <text class="time-title">开始时间</text>
+                <text class="time-desc">提醒开始时间</text>
+              </view>
+            </view>
+            <view class="time-value" bindtap="setTimeRange" data-type="startTime">
+              <text class="time-text">{{timeSettings.startTime}}</text>
+              <text class="time-arrow">></text>
+            </view>
+          </view>
+          
+          <view class="time-item">
+            <view class="time-info">
+              <text class="time-icon">🌙</text>
+              <view class="time-details">
+                <text class="time-title">结束时间</text>
+                <text class="time-desc">提醒结束时间</text>
+              </view>
+            </view>
+            <view class="time-value" bindtap="setTimeRange" data-type="endTime">
+              <text class="time-text">{{timeSettings.endTime}}</text>
+              <text class="time-arrow">></text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 静音时段设置 -->
+      <view class="settings-card">
+        <view class="card-header">
+          <text class="card-title">静音时段</text>
+        </view>
+        
+        <view class="quiet-hours-setting">
+          <view class="setting-info">
+            <text class="setting-icon">🌙</text>
+            <view class="setting-details">
+              <text class="setting-title">启用静音时段</text>
+              <text class="setting-desc">在指定时间段内不发送提醒</text>
+            </view>
+          </view>
+          <view class="setting-switch" bindtap="toggleQuietHours">
+            <view class="switch-track {{timeSettings.quietHours ? 'enabled' : ''}}">
+              <view class="switch-thumb {{timeSettings.quietHours ? 'enabled' : ''}}"></view>
+            </view>
+          </view>
+        </view>
+        
+        <view wx:if="{{timeSettings.quietHours}}" class="quiet-hours-info">
+          <text class="info-text">静音时段：{{timeSettings.endTime}} - {{timeSettings.startTime}}</text>
+          <text class="info-desc">在此时间段内，所有提醒将被静音</text>
+        </view>
+      </view>
+
+      <!-- 权限设置 -->
+      <view class="settings-card">
+        <view class="card-header">
+          <text class="card-title">权限设置</text>
+        </view>
+        
+        <view class="permission-settings">
+          <view class="permission-item">
+            <view class="permission-info">
+              <text class="permission-icon">🔔</text>
+              <view class="permission-details">
+                <text class="permission-title">通知权限</text>
+                <text class="permission-desc">允许应用发送通知</text>
+              </view>
+            </view>
+            <button class="permission-btn" bindtap="requestNotificationPermission">
+              <text class="btn-text">获取权限</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn secondary" bindtap="goBack">
+      <text class="btn-text">返回</text>
+    </button>
+    <button class="action-btn primary" bindtap="testReminder">
+      <text class="btn-text">测试提醒</text>
+    </button>
+  </view>
+</view> 

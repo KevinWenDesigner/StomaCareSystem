@@ -1,0 +1,158 @@
+<!--patient-app/pages/education/education.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">护理教育</text>
+    <text class="page-subtitle">学习专业护理知识</text>
+  </view>
+
+  <!-- 课程分类 -->
+  <view class="category-section">
+    <view class="section-header">
+      <text class="section-title">课程分类</text>
+      <text class="section-subtitle">选择您感兴趣的内容</text>
+    </view>
+    
+    <view class="category-grid">
+      <view class="category-card" bindtap="selectCategory" data-category="basic" style="border: 2rpx solid #FF0000;">
+        <view class="category-icon">📚</view>
+        <text class="category-title">基础知识</text>
+        <text class="category-desc">造口护理基础理论</text>
+      </view>
+      
+      <view class="category-card" bindtap="selectCategory" data-category="practice">
+        <view class="category-icon">🛠️</view>
+        <text class="category-title">实践操作</text>
+        <text class="category-desc">护理技能实操指导</text>
+      </view>
+      
+      <view class="category-card" bindtap="selectCategory" data-category="diet">
+        <view class="category-icon">🍎</view>
+        <text class="category-title">饮食指导</text>
+        <text class="category-desc">营养搭配与饮食建议</text>
+      </view>
+      
+      <view class="category-card" bindtap="selectCategory" data-category="emergency">
+        <view class="category-icon">🚨</view>
+        <text class="category-title">应急处理</text>
+        <text class="category-desc">紧急情况应对方法</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 推荐课程 -->
+  <view class="recommended-section">
+    <view class="section-header">
+      <text class="section-title">推荐课程</text>
+      <text class="section-subtitle">根据您的需求推荐</text>
+    </view>
+    
+    <view class="course-list">
+      <view wx:for="{{recommendedCourses}}" wx:key="id" class="course-item">
+        <view class="course-card" bindtap="viewCourse" data-id="{{item.id}}">
+          <view class="course-header">
+            <text class="course-title">{{item.title}}</text>
+            <view class="course-level level-{{item.level}}">
+              <text class="level-text">{{item.levelText}}</text>
+            </view>
+          </view>
+          
+          <text class="course-desc">{{item.description}}</text>
+          
+          <view class="course-meta">
+            <view class="meta-item">
+              <text class="meta-icon">⏱️</text>
+              <text class="meta-text">{{item.duration}}</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-icon">👥</text>
+              <text class="meta-text">{{item.students}}人学习</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-icon">⭐</text>
+              <text class="meta-text">{{item.rating}}分</text>
+            </view>
+          </view>
+          
+          <view class="course-progress">
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{item.progress}}%"></view>
+            </view>
+            <text class="progress-text">已完成 {{item.progress}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 学习进度 -->
+  <view class="progress-section">
+    <view class="section-header">
+      <text class="section-title">学习进度</text>
+      <text class="section-subtitle">您的学习统计</text>
+    </view>
+    
+    <view class="progress-grid">
+      <view class="progress-card">
+        <view class="progress-icon">📖</view>
+        <view class="progress-content">
+          <text class="progress-number">{{learningStats.courses}}</text>
+          <text class="progress-label">已学课程</text>
+        </view>
+      </view>
+      
+      <view class="progress-card">
+        <view class="progress-icon">⏰</view>
+        <view class="progress-content">
+          <text class="progress-number">{{learningStats.hours}}</text>
+          <text class="progress-label">学习时长</text>
+        </view>
+      </view>
+      
+      <view class="progress-card">
+        <view class="progress-icon">🎯</view>
+        <view class="progress-content">
+          <text class="progress-number">{{learningStats.score}}</text>
+          <text class="progress-label">平均分数</text>
+        </view>
+      </view>
+      
+      <view class="progress-card">
+        <view class="progress-icon">🏆</view>
+        <view class="progress-content">
+          <text class="progress-number">{{learningStats.certificates}}</text>
+          <text class="progress-label">获得证书</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近学习 -->
+  <view class="recent-section">
+    <view class="section-header">
+      <text class="section-title">最近学习</text>
+      <button class="view-all-btn" bindtap="viewAllCourses">
+        <text class="btn-text">查看全部</text>
+      </button>
+    </view>
+    
+    <view wx:if="{{recentCourses.length === 0}}" class="empty-state">
+      <text class="empty-icon">📚</text>
+      <text class="empty-text">暂无学习记录</text>
+      <text class="empty-subtext">开始您的学习之旅</text>
+    </view>
+    
+    <view wx:else class="recent-list">
+      <view wx:for="{{recentCourses}}" wx:key="id" class="recent-item">
+        <view class="recent-card" bindtap="continueLearning" data-id="{{item.id}}">
+          <view class="recent-icon">📖</view>
+          <view class="recent-content">
+            <text class="recent-title">{{item.title}}</text>
+            <text class="recent-time">{{item.lastStudyTime}}</text>
+            <text class="recent-progress-text">{{item.progress}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

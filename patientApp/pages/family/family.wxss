@@ -1,0 +1,623 @@
+/* patient-app/pages/family/family.wxss */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  padding: 32rpx;
+  box-sizing: border-box;
+  padding-bottom: 120rpx;
+}
+
+/* 页面头部 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48rpx;
+  padding: 24rpx 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  font-size: 40rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+  margin-right: 20rpx;
+}
+
+.page-title {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  max-width: 400rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.add-btn {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.add-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+}
+
+.loading-text {
+  font-size: 32rpx;
+  color: #FFFFFF;
+  opacity: 0.8;
+}
+
+/* 家属管理内容 */
+.family-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+/* 标签页导航 */
+.tab-navigation {
+  display: flex;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 12rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 24rpx;
+}
+
+.tab-item {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-item.active {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  box-shadow: 0 4rpx 16rpx rgba(139, 92, 246, 0.3);
+}
+
+.tab-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.3s ease;
+}
+
+.tab-item.active .tab-text {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* 联系人页面 */
+.contacts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+
+
+.family-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.family-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  margin-bottom: 16rpx;
+}
+
+.family-item:last-child {
+  margin-bottom: 0;
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.member-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 16rpx rgba(139, 92, 246, 0.3);
+}
+
+.avatar-text {
+  font-size: 32rpx;
+}
+
+.member-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.member-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.member-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.emergency-badge {
+  background: #EF4444;
+  color: #FFFFFF;
+  padding: 4rpx 8rpx;
+  border-radius: 6rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.badge-text {
+  color: #FFFFFF;
+}
+
+.member-relationship {
+  font-size: 24rpx;
+  color: #6B7280;
+}
+
+.member-phone {
+  font-size: 24rpx;
+  color: #8B5CF6;
+  font-weight: 600;
+}
+
+.member-last-contact {
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.member-actions {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 80rpx;
+  text-align: center;
+}
+
+.contact-btn {
+  background: #10B981;
+  color: #FFFFFF;
+}
+
+.edit-btn {
+  background: #F59E0B;
+  color: #FFFFFF;
+}
+
+
+
+.emergency-btn {
+  background: #6B7280;
+  color: #FFFFFF;
+}
+
+.emergency-btn.active {
+  background: #EF4444;
+}
+
+.delete-btn {
+  background: #EF4444;
+  color: #FFFFFF;
+}
+
+.action-text {
+  color: inherit;
+}
+
+/* 紧急联系人页面 */
+.emergency-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+
+
+.emergency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.emergency-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 2rpx solid #EF4444;
+}
+
+.emergency-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.emergency-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emergency-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.emergency-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.emergency-relationship {
+  font-size: 24rpx;
+  color: #6B7280;
+}
+
+.emergency-phone {
+  font-size: 24rpx;
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.emergency-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.cancel-btn {
+  background: #6B7280;
+  color: #FFFFFF;
+}
+
+.empty-emergency {
+  text-align: center;
+  padding: 80rpx 32rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+}
+
+.empty-icon {
+  font-size: 64rpx;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #374151;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #374151;
+}
+
+.modal-close {
+  font-size: 36rpx;
+  color: #6B7280;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: 40rpx;
+}
+
+.form-item {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.form-input {
+  width: 100%;
+  padding: 20rpx 24rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #374151;
+  box-sizing: border-box;
+  height: 80rpx;
+  line-height: 40rpx;
+}
+
+.form-input:focus {
+  border-color: #8B5CF6;
+  background-color: rgba(139, 92, 246, 0.02);
+}
+
+.relationship-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.relationship-option {
+  padding: 12rpx 20rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #374151;
+  transition: all 0.3s ease;
+}
+
+.relationship-option.selected {
+  background: #8B5CF6;
+  color: #FFFFFF;
+  border-color: #8B5CF6;
+}
+
+.option-text {
+  color: inherit;
+}
+
+.permission-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.permission-option {
+  padding: 16rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+}
+
+.permission-option.selected {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8B5CF6;
+}
+
+.option-desc {
+  font-size: 22rpx;
+  color: #6B7280;
+  margin-top: 4rpx;
+  display: block;
+}
+
+.permission-member {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+  padding: 16rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+}
+
+.permission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+}
+
+.permission-item.selected {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: #8B5CF6;
+}
+
+.permission-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.permission-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.permission-desc {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.permission-checkbox {
+  flex-shrink: 0;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 6rpx;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+  background: #8B5CF6;
+  border-color: #8B5CF6;
+}
+
+.checkbox.checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #FFFFFF;
+  font-size: 20rpx;
+  font-weight: bold;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 16rpx;
+  padding: 32rpx;
+  border-top: 1rpx solid #E5E7EB;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 20rpx 32rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.modal-btn.primary {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 16rpx rgba(139, 92, 246, 0.3);
+}
+
+.modal-btn.primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(139, 92, 246, 0.4);
+}
+
+.modal-btn.secondary {
+  background: #F3F4F6;
+  color: #374151;
+  border: 2rpx solid #D1D5DB;
+}
+
+.modal-btn.secondary:active {
+  background: #E5E7EB;
+  transform: scale(0.95);
+}
+
+.btn-text {
+  color: inherit;
+} 

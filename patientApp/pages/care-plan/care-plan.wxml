@@ -1,0 +1,245 @@
+<!--patient-app/pages/care-plan/care-plan.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">护理计划</text>
+    <view class="header-right">
+      <text class="share-btn" bindtap="sharePlan">分享</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载护理计划中...</text>
+  </view>
+
+  <!-- 护理计划内容 -->
+  <view wx:else class="plan-content">
+    <!-- 标签页导航 -->
+    <view class="tab-navigation">
+      <view class="tab-item {{currentTab === 'overview' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="overview">
+        <text class="tab-text">总览</text>
+      </view>
+      <view class="tab-item {{currentTab === 'tasks' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="tasks">
+        <text class="tab-text">任务</text>
+      </view>
+      <view class="tab-item {{currentTab === 'goals' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="goals">
+        <text class="tab-text">目标</text>
+      </view>
+      <view class="tab-item {{currentTab === 'tips' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="tips">
+        <text class="tab-text">建议</text>
+      </view>
+    </view>
+
+    <!-- 总览页面 -->
+    <view wx:if="{{currentTab === 'overview'}}" class="overview-section">
+      <!-- 基本信息 -->
+      <view class="info-card">
+        <view class="card-header">
+          <text class="card-title">基本信息</text>
+          <text class="edit-btn" bindtap="editPlan">编辑</text>
+        </view>
+        <view class="info-grid">
+          <view class="info-item">
+            <text class="info-label">患者姓名</text>
+            <text class="info-value">{{carePlan.basicInfo.patientName}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">年龄</text>
+            <text class="info-value">{{carePlan.basicInfo.age}}岁</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">性别</text>
+            <text class="info-value">{{carePlan.basicInfo.gender}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">造口类型</text>
+            <text class="info-value">{{carePlan.basicInfo.stomaType}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">造口日期</text>
+            <text class="info-value">{{carePlan.basicInfo.stomaDate}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">术后天数</text>
+            <text class="info-value">{{carePlan.basicInfo.daysSince}}天</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">护理等级</text>
+            <text class="info-value">{{carePlan.basicInfo.careLevel}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">下次复查</text>
+            <text class="info-value">{{carePlan.basicInfo.nextReview}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 进度概览 -->
+      <view class="progress-section">
+        <view class="section-header">
+          <text class="section-title">进度概览</text>
+        </view>
+        <view class="progress-grid">
+          <view class="progress-card">
+            <view class="progress-header">
+              <text class="progress-title">今日进度</text>
+              <text class="progress-percent">{{todayProgress}}%</text>
+            </view>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{todayProgress}}%"></view>
+            </view>
+            <text class="progress-desc">已完成 {{todayProgress}}% 的今日任务</text>
+          </view>
+          
+          <view class="progress-card">
+            <view class="progress-header">
+              <text class="progress-title">本周进度</text>
+              <text class="progress-percent">{{weeklyProgress}}%</text>
+            </view>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{weeklyProgress}}%"></view>
+            </view>
+            <text class="progress-desc">已完成 {{weeklyProgress}}% 的周目标</text>
+          </view>
+          
+          <view class="progress-card">
+            <view class="progress-header">
+              <text class="progress-title">本月进度</text>
+              <text class="progress-percent">{{monthlyProgress}}%</text>
+            </view>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{monthlyProgress}}%"></view>
+            </view>
+            <text class="progress-desc">已完成 {{monthlyProgress}}% 的月目标</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 医生信息 -->
+      <view class="doctor-section">
+        <view class="section-header">
+          <text class="section-title">主治医生</text>
+        </view>
+        <view class="doctor-card">
+          <view class="doctor-info">
+            <text class="doctor-name">{{carePlan.monthlyReview.doctorName}}</text>
+            <text class="doctor-dept">{{carePlan.monthlyReview.department}}</text>
+            <text class="doctor-phone">{{carePlan.monthlyReview.phone}}</text>
+          </view>
+          <button class="contact-btn" bindtap="contactDoctor">
+            <text class="btn-text">联系医生</text>
+          </button>
+        </view>
+        <view class="review-info">
+          <text class="review-label">上次复查：{{carePlan.monthlyReview.lastReview}}</text>
+          <text class="review-label">下次复查：{{carePlan.monthlyReview.nextReview}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 任务页面 -->
+    <view wx:if="{{currentTab === 'tasks'}}" class="tasks-section">
+      <!-- 今日任务 -->
+      <view class="tasks-header">
+        <text class="tasks-title">今日任务</text>
+        <text class="add-task-btn" bindtap="addTask">+ 添加任务</text>
+      </view>
+      
+      <view class="tasks-list">
+        <view wx:for="{{carePlan.dailyTasks}}" wx:key="id" 
+              class="task-item {{item.completed ? 'completed' : ''}} {{item.priority}}">
+          <view class="task-content" bindtap="completeTask" data-id="{{item.id}}">
+            <view class="task-header">
+              <view class="task-info">
+                <text class="task-title">{{item.title}}</text>
+                <text class="task-time">{{item.time}} · {{item.duration}}</text>
+              </view>
+              <view class="task-status">
+                <text wx:if="{{item.completed}}" class="status-completed">已完成</text>
+                <text wx:else class="status-pending">待完成</text>
+              </view>
+            </view>
+            <text class="task-desc">{{item.description}}</text>
+            <view class="task-priority">
+              <text class="priority-tag {{item.priority}}">
+                {{item.priority === 'high' ? '高优先级' : item.priority === 'medium' ? '中优先级' : '低优先级'}}
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 目标页面 -->
+    <view wx:if="{{currentTab === 'goals'}}" class="goals-section">
+      <!-- 周目标 -->
+      <view class="goals-header">
+        <text class="goals-title">本周目标</text>
+      </view>
+      
+      <view class="goals-list">
+        <view wx:for="{{carePlan.weeklyGoals}}" wx:key="id" 
+              class="goal-item {{item.status}}">
+          <view class="goal-header">
+            <text class="goal-title">{{item.title}}</text>
+            <text class="goal-status {{item.status}}">
+              {{item.status === 'completed' ? '已完成' : item.status === 'in-progress' ? '进行中' : '未开始'}}
+            </text>
+          </view>
+          <text class="goal-desc">{{item.description}}</text>
+          <view class="goal-progress">
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{item.progress}}%"></view>
+            </view>
+            <text class="progress-text">{{item.progress}}% / {{item.target}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 建议页面 -->
+    <view wx:if="{{currentTab === 'tips'}}" class="tips-section">
+      <!-- 护理建议 -->
+      <view class="tips-header">
+        <text class="tips-title">护理建议</text>
+      </view>
+      
+      <view class="tips-list">
+        <view wx:for="{{carePlan.careTips}}" wx:key="id" 
+              class="tip-item {{item.priority}}">
+          <view class="tip-header">
+            <text class="tip-title">{{item.title}}</text>
+            <text class="tip-priority {{item.priority}}">
+              {{item.priority === 'high' ? '重要' : item.priority === 'medium' ? '一般' : '参考'}}
+            </text>
+          </view>
+          <text class="tip-content">{{item.content}}</text>
+        </view>
+      </view>
+      
+      <view class="tips-actions">
+        <button class="tips-btn" bindtap="viewCareTips">
+          <text class="btn-text">查看详细建议</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn secondary" bindtap="exportPlan">
+      <text class="btn-text">导出计划</text>
+    </button>
+    <button class="action-btn primary" bindtap="sharePlan">
+      <text class="btn-text">分享计划</text>
+    </button>
+  </view>
+</view> 

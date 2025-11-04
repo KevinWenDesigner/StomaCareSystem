@@ -1,0 +1,237 @@
+<!--patient-app/pages/education/diet-study/diet-study.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">{{course.title}}</text>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 饮食指导学习内容 -->
+  <view wx:else class="study-content">
+    <!-- 学习进度 -->
+    <view class="progress-section">
+      <view class="progress-header">
+        <text class="progress-title">学习进度</text>
+        <text class="progress-percent">{{studyProgress}}%</text>
+      </view>
+      
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{studyProgress}}%"></view>
+      </view>
+      
+      <text class="progress-text">已完成 {{studyProgress}}%</text>
+    </view>
+
+    <!-- 当前章节 -->
+    <view wx:if="{{course.chapters && course.chapters[currentChapter]}}" class="chapter-section">
+      <view class="chapter-header">
+        <text class="chapter-title">第{{currentChapter + 1}}章：{{course.chapters[currentChapter].title}}</text>
+        <text class="chapter-duration">{{course.chapters[currentChapter].duration}}</text>
+      </view>
+      
+      <view class="chapter-content">
+        <view class="content-card">
+          <text class="content-title">饮食指导</text>
+          <text class="content-text">
+            这里是第{{currentChapter + 1}}章的饮食指导内容。请仔细学习以下营养知识和饮食建议，完成后点击"完成学习"按钮。
+          </text>
+          
+          <!-- 营养知识 -->
+          <view class="nutrition-knowledge">
+            <view class="knowledge-item">
+              <text class="knowledge-icon">🍎</text>
+              <text class="knowledge-text">营养均衡是造口患者健康的基础</text>
+            </view>
+            <view class="knowledge-item">
+              <text class="knowledge-icon">🥩</text>
+              <text class="knowledge-text">优质蛋白质有助于伤口愈合</text>
+            </view>
+            <view class="knowledge-item">
+              <text class="knowledge-icon">🥬</text>
+              <text class="knowledge-text">适量膳食纤维促进肠道健康</text>
+            </view>
+            <view class="knowledge-item">
+              <text class="knowledge-icon">💧</text>
+              <text class="knowledge-text">充足水分摄入预防脱水</text>
+            </view>
+          </view>
+          
+          <!-- 饮食建议 -->
+          <view class="diet-tips">
+            <text class="tips-title">💡 饮食建议</text>
+            <view class="tips-list">
+              <text class="tip-item">• 选择易消化的食物</text>
+              <text class="tip-item">• 避免刺激性食物</text>
+              <text class="tip-item">• 少量多餐</text>
+              <text class="tip-item">• 注意食物卫生</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 章节列表 -->
+    <view wx:if="{{course.chapters}}" class="chapters-section">
+      <view class="section-header">
+        <text class="section-title">饮食章节</text>
+        <text class="section-subtitle">共{{course.chapters.length}}个章节</text>
+      </view>
+      
+      <view class="chapters-list">
+        <view wx:for="{{course.chapters}}" wx:key="id" 
+              class="chapter-item {{index === currentChapter ? 'active' : ''}} {{item.completed ? 'completed' : ''}}"
+              bindtap="startChapter" data-index="{{index}}">
+          <view class="chapter-info">
+            <view class="chapter-header">
+              <text class="chapter-number">第{{item.id}}章</text>
+              <text class="chapter-duration">{{item.duration}}</text>
+            </view>
+            <text class="chapter-title">{{item.title}}</text>
+          </view>
+          
+          <view class="chapter-status">
+            <text wx:if="{{item.completed}}" class="status-completed">已完成</text>
+            <text wx:elif="{{index === currentChapter}}" class="status-current">学习中</text>
+            <text wx:else class="status-pending">待学习</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 营养计算器弹窗 -->
+    <view wx:if="{{showNutritionCalculator}}" class="calculator-modal">
+      <view class="modal-overlay" bindtap="closeNutritionCalculator"></view>
+      <view class="modal-content">
+        <view class="calculator-header">
+          <text class="calculator-title">🍎 营养需求计算</text>
+          <text class="calculator-subtitle">根据您的身体情况计算营养需求</text>
+        </view>
+        
+        <view class="calculator-content">
+          <!-- 基本信息输入 -->
+          <view class="input-section">
+            <view class="input-item">
+              <text class="input-label">体重 (kg)</text>
+              <input class="input-field" type="digit" value="{{nutritionData.weight}}" 
+                     data-field="weight" bindinput="updateNutritionData" placeholder="请输入体重"/>
+            </view>
+            <view class="input-item">
+              <text class="input-label">身高 (cm)</text>
+              <input class="input-field" type="digit" value="{{nutritionData.height}}" 
+                     data-field="height" bindinput="updateNutritionData" placeholder="请输入身高"/>
+            </view>
+            <view class="input-item">
+              <text class="input-label">年龄</text>
+              <input class="input-field" type="digit" value="{{nutritionData.age}}" 
+                     data-field="age" bindinput="updateNutritionData" placeholder="请输入年龄"/>
+            </view>
+            <view class="input-item">
+              <text class="input-label">活动水平</text>
+              <picker class="input-field" mode="selector" range="{{['久坐不动', '轻度活动', '中度活动', '重度活动', '极重度活动']}}" 
+                      range-key="name" value="{{0}}" bindchange="updateActivityLevel">
+                <text class="picker-text">{{nutritionData.activityText || '请选择活动水平'}}</text>
+              </picker>
+            </view>
+          </view>
+          
+          <!-- 计算结果 -->
+          <view wx:if="{{nutritionData.dailyCalories > 0}}" class="result-section">
+            <text class="result-title">计算结果</text>
+            <view class="result-grid">
+              <view class="result-item">
+                <text class="result-label">基础代谢率</text>
+                <text class="result-value">{{nutritionData.bmr}} 千卡</text>
+              </view>
+              <view class="result-item">
+                <text class="result-label">每日热量需求</text>
+                <text class="result-value">{{nutritionData.dailyCalories}} 千卡</text>
+              </view>
+              <view class="result-item">
+                <text class="result-label">蛋白质</text>
+                <text class="result-value">{{nutritionData.protein}}g</text>
+              </view>
+              <view class="result-item">
+                <text class="result-label">碳水化合物</text>
+                <text class="result-value">{{nutritionData.carbs}}g</text>
+              </view>
+              <view class="result-item">
+                <text class="result-label">脂肪</text>
+                <text class="result-value">{{nutritionData.fat}}g</text>
+              </view>
+            </view>
+          </view>
+          
+          <view class="calculator-options">
+            <button class="calculator-btn primary" bindtap="calculateNutrition">
+              <text class="btn-text">计算营养需求</text>
+            </button>
+            <button class="calculator-btn secondary" bindtap="showRecipeRecommendation">
+              <text class="btn-text">查看食谱推荐</text>
+            </button>
+            <button class="calculator-btn secondary" bindtap="closeNutritionCalculator">
+              <text class="btn-text">关闭</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 食谱推荐弹窗 -->
+    <view wx:if="{{showRecipeRecommendation}}" class="recipe-modal">
+      <view class="modal-overlay" bindtap="closeRecipeRecommendation"></view>
+      <view class="modal-content">
+        <view class="recipe-header">
+          <text class="recipe-title">🍽️ 食谱推荐</text>
+          <text class="recipe-subtitle">适合造口患者的营养食谱</text>
+        </view>
+        
+        <view class="recipe-content">
+          <view wx:for="{{recipeRecommendations}}" wx:key="meal" class="recipe-item">
+            <view class="recipe-meal">
+              <text class="meal-title">{{item.meal}}</text>
+              <text class="meal-subtitle">{{item.title}}</text>
+            </view>
+            
+            <text class="recipe-desc">{{item.description}}</text>
+            
+            <view class="food-list">
+              <view wx:for="{{item.foods}}" wx:key="name" wx:for-item="food" class="food-item">
+                <text class="food-name">{{food.name}}</text>
+                <text class="food-amount">{{food.amount}}</text>
+                <text class="food-calories">{{food.calories}}千卡</text>
+              </view>
+            </view>
+            
+            <view class="recipe-summary">
+              <text class="total-calories">总热量：{{item.totalCalories}}千卡</text>
+              <text class="recipe-tips">{{item.tips}}</text>
+            </view>
+          </view>
+          
+          <button class="recipe-btn" bindtap="closeRecipeRecommendation">
+            <text class="btn-text">关闭</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button wx:if="{{!isCompleted && course.chapters && course.chapters[currentChapter] && !showNutritionCalculator}}" 
+            class="action-btn primary" bindtap="completeChapter">
+      <text class="btn-text">完成学习</text>
+    </button>
+    <button wx:else class="action-btn secondary" bindtap="goBack">
+      <text class="btn-text">返回课程</text>
+    </button>
+  </view>
+</view> 

@@ -1,0 +1,607 @@
+/* patient-app/pages/reminders/reminders.wxss */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  padding: 32rpx;
+  box-sizing: border-box;
+  padding-bottom: 120rpx;
+}
+
+/* 页面头部 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48rpx;
+  padding: 20rpx 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  font-size: 36rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+  margin-right: 16rpx;
+}
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  max-width: 400rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.test-btn {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+}
+
+.loading-text {
+  font-size: 32rpx;
+  color: #FFFFFF;
+  opacity: 0.8;
+}
+
+/* 设置内容 */
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+/* 标签页导航 */
+.tab-navigation {
+  display: flex;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 8rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.tab-item {
+  flex: 1;
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tab-item.active {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.3);
+}
+
+.tab-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.tab-item.active .tab-text {
+  color: #FFFFFF;
+}
+
+/* 提醒管理页面 */
+.reminders-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.reminders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.reminders-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.add-reminder-btn {
+  font-size: 24rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.reminder-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.reminder-item.disabled {
+  opacity: 0.6;
+}
+
+.reminder-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.reminder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reminder-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.reminder-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.reminder-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.reminder-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.reminder-desc {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.reminder-actions {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.reminder-time {
+  font-size: 24rpx;
+  color: #F59E0B;
+  font-weight: 600;
+}
+
+/* 开关样式 */
+.reminder-switch, .setting-switch {
+  position: relative;
+  width: 60rpx;
+  height: 32rpx;
+  border-radius: 16rpx;
+  transition: all 0.3s ease;
+}
+
+.switch-track {
+  width: 100%;
+  height: 100%;
+  background: #E5E7EB;
+  border-radius: 16rpx;
+  transition: all 0.3s ease;
+}
+
+.switch-track.enabled {
+  background: #F59E0B;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2rpx;
+  left: 2rpx;
+  width: 28rpx;
+  height: 28rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.switch-thumb.enabled {
+  left: 30rpx;
+}
+
+.reminder-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reminder-category {
+  display: flex;
+  align-items: center;
+}
+
+.category-tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-weight: 600;
+}
+
+/* 分类颜色样式 */
+.category-tag[data-category="hygiene"] {
+  background-color: #3B82F620;
+  color: #3B82F6;
+}
+
+.category-tag[data-category="care"] {
+  background-color: #10B98120;
+  color: #10B981;
+}
+
+.category-tag[data-category="monitoring"] {
+  background-color: #F59E0B20;
+  color: #F59E0B;
+}
+
+.category-tag[data-category="exercise"] {
+  background-color: #8B5CF620;
+  color: #8B5CF6;
+}
+
+.category-tag[data-category="medical"] {
+  background-color: #EF444420;
+  color: #EF4444;
+}
+
+.category-tag[data-category="medication"] {
+  background-color: #EC489920;
+  color: #EC4899;
+}
+
+.category-tag[data-category="nutrition"] {
+  background-color: #F9731620;
+  color: #F97316;
+}
+
+.reminder-buttons {
+  display: flex;
+  gap: 16rpx;
+}
+
+.edit-btn, .delete-btn {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+  font-weight: 600;
+}
+
+.edit-btn {
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.delete-btn {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* 通知设置页面 */
+.notifications-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.settings-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.card-header {
+  margin-bottom: 24rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #F59E0B;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.setting-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+}
+
+.setting-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.setting-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.setting-desc {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+/* 时间设置页面 */
+.time-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.time-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.time-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.time-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+}
+
+.time-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.time-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.time-desc {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.time-value {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 16rpx;
+  background: #FFFFFF;
+  border-radius: 8rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.time-text {
+  font-size: 26rpx;
+  color: #F59E0B;
+  font-weight: 600;
+}
+
+.time-arrow {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.quiet-hours-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.quiet-hours-info {
+  margin-top: 16rpx;
+  padding: 16rpx;
+  background: #FEF3C7;
+  border-radius: 8rpx;
+  border: 1rpx solid #F59E0B;
+}
+
+.info-text {
+  font-size: 24rpx;
+  color: #92400E;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.info-desc {
+  font-size: 22rpx;
+  color: #92400E;
+  display: block;
+}
+
+.permission-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.permission-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.permission-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+}
+
+.permission-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.permission-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.permission-desc {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.permission-btn {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #FFFFFF;
+  padding: 12rpx 24rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  border: none;
+}
+
+/* 底部操作按钮 */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 24rpx 32rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 16rpx rgba(245, 158, 11, 0.3);
+}
+
+.action-btn.primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.4);
+}
+
+.action-btn.secondary {
+  background: #F3F4F6;
+  color: #374151;
+  border: 2rpx solid #D1D5DB;
+}
+
+.action-btn.secondary:active {
+  background: #E5E7EB;
+  transform: scale(0.95);
+}
+
+.btn-text {
+  color: inherit;
+} 

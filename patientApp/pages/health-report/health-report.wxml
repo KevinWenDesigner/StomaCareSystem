@@ -1,0 +1,386 @@
+<!--patient-app/pages/health-report/health-report.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">健康报告</text>
+    <view class="header-right">
+      <text class="share-btn" bindtap="shareReport">分享</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">生成健康报告中...</text>
+  </view>
+
+  <!-- 健康报告内容 -->
+  <view wx:else class="report-content">
+    <!-- 标签页导航 -->
+    <view class="tab-navigation">
+      <view class="tab-item {{currentTab === 'overview' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="overview">
+        <text class="tab-text">总览</text>
+      </view>
+      <view class="tab-item {{currentTab === 'trends' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="trends">
+        <text class="tab-text">趋势</text>
+      </view>
+      <view class="tab-item {{currentTab === 'analysis' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="analysis">
+        <text class="tab-text">分析</text>
+      </view>
+    </view>
+
+    <!-- 总览页面 -->
+    <view wx:if="{{currentTab === 'overview'}}" class="overview-section">
+      <!-- 健康评分 -->
+      <view class="health-score-card">
+        <view class="score-header">
+          <text class="score-title">健康评分</text>
+          <text class="score-date">{{healthData.basicInfo.stomaDate}}</text>
+        </view>
+        <view class="score-display">
+          <text class="score-value">{{healthData.healthScore}}</text>
+          <text class="score-unit">分</text>
+        </view>
+        <view class="score-status">
+          <text wx:if="{{healthData.healthScore >= 80}}" class="status-text good">优秀</text>
+          <text wx:elif="{{healthData.healthScore >= 60}}" class="status-text normal">良好</text>
+          <text wx:else class="status-text poor">需关注</text>
+        </view>
+      </view>
+
+      <!-- 基本信息 -->
+      <view class="info-section">
+        <view class="section-header">
+          <text class="section-title">基本信息</text>
+        </view>
+        <view class="info-grid">
+          <view class="info-item">
+            <text class="info-label">姓名</text>
+            <text class="info-value">{{healthData.basicInfo.name}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">年龄</text>
+            <text class="info-value">{{healthData.basicInfo.age}}岁</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">性别</text>
+            <text class="info-value">{{healthData.basicInfo.gender}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">造口类型</text>
+            <text class="info-value">{{healthData.basicInfo.stomaType}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">造口日期</text>
+            <text class="info-value">{{healthData.basicInfo.stomaDate}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">术后天数</text>
+            <text class="info-value">{{healthData.basicInfo.daysSince}}天</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 生命体征 -->
+      <view class="vitals-section">
+        <view class="section-header">
+          <text class="section-title">生命体征</text>
+        </view>
+        <view class="vitals-grid">
+          <view class="vital-item">
+            <text class="vital-icon">🌡️</text>
+            <text class="vital-label">体温</text>
+            <text class="vital-value">{{healthData.vitalSigns.temperature}}°C</text>
+          </view>
+          <view class="vital-item">
+            <text class="vital-icon">💓</text>
+            <text class="vital-label">血压</text>
+            <text class="vital-value">{{healthData.vitalSigns.bloodPressure}}</text>
+          </view>
+          <view class="vital-item">
+            <text class="vital-icon">❤️</text>
+            <text class="vital-label">心率</text>
+            <text class="vital-value">{{healthData.vitalSigns.heartRate}}次/分</text>
+          </view>
+          <view class="vital-item">
+            <text class="vital-icon">⚖️</text>
+            <text class="vital-label">体重</text>
+            <text class="vital-value">{{healthData.vitalSigns.weight}}kg</text>
+          </view>
+          <view class="vital-item">
+            <text class="vital-icon">📊</text>
+            <text class="vital-label">BMI</text>
+            <text class="vital-value">{{healthData.vitalSigns.bmi}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 造口状态 -->
+      <view class="stoma-section">
+        <view class="section-header">
+          <text class="section-title">造口状态</text>
+        </view>
+        <view class="stoma-grid">
+          <view class="stoma-item">
+            <text class="stoma-label">颜色</text>
+            <text class="stoma-value {{healthData.stomaStatus.color === '正常' ? 'normal' : 'warning'}}">{{healthData.stomaStatus.color}}</text>
+          </view>
+          <view class="stoma-item">
+            <text class="stoma-label">大小</text>
+            <text class="stoma-value">{{healthData.stomaStatus.size}}</text>
+          </view>
+          <view class="stoma-item">
+            <text class="stoma-label">高度</text>
+            <text class="stoma-value">{{healthData.stomaStatus.height}}</text>
+          </view>
+          <view class="stoma-item">
+            <text class="stoma-label">皮肤状况</text>
+            <text class="stoma-value {{healthData.stomaStatus.skinCondition === '良好' ? 'normal' : 'warning'}}">{{healthData.stomaStatus.skinCondition}}</text>
+          </view>
+          <view class="stoma-item">
+            <text class="stoma-label">最后更换</text>
+            <text class="stoma-value">{{healthData.stomaStatus.lastChange}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 症状评估 -->
+      <view class="symptoms-section">
+        <view class="section-header">
+          <text class="section-title">症状评估</text>
+        </view>
+        <view class="symptoms-grid">
+          <view class="symptom-item">
+            <text class="symptom-label">疼痛程度</text>
+            <view class="symptom-value-container">
+              <text class="symptom-value {{healthData.symptoms.pain <= 2 ? 'normal' : healthData.symptoms.pain <= 3 ? 'warning' : 'danger'}}">{{healthData.symptoms.pain}}/5</text>
+            </view>
+          </view>
+          <view class="symptom-item">
+            <text class="symptom-label">出血情况</text>
+            <text class="symptom-value {{healthData.symptoms.bleeding === '无' ? 'normal' : 'danger'}}">{{healthData.symptoms.bleeding}}</text>
+          </view>
+          <view class="symptom-item">
+            <text class="symptom-label">感染情况</text>
+            <text class="symptom-value {{healthData.symptoms.infection === '无' ? 'normal' : 'danger'}}">{{healthData.symptoms.infection}}</text>
+          </view>
+          <view class="symptom-item">
+            <text class="symptom-label">梗阻情况</text>
+            <text class="symptom-value {{healthData.symptoms.obstruction === '无' ? 'normal' : 'danger'}}">{{healthData.symptoms.obstruction}}</text>
+          </view>
+          <view class="symptom-item">
+            <text class="symptom-label">脱垂情况</text>
+            <text class="symptom-value {{healthData.symptoms.prolapse === '无' ? 'normal' : 'danger'}}">{{healthData.symptoms.prolapse}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 趋势页面 -->
+    <view wx:if="{{currentTab === 'trends'}}" class="trends-section">
+      <!-- 周趋势 -->
+      <view class="trend-card">
+        <view class="trend-header">
+          <text class="trend-title">本周趋势</text>
+          <text class="trend-subtitle">最近7天数据</text>
+        </view>
+        <view class="trend-chart">
+          <view class="chart-item">
+            <text class="chart-label">疼痛程度</text>
+            <view class="chart-bars-container">
+              <view class="chart-bars">
+                <view wx:for="{{weeklyStats.painLevel}}" wx:key="*this" 
+                      class="chart-bar {{item >= 4 ? 'high' : item >= 2 ? 'medium' : 'low'}}" 
+                      style="height: {{item * 15}}%">
+                  <view class="bar-fill"></view>
+                  <text class="bar-value">{{item}}</text>
+                </view>
+              </view>
+              <view class="chart-axis">
+                <text class="axis-label">0</text>
+                <text class="axis-label">5</text>
+              </view>
+            </view>
+          </view>
+          <view class="chart-item">
+            <text class="chart-label">排便次数</text>
+            <view class="chart-bars-container">
+              <view class="chart-bars">
+                <view wx:for="{{weeklyStats.bowelMovements}}" wx:key="*this" 
+                      class="chart-bar {{item >= 3 ? 'high' : item >= 1 ? 'medium' : 'low'}}" 
+                      style="height: {{item * 20}}%">
+                  <view class="bar-fill"></view>
+                  <text class="bar-value">{{item}}</text>
+                </view>
+              </view>
+              <view class="chart-axis">
+                <text class="axis-label">0</text>
+                <text class="axis-label">5</text>
+              </view>
+            </view>
+          </view>
+          <view class="chart-item">
+            <text class="chart-label">皮肤问题</text>
+            <view class="chart-bars-container">
+              <view class="chart-bars">
+                <view wx:for="{{weeklyStats.skinIssues}}" wx:key="*this" 
+                      class="chart-bar {{item >= 3 ? 'high' : item >= 1 ? 'medium' : 'low'}}" 
+                      style="height: {{item * 25}}%">
+                  <view class="bar-fill"></view>
+                  <text class="bar-value">{{item}}</text>
+                </view>
+              </view>
+              <view class="chart-axis">
+                <text class="axis-label">0</text>
+                <text class="axis-label">5</text>
+              </view>
+            </view>
+          </view>
+          <view class="chart-item">
+            <text class="chart-label">心情评分</text>
+            <view class="chart-bars-container">
+              <view class="chart-bars">
+                <view wx:for="{{weeklyStats.moodScore}}" wx:key="*this" 
+                      class="chart-bar {{item >= 4 ? 'high' : item >= 2 ? 'medium' : 'low'}}" 
+                      style="height: {{item * 12}}%">
+                  <view class="bar-fill"></view>
+                  <text class="bar-value">{{item}}</text>
+                </view>
+              </view>
+              <view class="chart-axis">
+                <text class="axis-label">0</text>
+                <text class="axis-label">5</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 月趋势 -->
+      <view class="trend-card">
+        <view class="trend-header">
+          <text class="trend-title">月度趋势</text>
+          <text class="trend-subtitle">最近8周数据</text>
+        </view>
+        <view class="monthly-trends">
+          <view class="trend-line">
+            <view class="line-header">
+              <text class="line-label">疼痛趋势</text>
+              <view class="trend-indicator {{monthlyTrends.painTrend[7] > monthlyTrends.painTrend[0] ? 'up' : 'down'}}">
+                <text class="indicator-text">{{monthlyTrends.painTrend[7] > monthlyTrends.painTrend[0] ? '↑' : '↓'}}</text>
+              </view>
+            </view>
+            <view class="line-chart-container">
+              <view class="line-chart">
+                <view class="chart-line"></view>
+                <view wx:for="{{monthlyTrends.painTrend}}" wx:key="*this" 
+                      class="line-point" style="left: {{index * 14.28}}%">
+                  <view class="point-dot"></view>
+                  <text class="point-value">{{item}}</text>
+                </view>
+              </view>
+              <view class="chart-axis">
+                <text class="axis-label">第1周</text>
+                <text class="axis-label">第8周</text>
+              </view>
+            </view>
+          </view>
+          <view class="trend-line">
+            <view class="line-header">
+              <text class="line-label">体重趋势</text>
+              <view class="trend-indicator {{monthlyTrends.weightTrend[7] > monthlyTrends.weightTrend[0] ? 'up' : 'down'}}">
+                <text class="indicator-text">{{monthlyTrends.weightTrend[7] > monthlyTrends.weightTrend[0] ? '↑' : '↓'}}</text>
+              </view>
+            </view>
+            <view class="line-chart-container">
+              <view class="line-chart">
+                <view class="chart-line"></view>
+                <view wx:for="{{monthlyTrends.weightTrend}}" wx:key="*this" 
+                      class="line-point" style="left: {{index * 14.28}}%">
+                  <view class="point-dot"></view>
+                  <text class="point-value">{{item}}</text>
+                </view>
+              </view>
+              <view class="chart-axis">
+                <text class="axis-label">第1周</text>
+                <text class="axis-label">第8周</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分析页面 -->
+    <view wx:if="{{currentTab === 'analysis'}}" class="analysis-section">
+      <!-- 健康建议 -->
+      <view class="recommendations-section">
+        <view class="section-header">
+          <text class="section-title">健康建议</text>
+        </view>
+        <view class="recommendations-list">
+          <view wx:for="{{recommendations}}" wx:key="title" class="recommendation-item {{item.type}}">
+            <view class="recommendation-header">
+              <text class="recommendation-title">{{item.title}}</text>
+              <text class="recommendation-priority {{item.priority}}">{{item.priority}}</text>
+            </view>
+            <text class="recommendation-content">{{item.content}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 风险因素 -->
+      <view class="risks-section">
+        <view class="section-header">
+          <text class="section-title">风险因素</text>
+        </view>
+        <view class="risks-list">
+          <view wx:for="{{riskFactors}}" wx:key="factor" class="risk-item {{item.level}}">
+            <view class="risk-header">
+              <text class="risk-factor">{{item.factor}}</text>
+              <text class="risk-level {{item.level}}">{{item.level}}</text>
+            </view>
+            <text class="risk-description">{{item.description}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 改进领域 -->
+      <view class="improvements-section">
+        <view class="section-header">
+          <text class="section-title">改进领域</text>
+        </view>
+        <view class="improvements-list">
+          <view wx:for="{{improvementAreas}}" wx:key="area" class="improvement-item">
+            <view class="improvement-header">
+              <text class="improvement-area">{{item.area}}</text>
+              <text class="improvement-progress">{{item.progress}}%</text>
+            </view>
+            <view class="improvement-details">
+              <text class="improvement-current">当前：{{item.current}}</text>
+              <text class="improvement-target">目标：{{item.target}}</text>
+            </view>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{item.progress}}%"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn secondary" bindtap="exportReport">
+      <text class="btn-text">导出报告</text>
+    </button>
+    <button class="action-btn primary" bindtap="shareReport">
+      <text class="btn-text">分享报告</text>
+    </button>
+  </view>
+</view> 

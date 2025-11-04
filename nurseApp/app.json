@@ -1,0 +1,43 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/dashboard/dashboard",
+    "pages/patients/patients",
+    "pages/tasks/tasks",
+    "pages/analytics/analytics"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#667eea",
+    "navigationBarTitleText": "造口护理护士端",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8fafc"
+  },
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#3b82f6",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/dashboard/dashboard",
+        "text": "工作台"
+      },
+      {
+        "pagePath": "pages/patients/patients",
+        "text": "患者管理"
+      },
+      {
+        "pagePath": "pages/tasks/tasks",
+        "text": "任务管理"
+      },
+      {
+        "pagePath": "pages/analytics/analytics",
+        "text": "数据分析"
+      }
+    ]
+  },
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+} 

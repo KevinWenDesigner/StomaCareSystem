@@ -1,0 +1,64 @@
+<!--nurse-app/pages/index/index.wxml-->
+<view class="container">
+  <!-- 欢迎页面 -->
+  <view wx:if="{{showWelcome}}" class="welcome-page">
+    <!-- Logo区域 -->
+    <view class="logo-section">
+      <view class="logo-container">
+        <text class="logo-icon">👩‍⚕️</text>
+        <view class="logo-glow"></view>
+      </view>
+      <text class="app-title">造口护理护士端</text>
+      <text class="app-subtitle">专业的护理管理平台</text>
+    </view>
+
+    <!-- 功能介绍 -->
+    <view class="features-section">
+      <view class="feature-item">
+        <text class="feature-icon">🏠</text>
+        <text class="feature-title">工作台</text>
+        <text class="feature-desc">查看患者状态和任务</text>
+      </view>
+      
+      <view class="feature-item">
+        <text class="feature-icon">👥</text>
+        <text class="feature-title">患者管理</text>
+        <text class="feature-desc">管理患者信息和状态</text>
+      </view>
+      
+      <view class="feature-item">
+        <text class="feature-icon">📋</text>
+        <text class="feature-title">任务管理</text>
+        <text class="feature-desc">分配和跟踪护理任务</text>
+      </view>
+      
+      <view class="feature-item">
+        <text class="feature-icon">📊</text>
+        <text class="feature-title">数据分析</text>
+        <text class="feature-desc">查看护理效果分析</text>
+      </view>
+    </view>
+
+    <!-- 登录按钮 -->
+    <view class="login-section">
+      <button class="login-btn" bindtap="login">
+        <text class="btn-text">开始工作</text>
+      </button>
+      <text class="login-tip">点击开始工作，进入护理管理</text>
+    </view>
+
+    <!-- 底部信息 -->
+    <view class="footer-section">
+      <text class="footer-text">专业服务 · 高效管理</text>
+      <text class="footer-subtext">© 2024 StomaCare 护士端</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:else class="loading-page">
+    <view class="loading-container">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">正在加载...</text>
+    </view>
+  </view>
+</view> 

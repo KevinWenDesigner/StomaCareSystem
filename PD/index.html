@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>造口护理管理系统 - 原型展示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 
+                0 25px 50px rgba(0,0,0,0.4),
+                0 0 0 1px rgba(255,255,255,0.1) inset,
+                0 0 0 2px rgba(0,0,0,0.8);
+            margin: 30px;
+            display: inline-block;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .phone-frame:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 35px 70px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.15) inset,
+                0 0 0 2px rgba(0,0,0,0.9);
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 32px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .prototype-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .prototype-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .prototype-title {
+            text-align: center;
+            color: #1e293b;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .prototype-subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-title {
+            text-align: center;
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 60px 0 40px 0;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.3px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+        
+        .phones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1400px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .phone-label {
+            text-align: center;
+            color: #475569;
+            margin-top: 15px;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        
+        .phone-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .header-decoration {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+        
+        /* Tab样式 */
+        .tab-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            padding: 12px 24px;
+            margin: 0 4px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            white-space: nowrap;
+        }
+        
+        .tab-button:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .prototype-title {
+                font-size: 24px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            .phone-frame {
+                margin: 15px;
+                width: 320px;
+                height: 650px;
+            }
+            
+            .tab-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab-button {
+                margin: 2px 0;
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="prototype-container">
+        <div class="header-decoration"></div>
+        
+        <h1 class="prototype-title">造口护理管理系统</h1>
+        <p class="prototype-subtitle">专业医疗护理 · 智能管理平台 · 高保真原型展示</p>
+        
+        <!-- Tab导航 -->
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('structure')">课题实现结构</button>
+                <button class="tab-button" onclick="showTab('report')">查看结题报告</button>
+                <button class="tab-button" onclick="showTab('patient')">患者端界面</button>
+                <button class="tab-button" onclick="showTab('nurse')">护士端界面</button>
+                <button class="tab-button" onclick="showTab('management')">护理管理端</button>
+            </div>
+            
+            <!-- 课题实现结构 Tab -->
+            <div id="structure" class="tab-content active">
+                <div class="text-center mb-12">
+                    <div class="bg-white rounded-24 p-8 max-w-4xl mx-auto border border-gray-200 shadow-xl">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">课题实现结构</h3>
+                        
+                        <!-- 系统架构图 -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-16 p-6 border border-blue-200 text-center">
+                                <div class="text-3xl mb-3">👤</div>
+                                <h4 class="text-lg font-bold mb-2 text-blue-800">患者端</h4>
+                                <p class="text-sm text-blue-600">移动应用 · 5个核心功能模块</p>
+                                <div class="mt-3 text-xs text-blue-700">
+                                    <div>• 风险评估</div>
+                                    <div>• AI拍照评估</div>
+                                    <div>• 症状日记</div>
+                                    <div>• 教育内容</div>
+                                    <div>• 个人中心</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-16 p-6 border border-green-200 text-center">
+                                <div class="text-3xl mb-3">👩‍⚕️</div>
+                                <h4 class="text-lg font-bold mb-2 text-green-800">护士端</h4>
+                                <p class="text-sm text-green-600">移动应用 · 4个管理模块</p>
+                                <div class="mt-3 text-xs text-green-700">
+                                    <div>• 预警看板</div>
+                                    <div>• 患者管理</div>
+                                    <div>• 任务管理</div>
+                                    <div>• 数据分析</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-16 p-6 border border-purple-200 text-center">
+                                <div class="text-3xl mb-3">🏥</div>
+                                <h4 class="text-lg font-bold mb-2 text-purple-800">管理端</h4>
+                                <p class="text-sm text-purple-600">Web客户端 · 8个管理功能</p>
+                                <div class="mt-3 text-xs text-purple-700">
+                                    <div>• 工作看板</div>
+                                    <div>• 护士管理</div>
+                                    <div>• 患者管理</div>
+                                    <div>• 任务分配</div>
+                                    <div>• 绩效分析</div>
+                                    <div>• 排班管理</div>
+                                    <div>• 培训管理</div>
+                                    <div>• 系统设置</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 核心功能亮点 -->
+                        <div class="mt-8">
+                            <h4 class="text-lg font-bold text-gray-800 mb-4">核心功能亮点</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-12 p-4 text-center border border-amber-200">
+                                    <div class="text-2xl mb-2">🤖</div>
+                                    <div class="text-sm font-semibold text-amber-800">AI智能评估</div>
+                                    <div class="text-xs text-amber-600 mt-1">准确率85%+</div>
+                                </div>
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-12 p-4 text-center border border-blue-200">
+                                    <div class="text-2xl mb-2">⚡</div>
+                                    <div class="text-sm font-semibold text-blue-800">实时预警</div>
+                                    <div class="text-xs text-blue-600 mt-1">响应时间1.7s</div>
+                                </div>
+                                <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-12 p-4 text-center border border-emerald-200">
+                                    <div class="text-2xl mb-2">📊</div>
+                                    <div class="text-sm font-semibold text-emerald-800">数据分析</div>
+                                    <div class="text-xs text-emerald-600 mt-1">效率提升45%</div>
+                                </div>
+                                <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-12 p-4 text-center border border-rose-200">
+                                    <div class="text-2xl mb-2">🔒</div>
+                                    <div class="text-sm font-semibold text-rose-800">安全保护</div>
+                                    <div class="text-xs text-rose-600 mt-1">军用级加密</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 查看结题报告 Tab -->
+            <div id="report" class="tab-content">
+                <div class="text-center py-12">
+                    <div class="bg-white rounded-24 p-12 max-w-2xl mx-auto border border-gray-200 shadow-xl">
+                        <div class="text-6xl mb-6">📋</div>
+                        <h3 class="text-3xl font-bold text-gray-800 mb-4">结题报告</h3>
+                        <p class="text-gray-600 mb-8 text-lg">详细的项目总结报告，包含技术实现、功能特色、测试结果等完整信息</p>
+                        <a href="final-report.html" target="_blank" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-full transition-all duration-300 shadow-xl transform hover:scale-105">
+                            <i class="fas fa-file-alt mr-3 text-xl"></i>
+                            <span class="text-lg">查看结题报告</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 患者端界面 Tab -->
+            <div id="patient" class="tab-content">
+                <h2 class="section-title">患者端界面</h2>
+                <div class="phones-grid">
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/patient-home.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">患者端 - 首页</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/patient-camera.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">患者端 - AI拍照评估</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/patient-diary.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">患者端 - 症状日记</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/patient-education.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">患者端 - 教育内容</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/patient-profile.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">患者端 - 个人中心</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 护士端界面 Tab -->
+            <div id="nurse" class="tab-content">
+                <h2 class="section-title">护士端界面</h2>
+                <div class="phones-grid">
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/nurse-dashboard.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">护士端 - 预警看板</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/nurse-patients.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">护士端 - 患者管理</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/nurse-tasks.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">护士端 - 任务管理</div>
+                    </div>
+                    
+                    <div class="phone-container">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <iframe src="stoma-care-system/nurse-analytics.html" width="100%" height="100%" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                        <div class="phone-label">护士端 - 数据分析</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 护理管理端 Tab -->
+            <div id="management" class="tab-content">
+                <div class="text-center py-12">
+                    <div class="bg-white rounded-24 p-12 max-w-2xl mx-auto border border-gray-200 shadow-xl">
+                        <div class="text-6xl mb-6">🏥</div>
+                        <h3 class="text-3xl font-bold text-gray-800 mb-4">护理管理端</h3>
+                        <p class="text-gray-600 mb-8 text-lg">专业的Web管理客户端，为护理主任提供全面的护士工作管理功能</p>
+                                    <a href="stoma-care-system/nurse-management-fixed.html" target="_blank" class="inline-flex items-center px-10 py-5 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold rounded-full transition-all duration-300 shadow-xl transform hover:scale-105 text-xl">
+                <i class="fas fa-desktop mr-4 text-2xl"></i>
+                打开护理管理端
+            </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // 隐藏所有tab内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有tab按钮的active状态
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 显示选中的tab内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活对应的tab按钮
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html> 

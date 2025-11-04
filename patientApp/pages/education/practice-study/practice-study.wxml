@@ -1,0 +1,194 @@
+<!--patient-app/pages/education/practice-study/practice-study.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">{{course.title}}</text>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 实践操作学习内容 -->
+  <view wx:else class="study-content">
+    <!-- 学习进度 -->
+    <view class="progress-section">
+      <view class="progress-header">
+        <text class="progress-title">学习进度</text>
+        <text class="progress-percent">{{studyProgress}}%</text>
+      </view>
+      
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{studyProgress}}%"></view>
+      </view>
+      
+      <text class="progress-text">已完成 {{studyProgress}}%</text>
+    </view>
+
+    <!-- 当前章节 -->
+    <view wx:if="{{course.chapters && course.chapters[currentChapter]}}" class="chapter-section">
+      <view class="chapter-header">
+        <text class="chapter-title">第{{currentChapter + 1}}章：{{course.chapters[currentChapter].title}}</text>
+        <text class="chapter-duration">{{course.chapters[currentChapter].duration}}</text>
+      </view>
+      
+      <view class="chapter-content">
+        <view class="content-card">
+          <text class="content-title">操作指导</text>
+          <text class="content-text">
+            这里是第{{currentChapter + 1}}章的操作指导内容。请仔细学习以下操作步骤，完成后点击"完成学习"按钮。
+          </text>
+          
+          <!-- 操作步骤 -->
+          <view class="operation-steps">
+            <view class="step-item">
+              <text class="step-number">1</text>
+              <text class="step-text">准备操作环境</text>
+            </view>
+            <view class="step-item">
+              <text class="step-number">2</text>
+              <text class="step-text">清洁造口周围</text>
+            </view>
+            <view class="step-item">
+              <text class="step-number">3</text>
+              <text class="step-text">测量造口尺寸</text>
+            </view>
+            <view class="step-item">
+              <text class="step-number">4</text>
+              <text class="step-text">裁剪造口袋</text>
+            </view>
+            <view class="step-item">
+              <text class="step-number">5</text>
+              <text class="step-text">粘贴造口袋</text>
+            </view>
+          </view>
+          
+          <!-- 注意事项 -->
+          <view class="attention-section">
+            <text class="attention-title">⚠️ 注意事项</text>
+            <view class="attention-list">
+              <text class="attention-item">• 操作前必须洗手消毒</text>
+              <text class="attention-item">• 确保造口周围皮肤清洁干燥</text>
+              <text class="attention-item">• 选择合适的造口袋尺寸</text>
+              <text class="attention-item">• 粘贴时避免产生褶皱</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 章节列表 -->
+    <view wx:if="{{course.chapters}}" class="chapters-section">
+      <view class="section-header">
+        <text class="section-title">操作章节</text>
+        <text class="section-subtitle">共{{course.chapters.length}}个章节</text>
+      </view>
+      
+      <view class="chapters-list">
+        <view wx:for="{{course.chapters}}" wx:key="id" 
+              class="chapter-item {{index === currentChapter ? 'active' : ''}} {{item.completed ? 'completed' : ''}}"
+              bindtap="startChapter" data-index="{{index}}">
+          <view class="chapter-info">
+            <view class="chapter-header">
+              <text class="chapter-number">第{{item.id}}章</text>
+              <text class="chapter-duration">{{item.duration}}</text>
+            </view>
+            <text class="chapter-title">{{item.title}}</text>
+          </view>
+          
+          <view class="chapter-status">
+            <text wx:if="{{item.completed}}" class="status-completed">已完成</text>
+            <text wx:elif="{{index === currentChapter}}" class="status-current">学习中</text>
+            <text wx:else class="status-pending">待学习</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 技能评估弹窗 -->
+    <view wx:if="{{showSkillAssessment}}" class="assessment-modal">
+      <view class="modal-overlay" bindtap="closeSkillAssessment"></view>
+      <view class="modal-content">
+        <view class="assessment-header">
+          <text class="assessment-title">🎯 技能评估</text>
+          <text class="assessment-subtitle">完成课程学习后，请进行技能评估</text>
+        </view>
+        
+        <view class="assessment-content">
+          <text class="assessment-desc">
+            技能评估将测试您对造口护理操作的掌握程度，包括操作流程、注意事项和应急处理等方面。
+          </text>
+          
+          <view class="assessment-options">
+            <button class="assessment-btn primary" bindtap="startSkillAssessment">
+              <text class="btn-text">开始评估</text>
+            </button>
+            <button class="assessment-btn secondary" bindtap="closeSkillAssessment">
+              <text class="btn-text">稍后评估</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 实践模式 -->
+    <view wx:if="{{practiceMode}}" class="practice-mode">
+      <view class="practice-header">
+        <text class="practice-title">🔧 实践模式</text>
+        <text class="practice-subtitle">模拟真实操作环境</text>
+      </view>
+      
+      <view class="practice-content">
+        <view class="practice-step">
+          <text class="step-title">步骤1：环境准备</text>
+          <text class="step-desc">确保操作环境清洁，准备好所需用品</text>
+        </view>
+        
+        <view class="practice-step">
+          <text class="step-title">步骤2：清洁操作</text>
+          <text class="step-desc">按照标准流程清洁造口周围皮肤</text>
+        </view>
+        
+        <view class="practice-step">
+          <text class="step-title">步骤3：更换造口袋</text>
+          <text class="step-desc">正确测量、裁剪和粘贴造口袋</text>
+        </view>
+        
+        <button class="practice-btn" bindtap="completeSkillAssessment">
+          <text class="btn-text">完成评估</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- 评估结果 -->
+    <view wx:if="{{skillScore > 0}}" class="result-section">
+      <view class="result-card">
+        <text class="result-icon">🏆</text>
+        <text class="result-title">评估完成</text>
+        <text class="result-score">得分：{{skillScore}}分</text>
+        <text class="result-desc">
+          {{skillScore >= 90 ? '优秀！您已熟练掌握造口护理操作技能。' : 
+            skillScore >= 80 ? '良好！您的操作技能已达到标准要求。' : 
+            skillScore >= 70 ? '合格！建议多加练习提升操作技能。' : 
+            '需要加强练习，建议重新学习相关章节。'}}
+        </text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button wx:if="{{!isCompleted && course.chapters && course.chapters[currentChapter] && !showSkillAssessment}}" 
+            class="action-btn primary" bindtap="completeChapter">
+      <text class="btn-text">完成学习</text>
+    </button>
+    <button wx:else class="action-btn secondary" bindtap="goBack">
+      <text class="btn-text">返回课程</text>
+    </button>
+  </view>
+</view> 

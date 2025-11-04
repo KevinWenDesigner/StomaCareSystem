@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>护士端 - 任务管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            margin: 0;
+            padding: 0;
+        }
+        .status-bar {
+            height: 44px;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .task-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 8px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+        .task-card:hover {
+            transform: translateY(-2px);
+        }
+        .task-urgent {
+            border-left-color: #ff4757;
+            background: linear-gradient(135deg, #fff5f5, #fff);
+        }
+        .task-normal {
+            border-left-color: #ffa726;
+            background: linear-gradient(135deg, #fff8f0, #fff);
+        }
+        .task-completed {
+            border-left-color: #66bb6a;
+            background: linear-gradient(135deg, #f0fff0, #fff);
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+        .tab-item.active {
+            color: #007aff;
+        }
+        .filter-tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 12px;
+            padding: 4px;
+            margin: 0 20px 16px 20px;
+        }
+        .filter-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .filter-tab.active {
+            background: white;
+            color: #007aff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .urgent-badge {
+            background: #ff4757;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 10px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #007aff;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-pending {
+            background: #ffa726;
+        }
+        .status-in-progress {
+            background: #007aff;
+        }
+        .status-completed {
+            background: #66bb6a;
+        }
+        .status-overdue {
+            background: #ff4757;
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS状态栏 -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-arrow-left text-xl text-gray-600"></i>
+            <span class="font-semibold text-lg">任务管理</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-plus text-xl text-blue-600"></i>
+            <i class="fas fa-filter text-xl text-gray-600"></i>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="pb-20">
+        <!-- 任务统计 -->
+        <div class="stats-card">
+            <h3 class="text-lg font-semibold mb-4">今日任务概览</h3>
+            
+            <div class="grid grid-cols-4 gap-4 mb-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600">3</div>
+                    <div class="text-sm text-gray-500">紧急</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600">8</div>
+                    <div class="text-sm text-gray-500">进行中</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">12</div>
+                    <div class="text-sm text-gray-500">已完成</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">2</div>
+                    <div class="text-sm text-gray-500">超时</div>
+                </div>
+            </div>
+            
+            <div class="mb-2">
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span>完成进度</span>
+                    <span>52%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 52%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选标签 -->
+        <div class="filter-tabs">
+            <div class="filter-tab active">全部</div>
+            <div class="filter-tab">紧急</div>
+            <div class="filter-tab">进行中</div>
+            <div class="filter-tab">已完成</div>
+        </div>
+
+        <!-- 任务列表 -->
+        <div class="space-y-2">
+            <!-- 紧急任务 -->
+            <div class="task-card task-urgent">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                             class="w-10 h-10 rounded-full" alt="患者头像">
+                        <div>
+                            <div class="font-semibold">张阿姨</div>
+                            <div class="text-sm text-gray-500">高风险患者</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="urgent-badge">紧急</span>
+                        <span class="status-indicator status-pending"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-medium text-lg">紧急视频会诊</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        患者报告剧烈疼痛，需要立即进行视频会诊评估
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-red-600 font-medium">15分钟内响应</span>
+                        <span class="text-gray-500">剩余：8分钟</span>
+                    </div>
+                    <div class="text-red-600 font-medium">未开始</div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium">
+                        立即处理
+                    </button>
+                    <button class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm font-medium">
+                        查看详情
+                    </button>
+                </div>
+            </div>
+
+            <div class="task-card task-urgent">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face" 
+                             class="w-10 h-10 rounded-full" alt="患者头像">
+                        <div>
+                            <div class="font-semibold">王叔叔</div>
+                            <div class="text-sm text-gray-500">高风险患者</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="urgent-badge">紧急</span>
+                        <span class="status-indicator status-in-progress"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-medium text-lg">线下门诊安排</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        患者皮肤状况恶化，需要安排线下门诊检查
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-red-600 font-medium">24小时内完成</span>
+                        <span class="text-gray-500">剩余：6小时</span>
+                    </div>
+                    <div class="text-blue-600 font-medium">进行中</div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">
+                        继续处理
+                    </button>
+                    <button class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm font-medium">
+                        查看详情
+                    </button>
+                </div>
+            </div>
+
+            <!-- 普通任务 -->
+            <div class="task-card task-normal">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" 
+                             class="w-10 h-10 rounded-full" alt="患者头像">
+                        <div>
+                            <div class="font-semibold">李奶奶</div>
+                            <div class="text-sm text-gray-500">中风险患者</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="status-indicator status-in-progress"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-medium text-lg">视频随访</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        每周例行视频随访，了解患者护理情况
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-orange-600 font-medium">2小时内完成</span>
+                        <span class="text-gray-500">剩余：1小时</span>
+                    </div>
+                    <div class="text-blue-600 font-medium">进行中</div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-orange-600 text-white py-2 rounded-lg text-sm font-medium">
+                        开始随访
+                    </button>
+                    <button class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm font-medium">
+                        查看详情
+                    </button>
+                </div>
+            </div>
+
+            <div class="task-card task-normal">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                             class="w-10 h-10 rounded-full" alt="患者头像">
+                        <div>
+                            <div class="font-semibold">陈阿姨</div>
+                            <div class="text-sm text-gray-500">中风险患者</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="status-indicator status-pending"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-medium text-lg">护理方案调整</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        根据患者症状变化，调整护理方案
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-orange-600 font-medium">4小时内完成</span>
+                        <span class="text-gray-500">剩余：3小时</span>
+                    </div>
+                    <div class="text-orange-600 font-medium">待处理</div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-orange-600 text-white py-2 rounded-lg text-sm font-medium">
+                        开始处理
+                    </button>
+                    <button class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm font-medium">
+                        查看详情
+                    </button>
+                </div>
+            </div>
+
+            <!-- 已完成任务 -->
+            <div class="task-card task-completed">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face" 
+                             class="w-10 h-10 rounded-full" alt="患者头像">
+                        <div>
+                            <div class="font-semibold">刘爷爷</div>
+                            <div class="text-sm text-gray-500">低风险患者</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="status-indicator status-completed"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-medium text-lg">教育内容推送</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        推送护理知识学习内容，患者已完成学习
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-green-600 font-medium">已完成</span>
+                        <span class="text-gray-500">2小时前</span>
+                    </div>
+                    <div class="text-green-600 font-medium">已完成</div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm font-medium">
+                        查看结果
+                    </button>
+                    <button class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm font-medium">
+                        查看详情
+                    </button>
+                </div>
+            </div>
+
+            <!-- 超时任务 -->
+            <div class="task-card task-urgent">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face" 
+                             class="w-10 h-10 rounded-full" alt="患者头像">
+                        <div>
+                            <div class="font-semibold">赵奶奶</div>
+                            <div class="text-sm text-gray-500">中风险患者</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="status-indicator status-overdue"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="font-medium text-lg">症状记录审核</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        审核患者提交的症状记录，超时未处理
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-red-600 font-medium">已超时</span>
+                        <span class="text-gray-500">超时：30分钟</span>
+                    </div>
+                    <div class="text-red-600 font-medium">已超时</div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium">
+                        立即处理
+                    </button>
+                    <button class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm font-medium">
+                        查看详情
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item">
+            <i class="fas fa-tachometer-alt text-xl mb-1"></i>
+            <span>看板</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span>患者</span>
+        </div>
+        <div class="tab-item active">
+            <i class="fas fa-tasks text-xl mb-1"></i>
+            <span>任务</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-chart-bar text-xl mb-1"></i>
+            <span>数据</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-user text-xl mb-1"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <script>
+        // 筛选标签切换
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 任务卡片点击
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    console.log('跳转到任务详情');
+                }
+            });
+        });
+
+        // 按钮点击处理
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('按钮点击:', this.textContent);
+            });
+        });
+
+        // 底部标签栏切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.querySelector('span').textContent;
+                showNotification(`正在切换到${page}页面...`);
+                
+                // 页面跳转逻辑
+                setTimeout(() => {
+                    switch(page) {
+                        case '看板':
+                            window.location.href = './nurse-dashboard.html';
+                            break;
+                        case '患者':
+                            window.location.href = './nurse-patients.html';
+                            break;
+                        case '数据':
+                            window.location.href = './nurse-analytics.html';
+                            break;
+                    }
+                }, 1000);
+            });
+        });
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="text-sm font-medium">${text}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

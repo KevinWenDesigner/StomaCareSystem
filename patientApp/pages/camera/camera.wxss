@@ -1,0 +1,557 @@
+/* patient-app/pages/camera/camera.wxss */
+
+/* 页面容器，统一深蓝色渐变背景 */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+/* 页面头部 */
+.page-header {
+  margin-bottom: 48rpx;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 52rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  display: block;
+  margin-bottom: 16rpx;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.page-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+}
+
+/* 自动拍照模式 */
+.auto-capture-section {
+  margin-bottom: 48rpx;
+}
+
+.auto-capture-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.auto-capture-header {
+  margin-bottom: 24rpx;
+}
+
+.auto-capture-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E40AF;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.auto-capture-desc {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+.auto-capture-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auto-capture-btn {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12rpx;
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.auto-capture-btn.active {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.auto-capture-btn:active {
+  transform: scale(0.95);
+}
+
+.countdown-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  animation: pulse 1s infinite;
+  box-shadow: 0 8rpx 24rpx rgba(245, 158, 11, 0.4);
+}
+
+.countdown-text {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.countdown-label {
+  font-size: 20rpx;
+  color: #FFFFFF;
+  opacity: 0.9;
+  line-height: 1;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 8rpx 24rpx rgba(245, 158, 11, 0.4);
+  }
+  50% { 
+    transform: scale(1.1);
+    box-shadow: 0 12rpx 32rpx rgba(245, 158, 11, 0.6);
+  }
+}
+
+/* 拍照区域 */
+.camera-section {
+  margin-bottom: 48rpx;
+}
+
+.camera-preview {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 40rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  min-height: 400rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-placeholder {
+  text-align: center;
+  color: #6B7280;
+}
+
+.camera-icon {
+  font-size: 120rpx;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.camera-tip {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E40AF;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.camera-subtip {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+.camera-image {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 16rpx;
+}
+
+.camera-actions {
+  display: flex;
+  gap: 24rpx;
+}
+
+.camera-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.camera-btn.outline {
+  background: transparent;
+  color: #3B82F6;
+  border: 2rpx solid #3B82F6;
+}
+
+.camera-btn:active {
+  transform: scale(0.95);
+}
+
+/* AI分析进度 */
+.analysis-section {
+  margin-bottom: 48rpx;
+}
+
+.analysis-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.analysis-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E40AF;
+}
+
+.analysis-progress {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #10B981;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8rpx;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 4rpx;
+  overflow: hidden;
+  margin-bottom: 32rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  transition: width 0.3s ease;
+}
+
+.analysis-steps {
+  display: flex;
+  justify-content: space-between;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.step-item.completed {
+  opacity: 1;
+}
+
+.step-icon {
+  font-size: 32rpx;
+  margin-bottom: 8rpx;
+}
+
+.step-text {
+  font-size: 20rpx;
+  color: #6B7280;
+  text-align: center;
+}
+
+/* 评估结果 */
+.result-section {
+  margin-bottom: 48rpx;
+}
+
+.section-header {
+  margin-bottom: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  display: block;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.result-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E40AF;
+}
+
+.result-score {
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  font-weight: 600;
+}
+
+.result-score.score-1 {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #FFFFFF;
+}
+
+.result-score.score-2 {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #FFFFFF;
+}
+
+.result-score.score-3 {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: #FFFFFF;
+}
+
+.score-text {
+  font-size: 28rpx;
+}
+
+.result-desc {
+  font-size: 28rpx;
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 32rpx;
+}
+
+/* AI分析指标 */
+.analysis-metrics {
+  margin-bottom: 32rpx;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.metric-label {
+  font-size: 26rpx;
+  color: #374151;
+  width: 120rpx;
+  flex-shrink: 0;
+}
+
+.metric-bar {
+  flex: 1;
+  height: 8rpx;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 4rpx;
+  overflow: hidden;
+  margin: 0 16rpx;
+}
+
+.metric-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  transition: width 0.3s ease;
+}
+
+.metric-value {
+  font-size: 24rpx;
+  color: #6B7280;
+  width: 60rpx;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.result-details {
+  border-top: 1rpx solid rgba(0, 0, 0, 0.1);
+  padding-top: 24rpx;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: #374151;
+  font-weight: 600;
+  width: 120rpx;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  flex: 1;
+  font-size: 26rpx;
+  color: #6B7280;
+  line-height: 1.4;
+}
+
+/* 历史记录 */
+.history-section {
+  margin-bottom: 48rpx;
+}
+
+.view-all-btn {
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12rpx;
+  padding: 12rpx 24rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.empty-state {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 60rpx 32rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E40AF;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.empty-subtext {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.history-card {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+}
+
+.history-image {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 12rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.history-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-time {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.history-score {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1E40AF;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.history-level {
+  font-size: 24rpx;
+  color: #10B981;
+  display: block;
+}
+
+/* 按钮样式 */
+.btn-text {
+  color: #FFFFFF;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .container {
+    padding: 32rpx;
+  }
+  
+  .camera-actions {
+    flex-direction: column;
+    gap: 16rpx;
+  }
+  
+  .analysis-steps {
+    flex-wrap: wrap;
+    gap: 16rpx;
+  }
+  
+  .step-item {
+    flex: 0 0 calc(50% - 8rpx);
+  }
+} 

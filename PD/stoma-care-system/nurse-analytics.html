@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>护士端 - 数据分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            margin: 0;
+            padding: 0;
+        }
+        .status-bar {
+            height: 44px;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin: 20px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-line {
+            position: absolute;
+            bottom: 40px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+        }
+        .chart-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            bottom: 40px;
+        }
+        .chart-bar {
+            position: absolute;
+            bottom: 40px;
+            width: 30px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 4px 4px 0 0;
+        }
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 10px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+        }
+        .metric-success {
+            border-left-color: #66bb6a;
+        }
+        .metric-warning {
+            border-left-color: #ffa726;
+        }
+        .metric-danger {
+            border-left-color: #ff4757;
+        }
+        .metric-info {
+            border-left-color: #007aff;
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+        .tab-item.active {
+            color: #007aff;
+        }
+        .filter-tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 12px;
+            padding: 4px;
+            margin: 0 20px 16px 20px;
+        }
+        .filter-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .filter-tab.active {
+            background: white;
+            color: #007aff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .trend-up {
+            background: #e8f5e8;
+            color: #66bb6a;
+        }
+        .trend-down {
+            background: #ffeaea;
+            color: #ff4757;
+        }
+        .trend-stable {
+            background: #f0f0f0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS状态栏 -->
+    <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-xs"></i>
+            <i class="fas fa-wifi text-xs"></i>
+            <i class="fas fa-battery-three-quarters text-xs"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-arrow-left text-xl text-gray-600"></i>
+            <span class="font-semibold text-lg">数据分析</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-download text-xl text-gray-600"></i>
+            <i class="fas fa-share text-xl text-blue-600"></i>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="pb-20">
+        <!-- 关键指标 -->
+        <div class="stats-card">
+            <h3 class="text-lg font-semibold mb-4">关键指标</h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">85%</div>
+                    <div class="text-sm text-gray-500">患者满意度</div>
+                    <div class="trend-indicator trend-up mt-1">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        +5%
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">92%</div>
+                    <div class="text-sm text-gray-500">AI准确率</div>
+                    <div class="trend-indicator trend-up mt-1">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        +3%
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600">15分钟</div>
+                    <div class="text-sm text-gray-500">平均响应时间</div>
+                    <div class="trend-indicator trend-down mt-1">
+                        <i class="fas fa-arrow-down mr-1"></i>
+                        -2分钟
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">30%</div>
+                    <div class="text-sm text-gray-500">并发症降低</div>
+                    <div class="trend-indicator trend-up mt-1">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        +8%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 风险趋势图表 -->
+        <div class="chart-container">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold">风险等级趋势</h3>
+                <span class="text-sm opacity-80">最近30天</span>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 right-0 h-32 flex items-end justify-between px-4 pb-8">
+                <div class="chart-bar" style="height: 40px; left: 5%;"></div>
+                <div class="chart-bar" style="height: 60px; left: 15%;"></div>
+                <div class="chart-bar" style="height: 80px; left: 25%;"></div>
+                <div class="chart-bar" style="height: 50px; left: 35%;"></div>
+                <div class="chart-bar" style="height: 70px; left: 45%;"></div>
+                <div class="chart-bar" style="height: 90px; left: 55%;"></div>
+                <div class="chart-bar" style="height: 60px; left: 65%;"></div>
+                <div class="chart-bar" style="height: 40px; left: 75%;"></div>
+                <div class="chart-bar" style="height: 30px; left: 85%;"></div>
+                <div class="chart-bar" style="height: 50px; left: 95%;"></div>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 right-0 flex justify-between text-xs opacity-80 px-4">
+                <span>1/1</span>
+                <span>1/5</span>
+                <span>1/10</span>
+                <span>1/15</span>
+                <span>1/20</span>
+                <span>1/25</span>
+                <span>1/30</span>
+            </div>
+        </div>
+
+        <!-- 筛选标签 -->
+        <div class="filter-tabs">
+            <div class="filter-tab active">概览</div>
+            <div class="filter-tab">患者</div>
+            <div class="filter-tab">护理</div>
+            <div class="filter-tab">系统</div>
+        </div>
+
+        <!-- 详细分析 -->
+        <div class="space-y-3">
+            <!-- 患者分析 -->
+            <div class="metric-card metric-info">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="font-medium">患者分布</div>
+                        <div class="text-sm text-gray-500">按风险等级统计</div>
+                    </div>
+                    <i class="fas fa-chart-pie text-blue-600"></i>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-red-600">12%</div>
+                        <div class="text-xs text-gray-500">高风险</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-orange-600">28%</div>
+                        <div class="text-xs text-gray-500">中风险</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-bold text-green-600">60%</div>
+                        <div class="text-xs text-gray-500">低风险</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 护理效果 -->
+            <div class="metric-card metric-success">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="font-medium">护理效果</div>
+                        <div class="text-sm text-gray-500">症状改善情况</div>
+                    </div>
+                    <i class="fas fa-heart text-green-600"></i>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">疼痛缓解</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-20 h-2 bg-gray-200 rounded-full">
+                                <div class="w-16 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <span class="text-sm font-medium">80%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">皮肤改善</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-20 h-2 bg-gray-200 rounded-full">
+                                <div class="w-14 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <span class="text-sm font-medium">70%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">依从性提升</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-20 h-2 bg-gray-200 rounded-full">
+                                <div class="w-18 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <span class="text-sm font-medium">90%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统性能 -->
+            <div class="metric-card metric-warning">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="font-medium">系统性能</div>
+                        <div class="text-sm text-gray-500">AI识别和响应</div>
+                    </div>
+                    <i class="fas fa-cog text-orange-600"></i>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium">AI识别准确率</div>
+                            <div class="text-sm text-gray-500">图像识别精度</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-blue-600">92.5%</div>
+                            <div class="text-xs text-gray-500">+2.5%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium">平均响应时间</div>
+                            <div class="text-sm text-gray-500">系统响应速度</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-green-600">1.2s</div>
+                            <div class="text-xs text-gray-500">-0.3s</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium">系统可用性</div>
+                            <div class="text-sm text-gray-500">服务运行状态</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-green-600">99.8%</div>
+                            <div class="text-xs text-gray-500">+0.2%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作量分析 -->
+            <div class="metric-card metric-danger">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="font-medium">工作量分析</div>
+                        <div class="text-sm text-gray-500">护士工作负荷</div>
+                    </div>
+                    <i class="fas fa-chart-line text-red-600"></i>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">今日任务</span>
+                        <span class="font-medium">23个</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">已完成</span>
+                        <span class="font-medium text-green-600">18个</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">待处理</span>
+                        <span class="font-medium text-orange-600">5个</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">超时任务</span>
+                        <span class="font-medium text-red-600">2个</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 患者反馈 -->
+            <div class="metric-card metric-info">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <div class="font-medium">患者反馈</div>
+                        <div class="text-sm text-gray-500">满意度调查</div>
+                    </div>
+                    <i class="fas fa-comments text-blue-600"></i>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">整体满意度</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="font-medium">4.8/5</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">护理质量</span>
+                        <span class="font-medium text-green-600">4.9/5</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">响应速度</span>
+                        <span class="font-medium text-green-600">4.7/5</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">教育内容</span>
+                        <span class="font-medium text-green-600">4.6/5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item">
+            <i class="fas fa-tachometer-alt text-xl mb-1"></i>
+            <span>看板</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span>患者</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-tasks text-xl mb-1"></i>
+            <span>任务</span>
+        </div>
+        <div class="tab-item active">
+            <i class="fas fa-chart-bar text-xl mb-1"></i>
+            <span>数据</span>
+        </div>
+        <div class="tab-item">
+            <i class="fas fa-user text-xl mb-1"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <script>
+        // 筛选标签切换
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 分析卡片点击
+        document.querySelectorAll('.metric-card').forEach(card => {
+            card.addEventListener('click', function() {
+                console.log('查看详细分析');
+            });
+        });
+
+        // 底部标签栏切换
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.querySelector('span').textContent;
+                showNotification(`正在切换到${page}页面...`);
+                
+                // 页面跳转逻辑
+                setTimeout(() => {
+                    switch(page) {
+                        case '看板':
+                            window.location.href = './nurse-dashboard.html';
+                            break;
+                        case '患者':
+                            window.location.href = './nurse-patients.html';
+                            break;
+                        case '任务':
+                            window.location.href = './nurse-tasks.html';
+                            break;
+                    }
+                }, 1000);
+            });
+        });
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <span class="text-sm font-medium">${text}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

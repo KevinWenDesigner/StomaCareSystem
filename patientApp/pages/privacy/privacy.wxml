@@ -1,0 +1,169 @@
+<!--patient-app/pages/privacy/privacy.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">隐私设置</text>
+    <text class="page-subtitle">管理您的数据隐私和权限</text>
+  </view>
+
+  <!-- 数据收集设置 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">数据收集</text>
+      <text class="section-desc">控制应用收集的数据类型</text>
+    </view>
+    
+    <view class="setting-list">
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">健康数据收集</text>
+          <text class="setting-desc">允许收集症状记录和健康评估数据</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.healthData}}" bindchange="toggleHealthData" />
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">使用行为分析</text>
+          <text class="setting-desc">帮助改进应用功能和用户体验</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.usageAnalytics}}" bindchange="toggleUsageAnalytics" />
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">位置信息</text>
+          <text class="setting-desc">用于紧急联系和附近医院推荐</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.location}}" bindchange="toggleLocation" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 账号安全设置 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">账号安全</text>
+      <text class="section-desc">保护您的账号安全</text>
+    </view>
+    
+    <view class="setting-list">
+      <view class="setting-item" bindtap="changePassword">
+        <view class="setting-content">
+          <text class="setting-title">修改密码</text>
+          <text class="setting-desc">定期更换密码提高安全性</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">生物识别登录</text>
+          <text class="setting-desc">使用指纹或面容ID快速登录</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.biometric}}" bindchange="toggleBiometric" />
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">自动锁定</text>
+          <text class="setting-desc">应用闲置时自动锁定</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.autoLock}}" bindchange="toggleAutoLock" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 通知设置 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">通知设置</text>
+      <text class="section-desc">管理应用通知权限</text>
+    </view>
+    
+    <view class="setting-list">
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">护理提醒</text>
+          <text class="setting-desc">接收护理计划提醒通知</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.careReminders}}" bindchange="toggleCareReminders" />
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">健康报告</text>
+          <text class="setting-desc">接收健康评估报告通知</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.healthReports}}" bindchange="toggleHealthReports" />
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-content">
+          <text class="setting-title">学习提醒</text>
+          <text class="setting-desc">接收学习课程和知识更新</text>
+        </view>
+        <switch class="setting-switch" checked="{{privacySettings.learningReminders}}" bindchange="toggleLearningReminders" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据管理 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">数据管理</text>
+      <text class="section-desc">管理您的个人数据</text>
+    </view>
+    
+    <view class="setting-list">
+      <view class="setting-item" bindtap="exportData">
+        <view class="setting-content">
+          <text class="setting-title">导出数据</text>
+          <text class="setting-desc">导出您的健康数据和记录</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+      
+      <view class="setting-item" bindtap="deleteData">
+        <view class="setting-content">
+          <text class="setting-title">删除数据</text>
+          <text class="setting-desc">永久删除所有个人数据</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 隐私政策 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">隐私政策</text>
+      <text class="section-desc">了解我们如何保护您的隐私</text>
+    </view>
+    
+    <view class="setting-list">
+      <view class="setting-item" bindtap="viewPrivacyPolicy">
+        <view class="setting-content">
+          <text class="setting-title">查看隐私政策</text>
+          <text class="setting-desc">详细了解数据使用和保护措施</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+      
+      <view class="setting-item" bindtap="contactPrivacy">
+        <view class="setting-content">
+          <text class="setting-title">隐私问题反馈</text>
+          <text class="setting-desc">如有隐私问题请联系我们</text>
+        </view>
+        <view class="setting-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="footer">
+    <button class="save-btn" bindtap="saveSettings">
+      <text class="btn-text">保存设置</text>
+    </button>
+  </view>
+</view> 

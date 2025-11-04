@@ -1,0 +1,503 @@
+/* patient-app/pages/profile/profile.wxss */
+
+.container {
+  padding: 32rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  min-height: 100vh;
+}
+
+/* 用户信息卡片 */
+.user-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 48rpx;
+}
+
+.user-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-text {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: block;
+  margin-bottom: 6rpx;
+  white-space: nowrap;
+}
+
+.user-desc {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  display: block;
+  margin-bottom: 6rpx;
+  white-space: nowrap;
+}
+
+.user-care {
+  font-size: 24rpx;
+  color: var(--primary-color);
+  font-weight: 600;
+  display: block;
+  white-space: nowrap;
+}
+
+.edit-btn {
+  background: var(--primary-color);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10rpx;
+  padding: 8rpx 16rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.edit-btn:active {
+  transform: scale(0.95);
+}
+
+/* 微信用户信息获取区域 */
+.wechat-info-section {
+  margin-bottom: 48rpx;
+}
+
+.wechat-info-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.wechat-info-content {
+  margin-bottom: 24rpx;
+}
+
+.wechat-info-desc {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  line-height: 1.6;
+  display: block;
+}
+
+.wechat-info-btn {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12rpx;
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.wechat-info-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.3);
+}
+
+/* 健康数据 */
+.health-section {
+  margin-bottom: 48rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+}
+
+.health-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 36rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20rpx);
+  transition: all 0.3s ease;
+}
+
+.health-card:active {
+  transform: scale(0.98);
+}
+
+.health-icon {
+  font-size: 56rpx;
+  margin-right: 24rpx;
+}
+
+.health-content {
+  flex: 1;
+}
+
+.health-number {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.health-label {
+  font-size: 28rpx;
+  color: var(--gray-600);
+  display: block;
+}
+
+/* 功能菜单 */
+.menu-section {
+  margin-bottom: 48rpx;
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.menu-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 36rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.menu-item:active {
+  transform: scale(0.98);
+}
+
+.menu-icon {
+  font-size: 48rpx;
+  margin-right: 24rpx;
+}
+
+.menu-content {
+  flex: 1;
+}
+
+.menu-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.menu-desc {
+  font-size: 24rpx;
+  color: var(--gray-600);
+  display: block;
+}
+
+.menu-arrow {
+  font-size: 32rpx;
+  color: var(--gray-400);
+  font-weight: 600;
+}
+
+/* 设置选项 */
+.settings-section {
+  margin-bottom: 48rpx;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.setting-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 36rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.setting-item:active {
+  transform: scale(0.98);
+}
+
+.setting-icon {
+  font-size: 48rpx;
+  margin-right: 24rpx;
+}
+
+.setting-content {
+  flex: 1;
+}
+
+.setting-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.setting-desc {
+  font-size: 24rpx;
+  color: var(--gray-600);
+  display: block;
+}
+
+.setting-arrow {
+  font-size: 32rpx;
+  color: var(--gray-400);
+  font-weight: 600;
+}
+
+/* 退出登录 */
+.logout-section {
+  margin-bottom: 48rpx;
+}
+
+.logout-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 24rpx;
+  padding: 24rpx 48rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.logout-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.4);
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .container {
+    padding: 24rpx;
+  }
+  
+  .health-grid {
+    grid-template-columns: 1fr;
+    gap: 16rpx;
+  }
+  
+  .user-card {
+    padding: 28rpx;
+  }
+  
+  .health-card {
+    padding: 28rpx;
+  }
+  
+  .menu-item {
+    padding: 28rpx;
+  }
+  
+  .setting-item {
+    padding: 28rpx;
+  }
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #374151;
+}
+
+.modal-close {
+  font-size: 36rpx;
+  color: #6B7280;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: 36rpx;
+}
+
+.form-item {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.form-input {
+  width: 100%;
+  padding: 20rpx 24rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  color: #374151;
+  box-sizing: border-box;
+  height: 80rpx;
+  line-height: 40rpx;
+}
+
+.form-input:focus {
+  border-color: #3B82F6;
+}
+
+.gender-selector {
+  display: flex;
+  gap: 16rpx;
+}
+
+.gender-option {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 12rpx;
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gender-option.selected {
+  background: #3B82F6;
+  color: #FFFFFF;
+  border-color: #3B82F6;
+}
+
+.option-text {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 16rpx;
+  padding: 32rpx;
+  border-top: 1rpx solid #E5E7EB;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 16rpx 32rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.modal-btn.secondary {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.modal-btn.primary {
+  background: #3B82F6;
+  color: #FFFFFF;
+}
+
+.modal-btn:active {
+  transform: scale(0.95);
+}

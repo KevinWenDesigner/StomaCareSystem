@@ -1,0 +1,199 @@
+<!--patient-app/pages/family/family.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">家属管理</text>
+    <view class="header-right">
+      <text class="add-btn" bindtap="showAddMember">+ 添加</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载家属数据中...</text>
+  </view>
+
+  <!-- 家属管理内容 -->
+  <view wx:else class="family-content">
+    <!-- 标签页导航 -->
+    <view class="tab-navigation">
+      <view class="tab-item {{currentTab === 'contacts' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="contacts">
+        <text class="tab-text">联系人</text>
+      </view>
+      <view class="tab-item {{currentTab === 'emergency' ? 'active' : ''}}" 
+            bindtap="switchTab" data-tab="emergency">
+        <text class="tab-text">紧急联系人</text>
+      </view>
+    </view>
+
+    <!-- 联系人页面 -->
+    <view wx:if="{{currentTab === 'contacts'}}" class="contacts-section">
+      <!-- 家属列表 -->
+      <view class="family-list">
+        <view wx:for="{{familyMembers}}" wx:key="id" class="family-item">
+          <view class="member-info">
+            <view class="member-avatar">
+              <text class="avatar-text">{{item.avatar}}</text>
+            </view>
+            <view class="member-details">
+              <view class="member-header">
+                <text class="member-name">{{item.name}}</text>
+                <view wx:if="{{item.isEmergency}}" class="emergency-badge">
+                  <text class="badge-text">紧急</text>
+                </view>
+              </view>
+              <text class="member-relationship">{{item.relationship}}</text>
+              <text class="member-phone">{{item.phone}}</text>
+              <text class="member-last-contact">最后联系：{{item.lastContact}}</text>
+            </view>
+          </view>
+          
+          <view class="member-actions">
+            <view class="action-btn contact-btn" bindtap="contactMember" data-id="{{item.id}}">
+              <text class="action-text">联系</text>
+            </view>
+            <view class="action-btn edit-btn" bindtap="showEditMember" data-id="{{item.id}}">
+              <text class="action-text">编辑</text>
+            </view>
+            <view class="action-btn emergency-btn {{item.isEmergency ? 'active' : ''}}" 
+                  bindtap="setEmergencyContact" data-id="{{item.id}}">
+              <text class="action-text">{{item.isEmergency ? '取消紧急' : '设为紧急'}}</text>
+            </view>
+            <view class="action-btn delete-btn" bindtap="deleteMember" data-id="{{item.id}}">
+              <text class="action-text">删除</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 紧急联系人页面 -->
+    <view wx:if="{{currentTab === 'emergency'}}" class="emergency-section">
+      <view class="emergency-list">
+        <view wx:for="{{familyMembers}}" wx:key="id" wx:if="{{item.isEmergency}}" 
+              class="emergency-item">
+          <view class="emergency-info">
+            <view class="emergency-avatar">
+              <text class="avatar-text">{{item.avatar}}</text>
+            </view>
+            <view class="emergency-details">
+              <text class="emergency-name">{{item.name}}</text>
+              <text class="emergency-relationship">{{item.relationship}}</text>
+              <text class="emergency-phone">{{item.phone}}</text>
+            </view>
+          </view>
+          <view class="emergency-actions">
+            <view class="action-btn contact-btn" bindtap="contactMember" data-id="{{item.id}}">
+              <text class="action-text">立即联系</text>
+            </view>
+            <view class="action-btn cancel-btn" bindtap="setEmergencyContact" data-id="{{item.id}}">
+              <text class="action-text">取消紧急</text>
+            </view>
+          </view>
+        </view>
+        
+        <view wx:if="{{!hasEmergencyContacts}}" class="empty-emergency">
+          <text class="empty-icon">🚨</text>
+          <text class="empty-text">暂无紧急联系人</text>
+          <text class="empty-desc">建议设置1-3个紧急联系人</text>
+        </view>
+      </view>
+    </view>
+
+
+  </view>
+
+  <!-- 添加家属模态框 -->
+  <view wx:if="{{showAddModal}}" class="modal-overlay">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">添加家属</text>
+        <text class="modal-close" bindtap="closeAddModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">姓名</text>
+          <input class="form-input" placeholder="请输入姓名" 
+                 value="{{newMember.name}}" bindinput="inputNewMember" data-field="name" />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">关系</text>
+          <view class="relationship-selector">
+            <view wx:for="{{relationshipOptions}}" wx:key="*this" 
+                  class="relationship-option {{newMember.relationship === item ? 'selected' : ''}}"
+                  bindtap="selectRelationship" data-relationship="{{item}}">
+              <text class="option-text">{{item}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">手机号</text>
+          <input class="form-input" placeholder="请输入手机号" 
+                 value="{{newMember.phone}}" bindinput="inputNewMember" data-field="phone" />
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="modal-btn secondary" bindtap="closeAddModal">
+          <text class="btn-text">取消</text>
+        </button>
+        <button class="modal-btn primary" bindtap="addMember">
+          <text class="btn-text">添加</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑家属模态框 -->
+  <view wx:if="{{showEditModal}}" class="modal-overlay">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">编辑家属</text>
+        <text class="modal-close" bindtap="closeEditModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">姓名</text>
+          <input class="form-input" placeholder="请输入姓名" 
+                 value="{{currentMember.name}}" bindinput="inputEditMember" data-field="name" />
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">关系</text>
+          <view class="relationship-selector">
+            <view wx:for="{{relationshipOptions}}" wx:key="*this" 
+                  class="relationship-option {{currentMember.relationship === item ? 'selected' : ''}}"
+                  bindtap="selectRelationship" data-relationship="{{item}}">
+              <text class="option-text">{{item}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">手机号</text>
+          <input class="form-input" placeholder="请输入手机号" 
+                 value="{{currentMember.phone}}" bindinput="inputEditMember" data-field="phone" />
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="modal-btn secondary" bindtap="closeEditModal">
+          <text class="btn-text">取消</text>
+        </button>
+        <button class="modal-btn primary" bindtap="saveEdit">
+          <text class="btn-text">保存</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+
+</view> 

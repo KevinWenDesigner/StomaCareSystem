@@ -1,0 +1,699 @@
+/* patient-app/pages/education/emergency-study/emergency-study.wxss */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  padding: 32rpx;
+  box-sizing: border-box;
+  padding-bottom: 120rpx;
+}
+
+/* 页面头部 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48rpx;
+  padding: 20rpx 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  font-size: 36rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+  margin-right: 16rpx;
+}
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  max-width: 400rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-right {
+  width: 60rpx;
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+}
+
+.loading-text {
+  font-size: 32rpx;
+  color: #FFFFFF;
+  opacity: 0.8;
+}
+
+/* 学习内容 */
+.study-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+/* 学习进度 */
+.progress-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.progress-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #DC2626;
+}
+
+.progress-percent {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #B91C1C;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12rpx;
+  background: #E5E7EB;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: 12rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 26rpx;
+  color: #6B7280;
+}
+
+/* 当前章节 */
+.chapter-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.chapter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.chapter-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #DC2626;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.chapter-duration {
+  font-size: 24rpx;
+  color: #6B7280;
+  margin-left: 16rpx;
+}
+
+.chapter-content {
+  margin-top: 16rpx;
+}
+
+.content-card {
+  background: #F9FAFB;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.content-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.content-text {
+  font-size: 28rpx;
+  color: #374151;
+  line-height: 1.6;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+/* 应急知识 */
+.emergency-knowledge {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.knowledge-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx;
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.knowledge-icon {
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.knowledge-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* 应急建议 */
+.emergency-tips {
+  background: #FEE2E2;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  border: 1rpx solid #DC2626;
+}
+
+.tips-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.tip-item {
+  font-size: 24rpx;
+  color: #991B1B;
+  line-height: 1.4;
+}
+
+/* 章节列表 */
+.chapters-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #DC2626;
+}
+
+.section-subtitle {
+  font-size: 24rpx;
+  color: #B91C1C;
+}
+
+.chapters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.chapter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E7EB;
+  transition: all 0.3s ease;
+}
+
+.chapter-item.active {
+  background: #FEE2E2;
+  border-color: #DC2626;
+}
+
+.chapter-item.completed {
+  background: #FEE2E2;
+  border-color: #DC2626;
+}
+
+.chapter-info {
+  flex: 1;
+}
+
+.chapter-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.chapter-number {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #DC2626;
+}
+
+.chapter-duration {
+  font-size: 22rpx;
+  color: #6B7280;
+}
+
+.chapter-title {
+  font-size: 28rpx;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.chapter-status {
+  margin-left: 16rpx;
+}
+
+.status-completed {
+  font-size: 22rpx;
+  color: #DC2626;
+  background: #FEE2E2;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.status-current {
+  font-size: 22rpx;
+  color: #DC2626;
+  background: #FEE2E2;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.status-pending {
+  font-size: 22rpx;
+  color: #6B7280;
+  background: #F3F4F6;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+/* 紧急情况模拟弹窗 */
+.simulation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  width: 100%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 16rpx 64rpx rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1001;
+}
+
+.simulation-header {
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.simulation-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.simulation-subtitle {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+.simulation-content {
+  margin-top: 16rpx;
+}
+
+.simulation-info {
+  margin-bottom: 24rpx;
+}
+
+.info-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.info-text {
+  font-size: 26rpx;
+  color: #6B7280;
+  line-height: 1.6;
+  display: block;
+}
+
+.simulation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.simulation-btn {
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.simulation-btn.primary {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  color: #FFFFFF;
+}
+
+.simulation-btn.secondary {
+  background: #F3F4F6;
+  color: #374151;
+  border: 2rpx solid #D1D5DB;
+}
+
+.btn-text {
+  color: inherit;
+}
+
+/* 应急演练弹窗 */
+.drill-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx;
+}
+
+.drill-content {
+  width: 100%;
+}
+
+/* 演练场景 */
+.scenario-section {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.scenario-header {
+  margin-bottom: 20rpx;
+}
+
+.scenario-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.scenario-desc {
+  font-size: 26rpx;
+  color: #6B7280;
+  line-height: 1.4;
+  display: block;
+}
+
+.symptoms-list {
+  background: #FEE2E2;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.symptoms-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.symptom-item {
+  margin-bottom: 4rpx;
+}
+
+.symptom-text {
+  font-size: 24rpx;
+  color: #991B1B;
+  line-height: 1.4;
+}
+
+/* 当前步骤 */
+.current-step {
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.step-header {
+  margin-bottom: 12rpx;
+}
+
+.step-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.step-desc {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+.step-instruction {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.step-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.option-item {
+  padding: 16rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+}
+
+.option-item:active {
+  background: #FEE2E2;
+  border-color: #DC2626;
+  transform: scale(0.98);
+}
+
+.option-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* 演练结果 */
+.drill-result {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  text-align: center;
+}
+
+.result-header {
+  margin-bottom: 24rpx;
+}
+
+.result-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.result-subtitle {
+  font-size: 24rpx;
+  color: #6B7280;
+  display: block;
+}
+
+.score-section {
+  background: #FEE2E2;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.score-title {
+  font-size: 26rpx;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.score-value {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #DC2626;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.score-max {
+  font-size: 22rpx;
+  color: #991B1B;
+  display: block;
+}
+
+.result-feedback {
+  margin-bottom: 24rpx;
+}
+
+.feedback-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+  display: block;
+}
+
+.result-btn {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  color: #FFFFFF;
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  border: none;
+}
+
+/* 底部操作按钮 */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+.action-btn {
+  width: 100%;
+  padding: 24rpx 32rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 16rpx rgba(220, 38, 38, 0.3);
+}
+
+.action-btn.primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(220, 38, 38, 0.4);
+}
+
+.action-btn.secondary {
+  background: #F3F4F6;
+  color: #374151;
+  border: 2rpx solid #D1D5DB;
+}
+
+.action-btn.secondary:active {
+  background: #E5E7EB;
+  transform: scale(0.95);
+} 

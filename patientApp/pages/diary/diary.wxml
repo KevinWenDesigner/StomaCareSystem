@@ -1,0 +1,159 @@
+<!--patient-app/pages/diary/diary.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">症状日记</text>
+    <text class="page-subtitle">记录每日症状变化</text>
+  </view>
+
+  <!-- 快速记录 -->
+  <view class="quick-record">
+    <view class="record-card">
+      <view class="record-header">
+        <view class="title-section">
+          <text class="record-title">{{isEditing ? '编辑记录' : '今日症状'}}</text>
+          <text wx:if="{{isEditing}}" class="edit-badge">编辑中</text>
+        </view>
+        <text class="record-date">{{isEditing ? editingRecord.date : todayDate}}</text>
+      </view>
+      
+      <view class="symptom-form">
+        <view class="form-group">
+          <text class="form-label">疼痛程度</text>
+          <view class="pain-scale">
+            <view wx:for="{{painLevels}}" wx:key="level" 
+                  class="pain-item {{selectedPainLevel === item.level ? 'active' : ''}}"
+                  bindtap="selectPainLevel" data-level="{{item.level}}">
+              <text class="pain-number">{{item.level}}</text>
+              <text class="pain-desc">{{item.desc}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="form-group">
+          <view class="form-label-row">
+            <text class="form-label">症状类型</text>
+            <text wx:if="{{selectedSymptoms.length > 0}}" class="selection-count">已选择 {{selectedSymptoms.length}} 项</text>
+          </view>
+          <view class="symptom-tags">
+            <view wx:for="{{symptomTypes}}" wx:key="type" 
+                  class="symptom-tag {{selectedSymptoms.includes(item.type) ? 'selected' : ''}}"
+                  bindtap="toggleSymptom" data-type="{{item.type}}">
+              <text class="tag-text">{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="form-group">
+          <text class="form-label">备注说明</text>
+          <textarea class="form-textarea" placeholder="请描述您的症状感受..." 
+                    value="{{symptomNote}}" bindinput="onNoteInput"></textarea>
+        </view>
+      </view>
+      
+      <view class="action-buttons">
+        <button wx:if="{{isEditing}}" class="cancel-btn" bindtap="cancelEdit">
+          <text class="btn-text">取消</text>
+        </button>
+        <button class="submit-btn" bindtap="submitRecord">
+          <text class="btn-text">{{isEditing ? '保存修改' : '提交记录'}}</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计概览 -->
+  <view class="stats-section">
+    <view class="section-header">
+      <text class="section-title">本周统计</text>
+      <text class="section-subtitle">症状变化趋势</text>
+    </view>
+    
+    <view class="stats-grid">
+      <view class="stat-card">
+        <view class="stat-icon">📊</view>
+        <view class="stat-content">
+          <text class="stat-number">{{weeklyStats.records}}</text>
+          <text class="stat-label">记录天数</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">😣</view>
+        <view class="stat-content">
+          <text class="stat-number">{{weeklyStats.avgPain}}/5</text>
+          <text class="stat-label">平均疼痛</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">📈</view>
+        <view class="stat-content">
+          <text class="stat-number">{{weeklyStats.trend}}</text>
+          <text class="stat-label">症状趋势</text>
+        </view>
+      </view>
+      
+      <view class="stat-card">
+        <view class="stat-icon">🎯</view>
+        <view class="stat-content">
+          <text class="stat-number">{{weeklyStats.score}}</text>
+          <text class="stat-label">健康评分</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="history-section">
+    <view class="section-header">
+      <text class="section-title">历史记录</text>
+      <view class="filter-tabs">
+        <text class="filter-tab {{currentFilter === 'all' ? 'active' : ''}}" 
+              bindtap="switchFilter" data-filter="all">全部</text>
+        <text class="filter-tab {{currentFilter === 'week' ? 'active' : ''}}" 
+              bindtap="switchFilter" data-filter="week">本周</text>
+        <text class="filter-tab {{currentFilter === 'month' ? 'active' : ''}}" 
+              bindtap="switchFilter" data-filter="month">本月</text>
+      </view>
+    </view>
+    
+    <view wx:if="{{filteredRecords.length === 0}}" class="empty-state">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无记录</text>
+      <text class="empty-subtext">开始记录您的症状变化</text>
+    </view>
+    
+    <view wx:else class="records-list">
+      <view wx:for="{{filteredRecords}}" wx:key="id" class="record-item">
+        <view class="record-card">
+          <view class="record-header">
+            <text class="record-date">{{item.date}}</text>
+            <view class="record-pain">
+              <text class="pain-label">疼痛:</text>
+              <text class="pain-value">{{item.painLevel}}/5</text>
+            </view>
+          </view>
+          
+          <view class="record-symptoms">
+            <view wx:for="{{item.symptoms}}" wx:key="type" wx:for-item="symptom" 
+                  class="symptom-tag small">
+              <text class="tag-text">{{symptom}}</text>
+            </view>
+          </view>
+          
+          <text wx:if="{{item.note}}" class="record-note">{{item.note}}</text>
+          
+          <view class="record-actions">
+            <button class="action-btn" data-id="{{item.id}}" bindtap="editRecord">
+              <text class="action-text">编辑</text>
+            </button>
+            <button class="action-btn danger" data-id="{{item.id}}" bindtap="deleteRecord">
+              <text class="action-text">删除</text>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

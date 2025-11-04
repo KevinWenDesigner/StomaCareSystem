@@ -1,0 +1,133 @@
+<!--patient-app/pages/education/course-detail/course-detail.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <text class="page-title">课程详情</text>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 课程详情 -->
+  <view wx:else class="course-detail">
+    <!-- 课程基本信息 -->
+    <view class="course-info">
+      <view class="course-header">
+        <text class="course-title">{{course.title}}</text>
+        <view class="course-level level-{{course.level}}">
+          <text class="level-text">{{course.levelText}}</text>
+        </view>
+      </view>
+      
+      <text class="course-desc">{{course.description}}</text>
+      
+      <view class="course-meta">
+        <view class="meta-item">
+          <text class="meta-icon">⏱️</text>
+          <text class="meta-text">{{course.duration}}</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-icon">👥</text>
+          <text class="meta-text">{{course.students}}人学习</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-icon">⭐</text>
+          <text class="meta-text">{{course.rating}}分</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 学习进度 -->
+    <view class="progress-section">
+      <view class="section-header">
+        <text class="section-title">学习进度</text>
+        <text class="section-subtitle">{{isEnrolled ? '继续学习' : '开始学习'}}</text>
+      </view>
+      
+      <view class="progress-card">
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{userProgress}}%"></view>
+        </view>
+        <text class="progress-text">已完成 {{userProgress}}%</text>
+      </view>
+    </view>
+
+    <!-- 课程章节 -->
+    <view wx:if="{{course.chapters}}" class="chapters-section">
+      <view class="section-header">
+        <text class="section-title">课程章节</text>
+        <text class="section-subtitle">共{{course.chapters.length}}个章节</text>
+      </view>
+      
+      <view class="chapters-list">
+        <view wx:for="{{course.chapters}}" wx:key="id" class="chapter-item">
+          <view class="chapter-info">
+            <view class="chapter-header">
+              <text class="chapter-number">第{{item.id}}章</text>
+              <text class="chapter-duration">{{item.duration}}</text>
+            </view>
+            <text class="chapter-title">{{item.title}}</text>
+          </view>
+          
+          <view class="chapter-status">
+            <text wx:if="{{item.completed}}" class="status-completed">已完成</text>
+            <text wx:else class="status-pending">待学习</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 课程介绍 -->
+    <view class="intro-section">
+      <view class="section-header">
+        <text class="section-title">课程介绍</text>
+      </view>
+      
+      <view class="intro-content">
+        <text class="intro-text">
+          本课程将帮助您全面了解造口护理的基础知识，包括基本概念、护理原则、用品选择等内容。
+          通过系统学习，您将掌握专业的造口护理技能，为患者提供更好的护理服务。
+        </text>
+      </view>
+    </view>
+
+    <!-- 学习目标 -->
+    <view class="objectives-section">
+      <view class="section-header">
+        <text class="section-title">学习目标</text>
+      </view>
+      
+      <view class="objectives-list">
+        <view class="objective-item">
+          <text class="objective-icon">🎯</text>
+          <text class="objective-text">掌握造口护理的基本概念和重要性</text>
+        </view>
+        <view class="objective-item">
+          <text class="objective-icon">📚</text>
+          <text class="objective-text">了解不同类型造口的特点和护理要点</text>
+        </view>
+        <view class="objective-item">
+          <text class="objective-icon">🛠️</text>
+          <text class="objective-text">学会选择合适的护理用品</text>
+        </view>
+        <view class="objective-item">
+          <text class="objective-icon">🏥</text>
+          <text class="objective-text">掌握护理环境的准备和注意事项</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn primary" bindtap="startLearning">
+      <text class="btn-text">{{isEnrolled ? '继续学习' : '开始学习'}}</text>
+    </button>
+  </view>
+</view> 
