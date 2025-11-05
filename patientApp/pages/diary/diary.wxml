@@ -37,7 +37,7 @@
           </view>
           <view class="symptom-tags">
             <view wx:for="{{symptomTypes}}" wx:key="type" 
-                  class="symptom-tag {{selectedSymptoms.includes(item.type) ? 'selected' : ''}}"
+                  class="symptom-tag {{item.selected ? 'selected' : ''}}"
                   bindtap="toggleSymptom" data-type="{{item.type}}">
               <text class="tag-text">{{item.name}}</text>
             </view>

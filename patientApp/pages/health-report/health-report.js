@@ -1,9 +1,11 @@
 // patient-app/pages/health-report/health-report.js
 const app = getApp()
+const api = require('../../utils/api.js')
 
 Page({
   data: {
     loading: true,
+    useBackendData: true,
     currentTab: 'overview',
     healthData: {
       basicInfo: {
@@ -63,7 +65,47 @@ Page({
   },
 
   // 加载健康数据
-  loadHealthData() {
+  async loadHealthData() {
+    if (this.data.useBackendData) {
+      await this.loadFromBackend()
+    } else {
+      this.loadFromLocal()
+    }
+  },
+
+  // 从后端加载健康报告
+  async loadFromBackend() {
+    try {
+      // 获取健康报告
+      const res = await api.getMyReport({ days: 30 })
+      if (res.success && res.data) {
+        const report = res.data
+        
+        // 更新健康评分
+        this.setData({
+          healthScore: report.healthScore || 85,
+          recommendations: report.recommendations || [],
+          loading: false
+        })
+        
+        // 如果有统计数据，更新图表
+        if (report.trends) {
+          this.setData({
+            monthlyTrends: report.trends
+          })
+        }
+      }
+      
+      console.log('健康数据从后端加载完成')
+    } catch (error) {
+      console.error('从后端加载健康数据失败:', error)
+      // 如果后端失败，使用本地数据
+      this.loadFromLocal()
+    }
+  },
+
+  // 从本地加载健康数据
+  loadFromLocal() {
     try {
       // 从本地存储加载数据
       const symptomRecords = wx.getStorageSync('symptomRecords') || []
@@ -97,7 +139,7 @@ Page({
       console.log('健康数据加载完成')
     } catch (e) {
       console.error('加载健康数据失败:', e)
-      app.showToast('数据加载失败', 'error')
+      app.showToast('数据加载失败', 'none')
     }
   },
 

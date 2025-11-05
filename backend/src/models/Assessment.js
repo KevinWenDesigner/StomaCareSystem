@@ -105,12 +105,12 @@ class Assessment {
     }
     
     if (filters.startDate) {
-      sql += ' AND a.assessment_date >= ?';
+      sql += ' AND DATE(a.assessment_date) >= ?';
       params.push(filters.startDate);
     }
     
     if (filters.endDate) {
-      sql += ' AND a.assessment_date <= ?';
+      sql += ' AND DATE(a.assessment_date) <= ?';
       params.push(filters.endDate);
     }
     

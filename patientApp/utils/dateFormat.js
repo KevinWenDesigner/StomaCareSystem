@@ -115,6 +115,32 @@ function getCurrentTime() {
   return formatTime(new Date())
 }
 
+/**
+ * 格式化日期为ISO格式 "YYYY-MM-DD"
+ * @param {Date|string|number} date - 日期对象、日期字符串或时间戳
+ * @returns {string} ISO格式的日期字符串
+ */
+function formatDateISO(date) {
+  if (!date) return ''
+  
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * 获取当前日期（ISO格式 YYYY-MM-DD）
+ * @returns {string} ISO格式的当前日期字符串
+ */
+function getCurrentDateISO() {
+  return formatDateISO(new Date())
+}
+
 module.exports = {
   formatDateTime,
   formatDate,
@@ -122,7 +148,9 @@ module.exports = {
   getRelativeTime,
   getCurrentDateTime,
   getCurrentDate,
-  getCurrentTime
+  getCurrentTime,
+  formatDateISO,
+  getCurrentDateISO
 }
 
 /**

@@ -141,6 +141,25 @@
   color: #6B7280;
 }
 
+/* 点赞按钮样式 */
+.meta-like {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.meta-like:active {
+  transform: scale(0.95);
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.meta-like .meta-text {
+  color: #EF4444;
+  font-weight: 600;
+}
+
 /* 学习进度 */
 .progress-section {
   background: rgba(255, 255, 255, 0.95);

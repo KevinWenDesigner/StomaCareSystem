@@ -107,19 +107,11 @@ Page({
   filterCourses() {
     let filtered = this.data.courses
 
-    // 按分类筛选
+    // 按分类筛选（使用category字段，兼容数字ID）
     if (this.data.currentFilter !== 'all') {
       filtered = filtered.filter(course => {
-        if (this.data.currentFilter === 'basic') {
-          return course.id.startsWith('basic_') || course.category === 'basic'
-        } else if (this.data.currentFilter === 'practice') {
-          return course.id.startsWith('practice_') || course.category === 'practice'
-        } else if (this.data.currentFilter === 'diet') {
-          return course.id.startsWith('diet_') || course.category === 'diet'
-        } else if (this.data.currentFilter === 'emergency') {
-          return course.id.startsWith('emergency_') || course.category === 'emergency'
-        }
-        return true
+        // 直接使用category字段判断，不再依赖ID字符串
+        return course.category === this.data.currentFilter
       })
     }
 
@@ -170,23 +162,21 @@ Page({
       getApp().globalData = getApp().globalData || {}
       getApp().globalData.currentCourse = course
       
-      // 根据课程类型跳转到不同的学习页面
+      // 根据课程分类跳转到不同的学习页面
       let targetUrl = '/pages/education/course-study/course-study'
       
-      // 如果是实践操作课程，跳转到专门的实践学习页面
-      if (courseId && courseId.startsWith('practice_')) {
+      console.log('课程分类:', course.category, '课程ID:', courseId)
+      
+      // 根据课程分类（category字段）判断跳转页面
+      if (course.category === 'practice') {
         targetUrl = '/pages/education/practice-study/practice-study'
-      }
-      
-      // 如果是饮食指导课程，跳转到专门的饮食学习页面
-      if (courseId && courseId.startsWith('diet_')) {
+      } else if (course.category === 'diet') {
         targetUrl = '/pages/education/diet-study/diet-study'
-      }
-      
-      // 如果是应急处理课程，跳转到专门的应急处理学习页面
-      if (courseId && courseId.startsWith('emergency_')) {
+      } else if (course.category === 'emergency') {
         targetUrl = '/pages/education/emergency-study/emergency-study'
       }
+      
+      console.log('跳转到:', targetUrl)
       
       // 跳转到课程学习页面
       wx.navigateTo({

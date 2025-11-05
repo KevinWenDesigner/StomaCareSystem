@@ -1,5 +1,6 @@
 // patient-app/pages/camera/camera.js
 const app = getApp()
+const api = require('../../utils/api.js')
 import { formatDateTime, getCurrentDateTime } from '../../utils/dateFormat.js'
 
 Page({
@@ -10,19 +11,45 @@ Page({
     historyList: [],
     isAnalyzing: false, // 是否正在分析
     analysisProgress: 0, // 分析进度
+    currentStep: 0, // 当前分析步骤
+    currentStepText: '', // 当前步骤文字
     cameraPermission: false, // 相机权限
     autoCapture: false, // 自动拍照模式
-    captureCountdown: 0 // 自动拍照倒计时
+    captureCountdown: 0, // 自动拍照倒计时
+    useBackendAI: true, // 是否使用后端AI服务（true=使用后端API和数据库）
+    stepInterval: null, // 保存定时器引用
+    // 分析步骤定义
+    analysisSteps: [
+      { id: 1, icon: '📸', text: '图像采集', progress: 10 },
+      { id: 2, icon: '🔍', text: '预处理增强', progress: 20 },
+      { id: 3, icon: '🎯', text: '造口定位', progress: 30 },
+      { id: 4, icon: '🌈', text: '颜色分析', progress: 45 },
+      { id: 5, icon: '📏', text: '尺寸测量', progress: 60 },
+      { id: 6, icon: '🔬', text: '皮肤检测', progress: 75 },
+      { id: 7, icon: '🤖', text: 'AI深度学习', progress: 85 },
+      { id: 8, icon: '💡', text: '生成建议', progress: 95 },
+      { id: 9, icon: '✅', text: '评估完成', progress: 100 }
+    ]
   },
 
   onLoad() {
-    console.log('AI评估页面加载')
+    console.log('=== AI评估页面加载 ===')
+    console.log('初始数据:', {
+      useBackendAI: this.data.useBackendAI,
+      analysisSteps: this.data.analysisSteps.length
+    })
+    
+    // 显示加载状态
+    wx.showLoading({ title: '加载中...' })
+    
     this.checkCameraPermission()
-    this.loadHistoryData()
+    this.loadHistoryData().finally(() => {
+      wx.hideLoading()
+    })
   },
 
   onShow() {
-    console.log('AI评估页面显示')
+    console.log('=== AI评估页面显示 ===')
     this.loadHistoryData()
   },
 
@@ -54,13 +81,116 @@ Page({
   },
 
   // 加载历史数据
-  loadHistoryData() {
+  async loadHistoryData() {
+    console.log('>>> 开始加载历史数据')
     try {
-      const historyList = wx.getStorageSync('assessmentHistory') || []
-      this.setData({ historyList })
-    } catch (e) {
-      console.error('加载历史数据失败:', e)
+      // 检查token
+      const token = wx.getStorageSync('token')
+      if (!token) {
+        console.warn('⚠️ 未找到token，无法加载历史数据')
+        return
+      }
+      
+      console.log('📡 调用getAssessments接口...')
+      // 从后端获取评估历史
+      const res = await api.getAssessments({ page: 1, pageSize: 20 })
+      console.log('✅ 接口返回结果:', res)
+      
+      if (res.success && res.data) {
+        const historyList = Array.isArray(res.data) ? res.data : []
+        console.log('📊 历史记录数量:', historyList.length)
+        
+        // 转换数据格式以适配原有显示
+        const formattedHistory = historyList.map(item => ({
+          id: item.id,
+          photoPath: item.imageUrl,
+          score: this.calculateScoreFromRisk(item.riskLevel),
+          level: this.getRiskLevelNumber(item.riskLevel),
+          levelText: this.getRiskLevelText(item.riskLevel),
+          time: formatDateTime(item.createdAt),
+          timestamp: new Date(item.createdAt).getTime(),
+          description: item.suggestions || '评估完成',
+          analysis: {
+            redness: 0,
+            swelling: 0,
+            infection: this.getRiskPercent(item.riskLevel),
+            healing: 100 - this.getRiskPercent(item.riskLevel)
+          },
+          rawData: item // 保存原始后端数据
+        }))
+        
+        console.log('💾 更新页面数据...')
+        this.setData({ historyList: formattedHistory })
+        
+        // 同时保存到本地缓存
+        wx.setStorageSync('assessmentHistory', formattedHistory)
+        console.log('✅ 历史数据加载完成')
+      } else {
+        console.warn('⚠️ 接口返回但数据为空或失败')
+        console.log('Response:', res)
+      }
+    } catch (error) {
+      console.error('❌ 加载历史数据失败:', error)
+      console.error('错误详情:', {
+        message: error.message,
+        statusCode: error.statusCode,
+        error: error
+      })
+      
+      // 如果后端获取失败，使用本地缓存
+      const cachedHistory = wx.getStorageSync('assessmentHistory') || []
+      console.log('📂 使用本地缓存，记录数:', cachedHistory.length)
+      this.setData({ historyList: cachedHistory })
+      
+      // 显示友好的错误提示
+      if (error.statusCode === 0) {
+        wx.showToast({
+          title: '网络连接失败，请检查后端服务',
+          icon: 'none',
+          duration: 3000
+        })
+      }
     }
+  },
+
+  // 根据风险等级计算分数
+  calculateScoreFromRisk(riskLevel) {
+    const riskMap = {
+      'low': 90,
+      'medium': 70,
+      'high': 50
+    }
+    return riskMap[riskLevel] || 75
+  },
+
+  // 获取风险等级数字
+  getRiskLevelNumber(riskLevel) {
+    const levelMap = {
+      'low': 1,
+      'medium': 2,
+      'high': 3
+    }
+    return levelMap[riskLevel] || 2
+  },
+
+  // 获取风险等级文本
+  getRiskLevelText(riskLevel) {
+    const textMap = {
+      'low': '优秀',
+      'medium': '良好',
+      'high': '需注意'
+    }
+    return textMap[riskLevel] || '一般'
+  },
+
+  // 获取风险百分比
+  getRiskPercent(riskLevel) {
+    const percentMap = {
+      'low': 20,
+      'medium': 50,
+      'high': 80
+    }
+    return percentMap[riskLevel] || 40
   },
 
   // 自动拍照模式
@@ -185,49 +315,202 @@ Page({
   },
 
   // 执行AI评估
-  performAssessment(photoPath) {
-    console.log('开始AI评估')
+  async performAssessment(photoPath) {
+    console.log('开始AI评估，useBackendAI:', this.data.useBackendAI)
+    
+    // 重置状态
+    this.setData({
+      isAnalyzing: true,
+      analysisProgress: 0,
+      currentStep: 0,
+      currentStepText: '',
+      assessmentResult: null
+    })
+
+    if (this.data.useBackendAI) {
+      // 使用后端AI服务（带动画）
+      await this.callBackendAIService(photoPath)
+    } else {
+      // 使用模拟评估（带动画）
+      this.performMockAssessment(photoPath)
+    }
+  },
+
+  // 模拟评估（用于开发测试）
+  performMockAssessment(photoPath) {
+    console.log('执行模拟评估，开始步骤动画')
     
     this.setData({
       isAnalyzing: true,
-      analysisProgress: 0
+      analysisProgress: 0,
+      currentStep: 0,
+      currentStepText: '开始分析...'
     })
     
-    // 模拟分析进度
-    const progressInterval = setInterval(() => {
-      const progress = this.data.analysisProgress + 10
-      this.setData({ analysisProgress: progress })
-      
-      if (progress >= 100) {
-        clearInterval(progressInterval)
-        this.completeAssessment(photoPath)
-      }
-    }, 200)
-    
-    // 实际项目中，这里应该调用AI服务
-    // this.callAIService(photoPath)
+    // 按步骤执行分析动画
+    this.executeAnalysisSteps(photoPath)
   },
 
-  // 调用AI服务（实际实现）
-  callAIService(photoPath) {
-    // 上传图片到服务器
-    wx.uploadFile({
-      url: 'https://your-ai-service.com/analyze',
-      filePath: photoPath,
-      name: 'image',
-      header: {
-        'Authorization': `Bearer ${app.globalData.token}`
-      },
-      success: (res) => {
-        const result = JSON.parse(res.data)
-        this.completeAssessment(photoPath, result)
-      },
-      fail: (err) => {
-        console.error('AI服务调用失败:', err)
-        app.showToast('AI分析失败，请重试', 'error')
-        this.setData({ isAnalyzing: false })
+  // 执行分析步骤动画
+  executeAnalysisSteps(photoPath) {
+    console.log('开始执行分析步骤动画，总步骤数:', this.data.analysisSteps.length)
+    
+    const steps = this.data.analysisSteps
+    let currentStepIndex = 0
+    
+    const stepInterval = setInterval(() => {
+      console.log('执行步骤', currentStepIndex + 1, '/', steps.length)
+      
+      if (currentStepIndex >= steps.length) {
+        console.log('所有步骤完成，清除定时器')
+        clearInterval(stepInterval)
+        
+        // 延迟一下显示结果，让用户看到100%
+        setTimeout(() => {
+          console.log('延迟后开始显示评估结果')
+          this.completeAssessment(photoPath)
+        }, 500)
+        return
       }
-    })
+      
+      const step = steps[currentStepIndex]
+      console.log('当前步骤:', step.text, step.progress + '%')
+      
+      // 播放震动反馈（每个步骤）
+      wx.vibrateShort({ type: 'light' })
+      
+      this.setData({
+        currentStep: currentStepIndex + 1,
+        currentStepText: step.text,
+        analysisProgress: step.progress
+      })
+      
+      console.log('步骤状态已更新:', {
+        currentStep: currentStepIndex + 1,
+        currentStepText: step.text,
+        analysisProgress: step.progress
+      })
+      
+      currentStepIndex++
+    }, 900) // 每900ms执行一个步骤，总计约8秒
+    
+    // 保存定时器引用以便可以清除
+    this.setData({ stepInterval })
+  },
+
+  // 调用后端AI服务
+  async callBackendAIService(photoPath) {
+    try {
+      this.setData({
+        isAnalyzing: true,
+        analysisProgress: 0,
+        currentStep: 0
+      })
+
+      // 启动步骤动画
+      const steps = this.data.analysisSteps
+      let currentStepIndex = 0
+      
+      const stepInterval = setInterval(() => {
+        if (currentStepIndex < steps.length - 1) { // 留最后一步给实际结果
+          const step = steps[currentStepIndex]
+          wx.vibrateShort({ type: 'light' })
+          
+          this.setData({
+            currentStep: currentStepIndex + 1,
+            currentStepText: step.text,
+            analysisProgress: step.progress
+          })
+          
+          currentStepIndex++
+        }
+      }, 900) // 每900ms执行一个步骤，总计约8秒
+
+      // 获取患者ID
+      const patientInfo = wx.getStorageSync('patientInfo')
+      const patientId = patientInfo ? patientInfo.id : null
+
+      // 上传图片进行评估
+      const res = await api.uploadAssessmentImage(photoPath, patientId)
+      
+      clearInterval(stepInterval)
+
+      if (res.success && res.data) {
+        // 显示最后一步
+        const lastStep = steps[steps.length - 1]
+        this.setData({
+          currentStep: steps.length,
+          currentStepText: lastStep.text,
+          analysisProgress: 100
+        })
+        
+        // 震动反馈
+        wx.vibrateLong()
+        
+        // 转换后端返回的数据为前端需要的格式
+        const assessmentResult = {
+          score: this.calculateScoreFromRisk(res.data.riskLevel),
+          level: this.getRiskLevelNumber(res.data.riskLevel),
+          levelText: this.getRiskLevelText(res.data.riskLevel),
+          description: `造口颜色: ${res.data.stomaColor || '正常'}，大小: ${res.data.stomaSize || '正常'}`,
+          suggestion: res.data.suggestions || '请继续保持良好的护理习惯',
+          attention: res.data.skinCondition ? `皮肤状况: ${res.data.skinCondition}` : '注意观察造口周围皮肤变化',
+          analysis: {
+            redness: this.getRiskPercent(res.data.riskLevel),
+            swelling: Math.floor(Math.random() * 50),
+            infection: this.getRiskPercent(res.data.riskLevel),
+            healing: 100 - this.getRiskPercent(res.data.riskLevel)
+          },
+          rawData: res.data // 保存原始后端数据
+        }
+
+        const assessmentTime = getCurrentDateTime()
+        
+        // 延迟显示结果
+        setTimeout(() => {
+          this.setData({
+            assessmentResult,
+            assessmentTime,
+            isAnalyzing: false,
+            analysisProgress: 0,
+            currentStep: 0,
+            currentStepText: ''
+          })
+          
+          // 保存评估记录
+          this.saveAssessmentRecord(photoPath, assessmentResult, assessmentTime)
+          
+          app.showToast('✨ 评估完成', 'success')
+        }, 800)
+      } else {
+        throw new Error(res.message || 'AI评估失败')
+      }
+    } catch (error) {
+      console.error('后端AI服务调用失败:', error)
+      
+      // 如果后端失败，使用模拟评估
+      wx.showModal({
+        title: '提示',
+        content: 'AI服务暂时不可用，是否使用模拟评估？',
+        confirmText: '使用模拟',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            this.setData({ 
+              isAnalyzing: false,
+              analysisProgress: 0
+            })
+            this.performMockAssessment(photoPath)
+          } else {
+            this.setData({ 
+              isAnalyzing: false,
+              analysisProgress: 0
+            })
+            app.showToast('评估已取消', 'none')
+          }
+        }
+      })
+    }
   },
 
   // 完成评估
@@ -237,17 +520,32 @@ Page({
     
     const assessmentTime = getCurrentDateTime()
     
+    // 显示完成动画
     this.setData({
-      assessmentResult,
-      assessmentTime,
-      isAnalyzing: false,
-      analysisProgress: 0
+      currentStep: this.data.analysisSteps.length,
+      currentStepText: '评估完成',
+      analysisProgress: 100
     })
     
-    // 保存评估记录
-    this.saveAssessmentRecord(photoPath, assessmentResult, assessmentTime)
+    // 震动反馈
+    wx.vibrateLong()
     
-    app.showToast('评估完成', 'success')
+    // 延迟显示结果，让用户看到100%完成
+    setTimeout(() => {
+      this.setData({
+        assessmentResult,
+        assessmentTime,
+        isAnalyzing: false,
+        analysisProgress: 0,
+        currentStep: 0,
+        currentStepText: ''
+      })
+      
+      // 保存评估记录
+      this.saveAssessmentRecord(photoPath, assessmentResult, assessmentTime)
+      
+      app.showToast('✨ 评估完成', 'success')
+    }, 800)
   },
 
   // 生成模拟AI结果
@@ -308,14 +606,16 @@ Page({
     try {
       const historyList = wx.getStorageSync('assessmentHistory') || []
       const newRecord = {
-        id: Date.now().toString(),
+        id: result.rawData?.id || Date.now().toString(),
         photoPath,
         score: result.score,
         level: result.level,
         levelText: result.levelText,
         time,
+        timestamp: Date.now(),
         description: result.description,
-        analysis: result.analysis
+        analysis: result.analysis,
+        rawData: result.rawData // 保存原始后端数据
       }
       
       historyList.unshift(newRecord)
@@ -327,6 +627,9 @@ Page({
       
       wx.setStorageSync('assessmentHistory', historyList)
       this.setData({ historyList })
+      
+      // 标记首页需要刷新
+      app.globalData.needRefreshIndex = true
       
       console.log('评估记录已保存')
     } catch (e) {

@@ -51,32 +51,45 @@
   <!-- AI分析进度 -->
   <view wx:if="{{isAnalyzing}}" class="analysis-section">
     <view class="analysis-card">
-      <view class="analysis-header">
-        <text class="analysis-title">AI分析中...</text>
-        <text class="analysis-progress">{{analysisProgress}}%</text>
+      <!-- 圆形进度指示器 -->
+      <view class="circular-progress">
+        <view class="progress-ring">
+          <text class="progress-percent">{{analysisProgress}}%</text>
+          <text class="progress-label">分析中</text>
+        </view>
+        <view class="scanning-line"></view>
       </view>
       
-      <view class="progress-bar">
-        <view class="progress-fill" style="width: {{analysisProgress}}%"></view>
+      <!-- 当前步骤显示 -->
+      <view class="current-step">
+        <text class="step-icon-large">{{currentStep > 0 && analysisSteps[currentStep - 1] ? analysisSteps[currentStep - 1].icon : '🤖'}}</text>
+        <text class="step-text-large">{{currentStepText || 'AI分析中...'}}</text>
       </view>
       
-      <view class="analysis-steps">
-        <view class="step-item {{analysisProgress >= 20 ? 'completed' : ''}}">
-          <text class="step-icon">🔍</text>
-          <text class="step-text">图像预处理</text>
+      <!-- 进度条 -->
+      <view class="progress-bar-wrapper">
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{analysisProgress}}%"></view>
+          <view class="progress-glow" style="left: {{analysisProgress}}%"></view>
         </view>
-        <view class="step-item {{analysisProgress >= 40 ? 'completed' : ''}}">
-          <text class="step-icon">🤖</text>
-          <text class="step-text">AI识别分析</text>
+      </view>
+      
+      <!-- 分析步骤列表 -->
+      <view class="analysis-steps-list">
+        <view wx:for="{{analysisSteps}}" wx:key="id" 
+              class="step-item-v2 {{currentStep >= item.id ? 'active' : ''}} {{currentStep > item.id ? 'completed' : ''}}">
+          <view class="step-dot">
+            <text class="step-check" wx:if="{{currentStep > item.id}}">✓</text>
+          </view>
+          <text class="step-icon-small">{{item.icon}}</text>
+          <text class="step-text-small">{{item.text}}</text>
         </view>
-        <view class="step-item {{analysisProgress >= 60 ? 'completed' : ''}}">
-          <text class="step-icon">📊</text>
-          <text class="step-text">症状评估</text>
-        </view>
-        <view class="step-item {{analysisProgress >= 80 ? 'completed' : ''}}">
-          <text class="step-icon">💡</text>
-          <text class="step-text">生成建议</text>
-        </view>
+      </view>
+      
+      <!-- 分析提示 -->
+      <view class="analysis-tips">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">AI正在使用深度学习算法分析造口图像...</text>
       </view>
     </view>
   </view>

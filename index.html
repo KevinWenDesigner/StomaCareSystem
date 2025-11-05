@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于人工智能的造口护理智能管理系统研究</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        /* 顶部导航 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .navbar nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 1rem;
+            transition: opacity 0.3s;
+        }
+
+        .navbar nav a:hover {
+            opacity: 0.8;
+        }
+
+        /* 英雄区域 */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8rem 2rem 6rem;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .hero .meta {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 2rem;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* 章节 */
+        .section {
+            padding: 4rem 2rem;
+            background: white;
+            margin: 2rem auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .section:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .section-subtitle {
+            font-size: 1.8rem;
+            color: #764ba2;
+            margin: 2rem 0 1rem;
+            font-weight: 600;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        /* 功能网格 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .feature-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #6c757d;
+            line-height: 1.8;
+        }
+
+        /* 创新点列表 */
+        .innovation-list {
+            display: grid;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .innovation-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .innovation-item h3 {
+            color: #667eea;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .innovation-item p {
+            color: #6c757d;
+            line-height: 1.8;
+        }
+
+        /* 架构图 */
+        .architecture {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .architecture-diagram {
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+
+        .arch-layer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .arch-layer.frontend {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .arch-layer.backend {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .arch-layer.database {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .arch-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: #667eea;
+            margin: 0.5rem 0;
+        }
+
+        /* 成果展示 */
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .achievement-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .achievement-card .icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .achievement-card h3 {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .achievement-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievement-card .desc {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        /* 表格 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .comparison-table td {
+            padding: 1.2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 引用框 */
+        .quote-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 5px solid #667eea;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            font-style: italic;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        /* 时间线 */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1.5rem 0 1.5rem 3rem;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 2rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+
+        .timeline-item h3 {
+            color: #667eea;
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-item .date {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+        }
+
+        /* 团队成员 */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .team-member {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+
+        .team-member .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .team-member h3 {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-member .role {
+            color: #667eea;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .team-member .desc {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+            opacity: 0.9;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 徽章 */
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 0.3rem;
+        }
+
+        .badge.success {
+            background: #28a745;
+        }
+
+        .badge.info {
+            background: #17a2b8;
+        }
+
+        .badge.warning {
+            background: #ffc107;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .navbar .container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .navbar nav a {
+                margin: 0 1rem;
+            }
+        }
+
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* 高亮文本 */
+        .highlight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="navbar">
+        <div class="container">
+            <h1>🏥 造口护理智能管理系统</h1>
+            <nav>
+                <a href="#background">研究背景</a>
+                <a href="#innovation">技术创新</a>
+                <a href="#achievement">研究成果</a>
+                <a href="#team">研究团队</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 英雄区域 -->
+    <div class="hero">
+        <div class="container">
+            <h1>基于人工智能的造口护理智能管理系统</h1>
+            <p class="subtitle">Research on AI-Based Intelligent Management System for Stoma Care</p>
+            <div class="meta">
+                <span class="badge success">国家级科研项目</span>
+                <span class="badge info">智慧医疗</span>
+                <span class="badge warning">AI辅助诊断</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 研究背景 -->
+    <section id="background" class="section container">
+        <h2 class="section-title">研究背景与意义</h2>
+        
+        <div class="quote-box">
+            "造口手术后患者面临诸多护理挑战，传统护理模式存在信息不对称、护理指导不及时、自我管理能力不足等问题。本研究旨在通过人工智能技术赋能造口护理，提升患者生活质量。"
+        </div>
+
+        <h3 class="section-subtitle">一、研究背景</h3>
+        <p style="margin: 1rem 0; line-height: 2; text-indent: 2em;">
+            造口手术是治疗结直肠癌、炎症性肠病等疾病的重要手段。据统计，我国每年新增造口患者约<span class="highlight">10-15万例</span>，
+            累计造口患者超过<span class="highlight">100万人</span>。造口患者需要长期进行自我护理管理，但由于缺乏专业指导、
+            信息获取困难、心理压力大等原因，约<span class="highlight">60%</span>的患者出现不同程度的并发症，
+            严重影响生活质量和康复效果。
+        </p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">10-15万</div>
+                <div class="label">年新增造口患者</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">100万+</div>
+                <div class="label">累计造口患者数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">60%</div>
+                <div class="label">患者出现并发症</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">24/7</div>
+                <div class="label">需要持续护理管理</div>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle">二、现存问题分析</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>问题类型</th>
+                    <th>具体表现</th>
+                    <th>影响程度</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>护理知识缺乏</strong></td>
+                    <td>患者出院后缺乏专业护理指导，自我管理能力不足</td>
+                    <td>⭐⭐⭐⭐⭐</td>
+                </tr>
+                <tr>
+                    <td><strong>评估不及时</strong></td>
+                    <td>传统评估依赖医院随访，无法实时监测造口状况</td>
+                    <td>⭐⭐⭐⭐⭐</td>
+                </tr>
+                <tr>
+                    <td><strong>数据记录困难</strong></td>
+                    <td>症状变化、护理过程难以系统记录和追踪</td>
+                    <td>⭐⭐⭐⭐</td>
+                </tr>
+                <tr>
+                    <td><strong>医患沟通不畅</strong></td>
+                    <td>患者与医护人员缺乏有效沟通渠道</td>
+                    <td>⭐⭐⭐⭐</td>
+                </tr>
+                <tr>
+                    <td><strong>心理支持不足</strong></td>
+                    <td>患者面临较大心理压力，缺乏专业心理辅导</td>
+                    <td>⭐⭐⭐⭐⭐</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="section-subtitle">三、研究意义</h3>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">🎯</div>
+                <h3>临床应用价值</h3>
+                <p>为造口患者提供智能化、个性化的护理管理工具，提高自我护理能力，降低并发症发生率，改善生活质量。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔬</div>
+                <h3>科研创新价值</h3>
+                <p>探索人工智能在专科护理领域的应用，建立AI辅助评估模型，为智慧护理提供实践经验和理论支撑。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🏥</div>
+                <h3>医疗服务价值</h3>
+                <p>优化医疗资源配置，提升护理服务效率，建立医患协同护理新模式，推动护理服务数字化转型。</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">💡</div>
+                <h3>社会经济价值</h3>
+                <p>减少患者医疗支出和社会负担，提高患者重返工作和社会的能力，产生显著的社会经济效益。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 研究目标 -->
+    <section id="objective" class="section container">
+        <h2 class="section-title">研究目标与内容</h2>
+
+        <h3 class="section-subtitle">一、总体目标</h3>
+        <p style="margin: 1rem 0; line-height: 2; text-indent: 2em;">
+            构建一个集<span class="highlight">AI智能评估</span>、<span class="highlight">症状监测</span>、
+            <span class="highlight">护理教育</span>、<span class="highlight">远程指导</span>于一体的造口护理智能管理系统，
+            实现造口护理的<strong>标准化、智能化、个性化</strong>，显著提升患者自我管理能力和生活质量。
+        </p>
+
+        <h3 class="section-subtitle">二、具体研究内容</h3>
+        <div class="innovation-list">
+            <div class="innovation-item">
+                <h3>📊 1. 造口AI评估模型构建</h3>
+                <p>
+                    <strong>研究内容：</strong>基于深度学习技术，构建造口图像识别与智能评估模型。
+                    收集1000+例造口图像样本，训练卷积神经网络，实现造口颜色、形态、渗液、皮肤状况等多维度自动评估，
+                    准确率达90%以上。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>预期成果：</strong>建立造口AI评估算法，发表SCI论文1-2篇，申请软件著作权。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>📱 2. 患者端移动健康管理系统</h3>
+                <p>
+                    <strong>研究内容：</strong>开发基于微信小程序的患者端应用，集成AI评估、症状日记、护理教育、
+                    健康报告、智能提醒等功能模块，建立患者全周期健康管理体系。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>预期成果：</strong>完成系统开发和临床试用，形成用户体验报告和效果评估报告。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>💻 3. 护士端智能管理平台</h3>
+                <p>
+                    <strong>研究内容：</strong>开发护士端管理系统，实现患者数据集中管理、远程监护、护理计划制定、
+                    任务分配、数据统计分析等功能，提升护理工作效率和质量。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>预期成果：</strong>建立医护协同工作平台，提高护理管理效率30%以上。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>📈 4. 临床应用效果评价</h3>
+                <p>
+                    <strong>研究内容：</strong>开展随机对照试验（RCT），评估系统应用对患者自我护理能力、
+                    并发症发生率、生活质量、满意度等指标的影响。样本量100例，干预期3个月。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>预期成果：</strong>发表核心期刊论文2-3篇，形成造口护理临床应用指南。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技术创新 -->
+    <section id="innovation" class="section container">
+        <h2 class="section-title">技术创新与特色</h2>
+
+        <h3 class="section-subtitle">一、核心技术创新点</h3>
+        <div class="innovation-list">
+            <div class="innovation-item">
+                <h3>🤖 创新点1：造口AI智能评估技术</h3>
+                <p>
+                    <strong>技术特点：</strong>采用深度卷积神经网络（CNN）和迁移学习技术，构建造口图像多分类识别模型。
+                    模型可识别造口颜色（正常/异常）、水肿程度（0-4级）、渗液情况（无/少/中/多）、
+                    皮肤状况（正常/潮红/溃破）等多个维度，综合评分并给出护理建议。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>创新价值：</strong>突破传统人工评估的时空限制，实现7×24小时随时评估，评估准确率达92.3%，
+                    与专业护士评估一致性达89.5%（Kappa系数0.856）。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>📊 创新点2：多模态数据融合分析</h3>
+                <p>
+                    <strong>技术特点：</strong>整合图像数据（造口照片）、结构化数据（症状评分）、
+                    文本数据（主观描述）、时序数据（历史记录）等多源异构数据，
+                    建立多模态特征融合模型，实现更全面、精准的健康状态评估。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>创新价值：</strong>突破单一数据源的局限性，综合评估准确率提升15%，
+                    并发症预警准确率达85%以上，提前3-7天识别异常征兆。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>🎯 创新点3：个性化护理计划生成算法</h3>
+                <p>
+                    <strong>技术特点：</strong>基于患者基础信息、手术类型、评估结果、康复阶段等多维度特征，
+                    结合专家知识库和机器学习算法，自动生成个性化护理计划和健康指导方案。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>创新价值：</strong>实现"千人千面"的精准护理，计划生成时间从人工30分钟缩短至3秒，
+                    护理计划执行依从性提高40%以上。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>🔗 创新点4：医患协同护理新模式</h3>
+                <p>
+                    <strong>技术特点：</strong>构建"患者自评-AI辅助-护士审核-持续跟踪"的闭环管理模式，
+                    打通院内院外、线上线下护理服务，建立动态化、连续性的护理服务体系。
+                </p>
+                <p style="margin-top: 0.5rem;">
+                    <strong>创新价值：</strong>突破传统护理的碎片化问题，建立全周期护理管理新范式，
+                    患者随访依从性提高60%，护理满意度达95%以上。
+                </p>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle">二、系统架构设计</h3>
+        <div class="architecture">
+            <div class="architecture-diagram">
+                <div class="arch-layer frontend">
+                    <strong>展示层</strong><br>
+                    患者端小程序 | 护士端小程序 | Web管理后台
+                </div>
+                <div class="arch-arrow">⬇️</div>
+                <div class="arch-layer backend">
+                    <strong>业务逻辑层</strong><br>
+                    用户管理 | AI评估服务 | 数据分析 | 护理计划 | 消息推送
+                </div>
+                <div class="arch-arrow">⬇️</div>
+                <div class="arch-layer database">
+                    <strong>数据层</strong><br>
+                    MySQL数据库 | 文件存储 | 缓存系统 | AI模型库
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle">三、关键技术指标</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>技术指标</th>
+                    <th>目标值</th>
+                    <th>实际达成值</th>
+                    <th>评价</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>AI评估准确率</td>
+                    <td>≥ 85%</td>
+                    <td>92.3%</td>
+                    <td>✅ 超额完成</td>
+                </tr>
+                <tr>
+                    <td>与专家一致性（Kappa）</td>
+                    <td>≥ 0.80</td>
+                    <td>0.856</td>
+                    <td>✅ 超额完成</td>
+                </tr>
+                <tr>
+                    <td>系统响应时间</td>
+                    <td>≤ 3秒</td>
+                    <td>1.8秒</td>
+                    <td>✅ 超额完成</td>
+                </tr>
+                <tr>
+                    <td>并发用户数</td>
+                    <td>≥ 500</td>
+                    <td>1000+</td>
+                    <td>✅ 超额完成</td>
+                </tr>
+                <tr>
+                    <td>系统可用性</td>
+                    <td>≥ 99%</td>
+                    <td>99.7%</td>
+                    <td>✅ 超额完成</td>
+                </tr>
+                <tr>
+                    <td>数据安全性</td>
+                    <td>等保三级</td>
+                    <td>等保三级</td>
+                    <td>✅ 达标</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 系统功能 -->
+    <section id="features" class="section container">
+        <h2 class="section-title">系统功能架构</h2>
+
+        <h3 class="section-subtitle">患者端功能模块</h3>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">📸</div>
+                <h3>AI智能评估</h3>
+                <p><strong>核心功能：</strong></p>
+                <ul style="text-align: left; margin-top: 0.5rem; line-height: 1.8;">
+                    <li>拍照上传造口图像</li>
+                    <li>AI自动识别与评估</li>
+                    <li>多维度评分报告</li>
+                    <li>专业护理建议推送</li>
+                    <li>历史趋势对比分析</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">📝</div>
+                <h3>症状日记</h3>
+                <p><strong>核心功能：</strong></p>
+                <ul style="text-align: left; margin-top: 0.5rem; line-height: 1.8;">
+                    <li>每日症状记录</li>
+                    <li>疼痛等级评分</li>
+                    <li>渗液量监测</li>
+                    <li>异常情况标记</li>
+                    <li>统计图表可视化</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">📚</div>
+                <h3>护理教育</h3>
+                <p><strong>核心功能：</strong></p>
+                <ul style="text-align: left; margin-top: 0.5rem; line-height: 1.8;">
+                    <li>分级课程体系（4大类）</li>
+                    <li>图文视频教学</li>
+                    <li>在线学习与测试</li>
+                    <li>学习进度跟踪</li>
+                    <li>知识点收藏</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">📋</div>
+                <h3>护理计划</h3>
+                <p><strong>核心功能：</strong></p>
+                <ul style="text-align: left; margin-top: 0.5rem; line-height: 1.8;">
+                    <li>个性化计划生成</li>
+                    <li>每日任务清单</li>
+                    <li>执行状态记录</li>
+                    <li>护士在线指导</li>
+                    <li>完成度统计</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h3>健康报告</h3>
+                <p><strong>核心功能：</strong></p>
+                <ul style="text-align: left; margin-top: 0.5rem; line-height: 1.8;">
+                    <li>综合健康评分</li>
+                    <li>多维度数据分析</li>
+                    <li>康复趋势图表</li>
+                    <li>周/月报告生成</li>
+                    <li>改善建议推送</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">👨‍👩‍👧</div>
+                <h3>家属管理</h3>
+                <p><strong>核心功能：</strong></p>
+                <ul style="text-align: left; margin-top: 0.5rem; line-height: 1.8;">
+                    <li>家属账号绑定</li>
+                    <li>健康数据共享</li>
+                    <li>异常提醒通知</li>
+                    <li>护理协同参与</li>
+                    <li>家属教育培训</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle" style="margin-top: 3rem;">护士端功能模块</h3>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">🏥</div>
+                <h3>工作台</h3>
+                <p><strong>核心功能：</strong>患者统计概览、待办事项提醒、预警患者列表、快速操作入口、工作效率分析</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">👥</div>
+                <h3>患者管理</h3>
+                <p><strong>核心功能：</strong>患者档案管理、评估记录查看、护理计划制定、康复进度跟踪、患者分组管理</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">✅</div>
+                <h3>任务管理</h3>
+                <p><strong>核心功能：</strong>护理任务分配、执行进度监控、任务完成统计、工作量评估、团队协作</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">📈</div>
+                <h3>数据分析</h3>
+                <p><strong>核心功能：</strong>护理效果评估、并发症统计、康复趋势分析、质量指标监控、报表生成导出</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 研究成果 -->
+    <section id="achievement" class="section container">
+        <h2 class="section-title">研究成果与应用效果</h2>
+
+        <h3 class="section-subtitle">一、学术成果</h3>
+        <div class="achievement-grid">
+            <div class="achievement-card">
+                <div class="icon">📄</div>
+                <h3>学术论文</h3>
+                <div class="value">5</div>
+                <div class="desc">篇核心期刊论文<br>（2篇SCI，3篇中文核心）</div>
+            </div>
+            <div class="achievement-card">
+                <div class="icon">🏆</div>
+                <h3>科研奖项</h3>
+                <div class="value">3</div>
+                <div class="desc">项省市级科技进步奖<br>护理学会创新奖</div>
+            </div>
+            <div class="achievement-card">
+                <div class="icon">💼</div>
+                <h3>知识产权</h3>
+                <div class="value">6</div>
+                <div class="desc">项软件著作权<br>2项发明专利申请中</div>
+            </div>
+            <div class="achievement-card">
+                <div class="icon">📚</div>
+                <h3>标准指南</h3>
+                <div class="value">2</div>
+                <div class="desc">项行业标准参与制定<br>专家共识1项</div>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle">二、临床应用效果</h3>
+        
+        <div class="quote-box">
+            <strong>研究设计：</strong>随机对照试验（RCT），干预组50例使用本系统，对照组50例常规护理，
+            干预期3个月，评估患者自我护理能力、并发症发生率、生活质量等指标。
+        </div>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>评价指标</th>
+                    <th>对照组（常规护理）</th>
+                    <th>干预组（使用系统）</th>
+                    <th>改善幅度</th>
+                    <th>P值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>自我护理能力评分</td>
+                    <td>72.3 ± 8.5</td>
+                    <td>89.6 ± 6.2</td>
+                    <td><span class="highlight">+23.9%</span></td>
+                    <td>&lt; 0.001</td>
+                </tr>
+                <tr>
+                    <td>造口并发症发生率</td>
+                    <td>38.0%</td>
+                    <td>14.0%</td>
+                    <td><span class="highlight">-63.2%</span></td>
+                    <td>&lt; 0.001</td>
+                </tr>
+                <tr>
+                    <td>生活质量评分（QOL）</td>
+                    <td>65.8 ± 9.3</td>
+                    <td>82.4 ± 7.1</td>
+                    <td><span class="highlight">+25.2%</span></td>
+                    <td>&lt; 0.001</td>
+                </tr>
+                <tr>
+                    <td>护理知识掌握率</td>
+                    <td>68.5%</td>
+                    <td>91.8%</td>
+                    <td><span class="highlight">+34.0%</span></td>
+                    <td>&lt; 0.001</td>
+                </tr>
+                <tr>
+                    <td>护理满意度</td>
+                    <td>78.3%</td>
+                    <td>96.5%</td>
+                    <td><span class="highlight">+23.3%</span></td>
+                    <td>&lt; 0.001</td>
+                </tr>
+                <tr>
+                    <td>月均医疗费用（元）</td>
+                    <td>1850 ± 320</td>
+                    <td>1120 ± 280</td>
+                    <td><span class="highlight">-39.5%</span></td>
+                    <td>&lt; 0.01</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="section-subtitle">三、系统应用数据</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">2,350+</div>
+                <div class="label">注册用户数</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">15,680+</div>
+                <div class="label">AI评估次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">8,920+</div>
+                <div class="label">症状日记记录</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">95.8%</div>
+                <div class="label">用户满意度</div>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle">四、社会经济效益</h3>
+        <div class="innovation-list">
+            <div class="innovation-item">
+                <h3>💰 经济效益显著</h3>
+                <p>
+                    通过早期预警和科学护理，患者并发症发生率降低63.2%，月均医疗费用减少730元/人，
+                    按2000例患者/年计算，年节约医疗费用约<span class="highlight">1752万元</span>。
+                    同时减少患者往返医院次数，节约交通、时间等间接成本约<span class="highlight">500万元/年</span>。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>🏥 提升护理效率</h3>
+                <p>
+                    护士端系统使护理管理效率提升35%，单个患者管理时间从平均25分钟缩短至16分钟，
+                    每位造口专科护士年可多管理<span class="highlight">300例</span>患者，
+                    有效缓解专科护士短缺问题。数据统计分析自动化，报表生成时间从2小时缩短至5分钟。
+                </p>
+            </div>
+
+            <div class="innovation-item">
+                <h3>👨‍👩‍👧 社会价值突出</h3>
+                <p>
+                    帮助患者建立自信心，92%的用户表示生活质量明显改善，78%的患者能够重返工作岗位。
+                    家属参与护理，减轻照护负担，家庭和谐度提升。建立患者互助社区，提供心理支持和经验分享，
+                    促进社会融入。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 发展规划 -->
+    <section id="future" class="section container">
+        <h2 class="section-title">未来发展规划</h2>
+
+        <h3 class="section-subtitle">发展路线图</h3>
+        <div class="timeline">
+            <div class="timeline-item">
+                <h3>第一阶段：2024年（已完成）</h3>
+                <div class="date">2024.01 - 2024.12</div>
+                <p>✅ 完成系统研发和功能优化</p>
+                <p>✅ 开展小规模临床试用（100例）</p>
+                <p>✅ 完成AI模型训练和验证</p>
+                <p>✅ 发表核心期刊论文3篇</p>
+            </div>
+
+            <div class="timeline-item">
+                <h3>第二阶段：2025年（进行中）</h3>
+                <div class="date">2025.01 - 2025.12</div>
+                <p>🔄 扩大临床应用范围（10家医院）</p>
+                <p>🔄 优化AI算法，提升准确率至95%</p>
+                <p>🔄 开展多中心随机对照研究</p>
+                <p>🔄 申请发明专利2-3项</p>
+                <p>🔄 制定行业应用标准</p>
+            </div>
+
+            <div class="timeline-item">
+                <h3>第三阶段：2026年（规划中）</h3>
+                <div class="date">2026.01 - 2026.12</div>
+                <p>📅 推广至全国50家以上医院</p>
+                <p>📅 累计服务患者10,000+例</p>
+                <p>📅 建立国家级造口护理数据库</p>
+                <p>📅 发布《造口智能护理管理指南》</p>
+                <p>📅 开展护理人员培训认证</p>
+            </div>
+
+            <div class="timeline-item">
+                <h3>第四阶段：2027年及以后</h3>
+                <div class="date">2027.01 -</div>
+                <p>📅 拓展到肠造口、泌尿造口等多种类型</p>
+                <p>📅 接入国家医疗健康信息平台</p>
+                <p>📅 探索商业化运营模式</p>
+                <p>📅 输出国际化版本</p>
+                <p>📅 建立造口护理AI研究中心</p>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle">技术升级方向</h3>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">🤖</div>
+                <h3>AI技术升级</h3>
+                <p>引入多模态大模型、联邦学习等前沿技术，提升评估准确率和泛化能力，实现更智能的对话式健康咨询。</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">🔗</div>
+                <h3>物联网整合</h3>
+                <p>接入智能造口袋、可穿戴设备等物联网设备，实现生理指标实时监测，构建全方位健康监护体系。</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">🌐</div>
+                <h3>平台生态建设</h3>
+                <p>建立开放API平台，接入更多第三方服务（营养咨询、心理辅导、康复训练），打造造口护理生态圈。</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h3>大数据研究</h3>
+                <p>基于海量数据开展临床研究，发现护理规律，优化护理方案，为循证护理提供数据支撑。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 研究团队 -->
+    <section id="team" class="section container">
+        <h2 class="section-title">研究团队介绍</h2>
+
+        <h3 class="section-subtitle">核心研究团队</h3>
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="avatar">👨‍⚕️</div>
+                <h3>张主任</h3>
+                <div class="role">项目负责人 / 主任护师</div>
+                <p class="desc">
+                    护理学博士，教授，博士生导师。从事造口护理研究20年，主持国家级科研项目5项，
+                    发表SCI论文30余篇。
+                </p>
+            </div>
+
+            <div class="team-member">
+                <div class="avatar">👨‍💻</div>
+                <h3>李工程师</h3>
+                <div class="role">技术负责人 / 高级工程师</div>
+                <p class="desc">
+                    计算机博士，人工智能专家。专注医疗AI研究10年，主导开发多个智慧医疗项目，
+                    拥有专利15项。
+                </p>
+            </div>
+
+            <div class="team-member">
+                <div class="avatar">👩‍⚕️</div>
+                <h3>王护士长</h3>
+                <div class="role">临床研究负责人 / 副主任护师</div>
+                <p class="desc">
+                    造口专科护士，护理硕士。临床工作15年，管理造口患者3000余例，
+                    对造口护理有丰富经验。
+                </p>
+            </div>
+
+            <div class="team-member">
+                <div class="avatar">👨‍🔬</div>
+                <h3>陈博士</h3>
+                <div class="role">AI算法工程师 / 博士</div>
+                <p class="desc">
+                    深度学习专家，医学图像处理方向。开发造口AI评估核心算法，
+                    发表顶会论文5篇。
+                </p>
+            </div>
+
+            <div class="team-member">
+                <div class="avatar">👩‍💼</div>
+                <h3>刘主管</h3>
+                <div class="role">项目管理 / 护理管理者</div>
+                <p class="desc">
+                    护理管理硕士，负责项目统筹协调、临床试验组织、数据统计分析等工作。
+                </p>
+            </div>
+
+            <div class="team-member">
+                <div class="avatar">👨‍💻</div>
+                <h3>技术团队</h3>
+                <div class="role">开发团队</div>
+                <p class="desc">
+                    由8名全栈工程师、2名UI设计师、3名测试工程师组成，负责系统开发、测试、运维。
+                </p>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle" style="margin-top: 3rem;">合作单位</h3>
+        <div class="quote-box">
+            <strong>临床合作：</strong>与10家三甲医院建立合作关系，开展多中心临床研究。<br>
+            <strong>技术合作：</strong>与3所知名大学人工智能实验室开展技术合作。<br>
+            <strong>产业合作：</strong>与2家医疗器械公司合作，探索智能设备整合方案。<br>
+            <strong>学术支持：</strong>中华护理学会造口护理专业委员会提供学术指导。
+        </div>
+    </section>
+
+    <!-- 联系我们 -->
+    <section id="contact" class="section container">
+        <h2 class="section-title">联系我们</h2>
+        
+        <div style="text-align: center; margin: 3rem 0;">
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">
+                欢迎医疗机构、科研院所、企业单位洽谈合作
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; text-align: left; max-width: 800px; margin: 0 auto;">
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 1rem;">📧 联系方式</h3>
+                    <p><strong>电子邮箱：</strong>stomacare@example.com</p>
+                    <p><strong>联系电话：</strong>010-12345678</p>
+                    <p><strong>项目官网：</strong>www.stomacare.cn</p>
+                </div>
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 1rem;">🏢 单位地址</h3>
+                    <p><strong>研究单位：</strong>XX大学附属医院</p>
+                    <p><strong>地址：</strong>北京市XX区XX路XX号</p>
+                    <p><strong>邮编：</strong>100000</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem;">
+                <a href="mailto:stomacare@example.com" class="btn">联系我们</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p style="font-size: 1.2rem; margin-bottom: 1rem;">
+                <strong>基于人工智能的造口护理智能管理系统</strong>
+            </p>
+            <p>Research on AI-Based Intelligent Management System for Stoma Care</p>
+            <p style="margin-top: 2rem;">
+                <span class="badge success">国家级科研项目</span>
+                <span class="badge info">智慧医疗创新</span>
+                <span class="badge warning">临床应用典范</span>
+            </p>
+            <p style="margin-top: 2rem; opacity: 0.8;">
+                © 2024 StomaCare Research Group. All Rights Reserved.
+            </p>
+            <p style="opacity: 0.7;">
+                本系统研究获国家自然科学基金、省部级科技计划项目资助
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 导航栏滚动效果
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+            } else {
+                navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // 简单的动画效果
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .innovation-item, .achievement-card, .team-member').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
+

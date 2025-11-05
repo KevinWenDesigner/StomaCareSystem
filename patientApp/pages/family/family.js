@@ -1,10 +1,12 @@
 // patient-app/pages/family/family.js
 const app = getApp()
+const api = require('../../utils/api.js')
 import { getCurrentDateTime } from '../../utils/dateFormat.js'
 
 Page({
   data: {
     loading: true,
+    useBackendData: true,
     currentTab: 'contacts',
     hasEmergencyContacts: false,
     familyMembers: [
@@ -72,12 +74,51 @@ Page({
   },
 
   // 加载家属数据
-  loadFamilyData() {
+  async loadFamilyData() {
+    if (this.data.useBackendData) {
+      await this.loadFromBackend()
+    } else {
+      this.loadFromLocal()
+    }
+  },
+
+  // 从后端加载家属数据
+  async loadFromBackend() {
     try {
-      // 从本地存储加载数据
+      const res = await api.getFamilyMembers()
+      if (res.success && res.data) {
+        const backendMembers = Array.isArray(res.data) ? res.data : []
+        const familyMembers = backendMembers.map(member => ({
+          id: member.id,
+          name: member.name,
+          relationship: member.relationship || '其他',
+          phone: member.phone,
+          avatar: this.getAvatarByRelationship(member.relationship),
+          isEmergency: member.isPrimary === 1,
+          status: 'active',
+          lastContact: member.updatedAt || getCurrentDateTime(),
+          rawData: member
+        }))
+        
+        const hasEmergencyContacts = familyMembers.some(member => member.isEmergency)
+        
+        this.setData({
+          familyMembers,
+          hasEmergencyContacts,
+          loading: false
+        })
+      }
+      console.log('家属数据从后端加载完成')
+    } catch (error) {
+      console.error('从后端加载家属数据失败:', error)
+      this.loadFromLocal()
+    }
+  },
+
+  // 从本地加载家属数据
+  loadFromLocal() {
+    try {
       const savedFamilyMembers = wx.getStorageSync('familyMembers') || this.data.familyMembers
-      
-      // 计算是否有紧急联系人
       const hasEmergencyContacts = savedFamilyMembers.some(member => member.isEmergency)
       
       this.setData({
@@ -89,7 +130,7 @@ Page({
       console.log('家属数据加载完成')
     } catch (e) {
       console.error('加载家属数据失败:', e)
-      app.showToast('数据加载失败', 'error')
+      app.showToast('数据加载失败', 'none')
     }
   },
 
@@ -182,8 +223,8 @@ Page({
 
 
   // 添加家属
-  addMember() {
-    const { newMember } = this.data
+  async addMember() {
+    const { newMember, useBackendData } = this.data
     
     if (!newMember.name || !newMember.relationship || !newMember.phone) {
       app.showToast('请填写完整信息', 'error')
@@ -196,6 +237,74 @@ Page({
       app.showToast('请输入正确的手机号', 'error')
       return
     }
+    
+    wx.showLoading({ title: '添加中...' })
+    
+    try {
+      if (useBackendData) {
+        // 同步到后端
+        const res = await api.createFamilyMember({
+          name: newMember.name,
+          relationship: newMember.relationship,
+          phone: newMember.phone,
+          isPrimary: 0
+        })
+        
+        if (res.success && res.data) {
+          // 使用后端返回的数据
+          const backendMember = {
+            id: res.data.id,
+            name: res.data.name,
+            relationship: res.data.relationship,
+            phone: res.data.phone,
+            avatar: this.getAvatarByRelationship(res.data.relationship),
+            isEmergency: res.data.isPrimary === 1,
+            status: 'active',
+            lastContact: res.data.updatedAt || getCurrentDateTime(),
+            rawData: res.data
+          }
+          
+          const updatedMembers = [backendMember, ...this.data.familyMembers]
+          
+          this.setData({
+            familyMembers: updatedMembers,
+            showAddModal: false
+          })
+          
+          // 同时备份到本地
+          this.saveFamilyData()
+          
+          wx.hideLoading()
+          app.showToast('家属添加成功', 'success')
+          console.log('家属添加成功并同步到后端')
+        } else {
+          throw new Error('后端返回数据格式错误')
+        }
+      } else {
+        // 仅保存到本地
+        this.addMemberLocal()
+        wx.hideLoading()
+      }
+    } catch (error) {
+      console.error('添加家属到后端失败:', error)
+      wx.hideLoading()
+      
+      // 询问用户是否仅保存到本地
+      wx.showModal({
+        title: '网络错误',
+        content: '无法同步到服务器，是否仅保存到本地？',
+        success: (res) => {
+          if (res.confirm) {
+            this.addMemberLocal()
+          }
+        }
+      })
+    }
+  },
+  
+  // 仅本地添加家属
+  addMemberLocal() {
+    const { newMember } = this.data
     
     const newMemberData = {
       id: Date.now(),
@@ -220,18 +329,84 @@ Page({
   },
 
   // 保存编辑
-  saveEdit() {
-    const { currentMember } = this.data
+  async saveEdit() {
+    const { currentMember, useBackendData } = this.data
     
     if (!currentMember.name || !currentMember.relationship || !currentMember.phone) {
       app.showToast('请填写完整信息', 'error')
       return
     }
     
+    wx.showLoading({ title: '保存中...' })
+    
+    try {
+      if (useBackendData && currentMember.rawData?.id) {
+        // 同步到后端
+        const res = await api.updateFamilyMember(currentMember.rawData.id, {
+          name: currentMember.name,
+          relationship: currentMember.relationship,
+          phone: currentMember.phone
+        })
+        
+        if (res.success && res.data) {
+          // 更新本地数据
+          const updatedMembers = this.data.familyMembers.map(member => {
+            if (member.id === currentMember.id) {
+              return {
+                ...currentMember,
+                avatar: this.getAvatarByRelationship(currentMember.relationship),
+                rawData: res.data
+              }
+            }
+            return member
+          })
+          
+          this.setData({
+            familyMembers: updatedMembers,
+            showEditModal: false,
+            currentMember: null
+          })
+          
+          // 备份到本地
+          this.saveFamilyData()
+          
+          wx.hideLoading()
+          app.showToast('家属信息已更新', 'success')
+          console.log('家属信息已更新并同步到后端')
+        } else {
+          throw new Error('后端返回数据格式错误')
+        }
+      } else {
+        // 仅保存到本地
+        this.saveEditLocal()
+        wx.hideLoading()
+      }
+    } catch (error) {
+      console.error('更新家属信息到后端失败:', error)
+      wx.hideLoading()
+      
+      // 询问用户是否仅保存到本地
+      wx.showModal({
+        title: '网络错误',
+        content: '无法同步到服务器，是否仅保存到本地？',
+        success: (res) => {
+          if (res.confirm) {
+            this.saveEditLocal()
+          }
+        }
+      })
+    }
+  },
+  
+  // 仅本地保存编辑
+  saveEditLocal() {
+    const { currentMember } = this.data
+    
     const updatedMembers = this.data.familyMembers.map(member => {
       if (member.id === currentMember.id) {
         return {
           ...currentMember,
+          avatar: this.getAvatarByRelationship(currentMember.relationship),
           isEmergency: member.isEmergency
         }
       }
@@ -255,30 +430,88 @@ Page({
     const memberId = e.currentTarget.dataset.id
     const member = this.data.familyMembers.find(m => m.id === memberId)
     
+    if (!member) {
+      app.showToast('家属信息不存在', 'error')
+      return
+    }
+    
     wx.showModal({
       title: '确认删除',
       content: `确定要删除家属"${member.name}"吗？`,
       success: (res) => {
         if (res.confirm) {
-          const updatedMembers = this.data.familyMembers.filter(m => m.id !== memberId)
-          
-          this.setData({
-            familyMembers: updatedMembers
-          })
-          
-          // 保存到本地存储
-          this.saveFamilyData()
-          
-          app.showToast('家属已删除', 'success')
+          this.confirmDeleteMember(memberId, member)
         }
       }
     })
   },
+  
+  // 确认删除家属
+  async confirmDeleteMember(memberId, member) {
+    const { useBackendData } = this.data
+    
+    wx.showLoading({ title: '删除中...' })
+    
+    try {
+      if (useBackendData && member.rawData?.id) {
+        // 从后端删除
+        const res = await api.deleteFamilyMember(member.rawData.id)
+        
+        if (res.success) {
+          // 删除本地数据
+          this.deleteLocalMember(memberId)
+          
+          wx.hideLoading()
+          app.showToast('家属已删除', 'success')
+          console.log('家属已删除并同步到后端')
+        } else {
+          throw new Error('后端删除失败')
+        }
+      } else {
+        // 仅删除本地
+        this.deleteLocalMember(memberId)
+        wx.hideLoading()
+      }
+    } catch (error) {
+      console.error('从后端删除家属失败:', error)
+      wx.hideLoading()
+      
+      // 询问用户是否仅删除本地
+      wx.showModal({
+        title: '网络错误',
+        content: '无法从服务器删除，是否仅删除本地记录？',
+        success: (res) => {
+          if (res.confirm) {
+            this.deleteLocalMember(memberId)
+          }
+        }
+      })
+    }
+  },
+  
+  // 仅本地删除家属
+  deleteLocalMember(memberId) {
+    const updatedMembers = this.data.familyMembers.filter(m => m.id !== memberId)
+    
+    this.setData({
+      familyMembers: updatedMembers
+    })
+    
+    // 保存到本地存储
+    this.saveFamilyData()
+    
+    app.showToast('家属已删除', 'success')
+  },
 
   // 设置紧急联系人
-  setEmergencyContact(e) {
+  async setEmergencyContact(e) {
     const memberId = e.currentTarget.dataset.id
     const member = this.data.familyMembers.find(m => m.id === memberId)
+    
+    if (!member) {
+      app.showToast('家属信息不存在', 'error')
+      return
+    }
     
     if (member.isEmergency) {
       // 取消紧急联系人
@@ -287,19 +520,7 @@ Page({
         content: `确定要取消"${member.name}"的紧急联系人身份吗？`,
         success: (res) => {
           if (res.confirm) {
-            const updatedMembers = this.data.familyMembers.map(m => {
-              if (m.id === memberId) {
-                return { ...m, isEmergency: false }
-              }
-              return m
-            })
-            
-            this.setData({
-              familyMembers: updatedMembers
-            })
-            
-            this.saveFamilyData()
-            app.showToast('已取消紧急联系人', 'success')
+            this.toggleEmergencyStatus(memberId, member, false)
           }
         }
       })
@@ -312,20 +533,86 @@ Page({
         return
       }
       
-      const updatedMembers = this.data.familyMembers.map(m => {
-        if (m.id === memberId) {
-          return { ...m, isEmergency: true }
-        }
-        return m
-      })
-      
-      this.setData({
-        familyMembers: updatedMembers
-      })
-      
-      this.saveFamilyData()
-      app.showToast('已设置为紧急联系人', 'success')
+      this.toggleEmergencyStatus(memberId, member, true)
     }
+  },
+  
+  // 切换紧急联系人状态
+  async toggleEmergencyStatus(memberId, member, isEmergency) {
+    const { useBackendData } = this.data
+    
+    wx.showLoading({ title: isEmergency ? '设置中...' : '取消中...' })
+    
+    try {
+      if (useBackendData && member.rawData?.id) {
+        // 同步到后端
+        if (isEmergency) {
+          // 设置为主要联系人
+          const res = await api.setPrimaryContact(member.rawData.id)
+          
+          if (res.success) {
+            this.updateEmergencyStatusLocal(memberId, true)
+            wx.hideLoading()
+            app.showToast('已设置为紧急联系人', 'success')
+            console.log('已设置为紧急联系人并同步到后端')
+          } else {
+            throw new Error('设置主要联系人失败')
+          }
+        } else {
+          // 取消主要联系人 - 通过更新isPrimary为0
+          const res = await api.updateFamilyMember(member.rawData.id, {
+            name: member.name,
+            relationship: member.relationship,
+            phone: member.phone,
+            isPrimary: 0
+          })
+          
+          if (res.success) {
+            this.updateEmergencyStatusLocal(memberId, false)
+            wx.hideLoading()
+            app.showToast('已取消紧急联系人', 'success')
+            console.log('已取消紧急联系人并同步到后端')
+          } else {
+            throw new Error('取消主要联系人失败')
+          }
+        }
+      } else {
+        // 仅更新本地
+        this.updateEmergencyStatusLocal(memberId, isEmergency)
+        wx.hideLoading()
+      }
+    } catch (error) {
+      console.error('切换紧急联系人状态失败:', error)
+      wx.hideLoading()
+      
+      // 询问用户是否仅更新本地
+      wx.showModal({
+        title: '网络错误',
+        content: '无法同步到服务器，是否仅更新本地状态？',
+        success: (res) => {
+          if (res.confirm) {
+            this.updateEmergencyStatusLocal(memberId, isEmergency)
+          }
+        }
+      })
+    }
+  },
+  
+  // 仅本地更新紧急联系人状态
+  updateEmergencyStatusLocal(memberId, isEmergency) {
+    const updatedMembers = this.data.familyMembers.map(m => {
+      if (m.id === memberId) {
+        return { ...m, isEmergency }
+      }
+      return m
+    })
+    
+    this.setData({
+      familyMembers: updatedMembers
+    })
+    
+    this.saveFamilyData()
+    app.showToast(isEmergency ? '已设置为紧急联系人' : '已取消紧急联系人', 'success')
   },
 
   // 联系家属

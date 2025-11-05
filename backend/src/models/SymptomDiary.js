@@ -81,12 +81,12 @@ class SymptomDiary {
     const params = [patientId];
     
     if (options.startDate) {
-      sql += ' AND diary_date >= ?';
+      sql += ' AND DATE(diary_date) >= ?';
       params.push(options.startDate);
     }
     
     if (options.endDate) {
-      sql += ' AND diary_date <= ?';
+      sql += ' AND DATE(diary_date) <= ?';
       params.push(options.endDate);
     }
     
@@ -171,12 +171,12 @@ class SymptomDiary {
     const params = [patientId];
     
     if (filters.startDate) {
-      sql += ' AND diary_date >= ?';
+      sql += ' AND DATE(diary_date) >= ?';
       params.push(filters.startDate);
     }
     
     if (filters.endDate) {
-      sql += ' AND diary_date <= ?';
+      sql += ' AND DATE(diary_date) <= ?';
       params.push(filters.endDate);
     }
     

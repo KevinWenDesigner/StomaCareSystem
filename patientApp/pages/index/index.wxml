@@ -8,8 +8,8 @@
       <text class="welcome-subtitle">专业的造口护理管理平台</text>
       <text class="welcome-desc">为您提供全方位的造口护理服务</text>
       
-      <button class="start-btn" bindtap="simulateLogin">
-        <text class="btn-text">开始使用</text>
+      <button class="start-btn" bindtap="wechatLogin" loading="{{isLoading}}">
+        <text class="btn-text">{{isLoading ? '登录中...' : '微信登录'}}</text>
       </button>
     </view>
   </view>
@@ -21,12 +21,12 @@
       <view class="user-info-header">
         <view class="user-avatar">
           <!-- 如果有微信头像则显示，否则显示文字头像 -->
-          <image wx:if="{{patientInfo.avatarUrl}}" class="avatar-image" src="{{patientInfo.avatarUrl}}" mode="aspectFill"></image>
-          <text wx:else class="avatar-text">{{patientInfo.displayName.charAt(0)}}</text>
+          <image wx:if="{{patientInfo && patientInfo.avatarUrl}}" class="avatar-image" src="{{patientInfo.avatarUrl}}" mode="aspectFill"></image>
+          <text wx:else class="avatar-text">{{patientInfo && patientInfo.name ? patientInfo.name.charAt(0) : '患'}}</text>
         </view>
         <view class="user-welcome">
-          <text class="page-subtitle">欢迎回来，{{patientInfo.displayName}}</text>
-          <text class="user-care-info">{{patientInfo.age}}岁 · {{patientInfo.gender}} · 护理{{patientInfo.careDays}}天</text>
+          <text class="page-subtitle">欢迎回来，{{patientInfo && patientInfo.name ? patientInfo.name : '患者'}}</text>
+          <text class="user-care-info" wx:if="{{patientInfo}}">{{patientInfo.age || '-'}}岁 · {{patientInfo.gender || '-'}} · 护理{{patientInfo.careDays || 0}}天</text>
         </view>
       </view>
     </view>

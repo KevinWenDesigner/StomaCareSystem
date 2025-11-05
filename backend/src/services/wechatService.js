@@ -4,6 +4,20 @@ const wechatConfig = require('../config/wechat');
 class WechatService {
   // 微信登录 - code换取session_key和openid
   static async code2Session(code) {
+    // 开发环境：如果没有配置微信appId，使用模拟登录
+    if (!wechatConfig.appId || wechatConfig.appId === '' || wechatConfig.appId === 'test_appid_for_development') {
+      console.log('⚠️  开发模式：使用模拟微信登录');
+      // 生成一个基于code的模拟openid
+      const mockOpenId = `mock_openid_${Buffer.from(code).toString('base64').substring(0, 20)}`;
+      
+      return {
+        openid: mockOpenId,
+        sessionKey: 'mock_session_key_for_development',
+        unionId: null
+      };
+    }
+
+    // 生产环境：使用真实的微信API
     try {
       const response = await axios.get(wechatConfig.apiUrls.code2Session, {
         params: {
@@ -17,7 +31,7 @@ class WechatService {
       const data = response.data;
 
       if (data.errcode) {
-        throw new Error(`微信登录失败: ${data.errmsg}`);
+        throw new Error(`微信登录失败: ${data.errmsg}, rid: ${data.errcode}`);
       }
 
       return {

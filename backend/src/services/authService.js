@@ -38,8 +38,26 @@ class AuthService {
         user = await User.findById(user.id);
       }
       
-      // 3. 查找患者信息
+      // 3. 查找或创建患者信息
       let patient = await Patient.findByUserId(user.id);
+      
+      // 如果是新用户且没有患者信息，自动创建默认患者记录
+      if (!patient && user.user_type === 'patient') {
+        console.log('创建默认患者信息，用户ID:', user.id);
+        // gender: 1=男性, 2=女性, 0=未知，默认为男性
+        const gender = userInfo.gender === 2 ? 'female' : 'male';
+        
+        const patientId = await Patient.create({
+          userId: user.id,
+          name: userInfo.nickname || '患者',
+          gender: gender,
+          birthDate: new Date(1980, 0, 1), // 默认出生日期
+          phone: '',
+          address: ''
+        });
+        
+        patient = await Patient.findById(patientId);
+      }
       
       // 4. 生成JWT token
       const token = generateToken({
@@ -125,6 +143,22 @@ class AuthService {
       let patient = null;
       if (user.user_type === 'patient') {
         patient = await Patient.findByUserId(user.id);
+        
+        // 如果患者没有记录，创建默认记录
+        if (!patient) {
+          console.log('刷新token时创建默认患者信息，用户ID:', user.id);
+          // 默认性别为男性
+          const patientId = await Patient.create({
+            userId: user.id,
+            name: user.nickname || '患者',
+            gender: 'male',
+            birthDate: new Date(1980, 0, 1),
+            phone: '',
+            address: ''
+          });
+          
+          patient = await Patient.findById(patientId);
+        }
       }
       
       const token = generateToken({

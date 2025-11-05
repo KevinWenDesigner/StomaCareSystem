@@ -1,5 +1,6 @@
 // patient-app/pages/camera/history/history.js
 const app = getApp()
+const api = require('../../../utils/api.js')
 import { formatDateTime, getRelativeTime, formatDate } from '../../../utils/dateFormat.js'
 
 Page({
@@ -10,7 +11,8 @@ Page({
     page: 1,
     pageSize: 10,
     averageScore: 0,
-    latestRecord: '暂无'
+    latestRecord: '暂无',
+    useBackendData: true // 是否使用后端数据
   },
 
   onLoad() {
@@ -24,10 +26,82 @@ Page({
   },
 
   // 加载历史数据
-  loadHistoryData() {
+  async loadHistoryData() {
     this.setData({ loading: true })
     
+    // 优先从后端加载
+    if (this.data.useBackendData) {
+      await this.loadFromBackend()
+    } else {
+      this.loadFromLocal()
+    }
+  },
+
+  // 从后端加载评估历史
+  async loadFromBackend() {
     try {
+      console.log('从后端加载评估历史...')
+      const res = await api.getAssessments({
+        page: this.data.page,
+        pageSize: this.data.pageSize
+      })
+      
+      if (res.success && res.data) {
+        const backendData = Array.isArray(res.data) ? res.data : []
+        
+        // 转换后端数据格式为前端需要的格式
+        const historyList = backendData.map(item => ({
+          id: item.id,
+          imageUrl: item.imageUrl || item.image_url,
+          time: item.createdAt || item.created_at,
+          score: this.calculateScore(item.riskLevel || item.risk_level),
+          level: item.riskLevel || item.risk_level,
+          levelText: this.getRiskLevelText(item.riskLevel || item.risk_level),
+          description: item.suggestions || '暂无描述',
+          stomaColor: item.stomaColor || item.stoma_color,
+          stomaSize: item.stomaSize || item.stoma_size,
+          skinCondition: item.skinCondition || item.skin_condition,
+          rawData: item
+        }))
+        
+        // 按时间倒序排列
+        historyList.sort((a, b) => new Date(b.time) - new Date(a.time))
+        
+        // 计算统计数据
+        const averageScore = historyList.length > 0 
+          ? Math.round(historyList.reduce((sum, item) => sum + item.score, 0) / historyList.length)
+          : 0
+        
+        const latestRecord = historyList.length > 0 
+          ? getRelativeTime(historyList[0].time)
+          : '暂无'
+        
+        this.setData({ 
+          historyList,
+          averageScore,
+          latestRecord,
+          loading: false
+        })
+        
+        // 同时保存到本地作为备份
+        wx.setStorageSync('assessmentHistory', historyList)
+        
+        console.log('从后端加载评估历史成功，共', historyList.length, '条记录')
+      } else {
+        console.log('后端返回数据为空，使用本地数据')
+        this.loadFromLocal()
+      }
+    } catch (error) {
+      console.error('从后端加载评估历史失败:', error)
+      console.log('降级使用本地数据')
+      this.loadFromLocal()
+    }
+  },
+
+  // 从本地加载评估历史
+  loadFromLocal() {
+    try {
+      console.log('从本地加载评估历史...')
       const historyList = wx.getStorageSync('assessmentHistory') || []
       
       // 按时间倒序排列
@@ -49,12 +123,34 @@ Page({
         loading: false
       })
       
-      console.log('历史数据加载完成，共', historyList.length, '条记录')
+      console.log('从本地加载评估历史完成，共', historyList.length, '条记录')
     } catch (e) {
       console.error('加载历史数据失败:', e)
       this.setData({ loading: false })
       app.showToast('加载历史数据失败', 'error')
     }
+  },
+
+  // 计算评分（根据风险等级）
+  calculateScore(riskLevel) {
+    const scoreMap = {
+      'low': 90,
+      'medium': 70,
+      'high': 40,
+      'critical': 20
+    }
+    return scoreMap[riskLevel] || 75
+  },
+
+  // 获取风险等级文本
+  getRiskLevelText(riskLevel) {
+    const textMap = {
+      'low': '状态良好',
+      'medium': '需要注意',
+      'high': '需要处理',
+      'critical': '紧急处理'
+    }
+    return textMap[riskLevel] || '未知'
   },
 
   // 查看评估详情

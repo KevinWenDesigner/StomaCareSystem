@@ -2,20 +2,21 @@
 <view class="container">
   <!-- 用户信息卡片 -->
   <view class="user-card">
-    <view class="user-avatar" bindtap="chooseAvatar">
+    <view class="user-avatar" bindtap="showEditModal">
       <!-- 如果有微信头像则显示，否则显示文字头像 -->
-      <image wx:if="{{userInfo.avatarUrl}}" class="avatar-image" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
-      <text wx:else class="avatar-text">{{userInfo.name.charAt(0)}}</text>
+      <image wx:if="{{userInfo && userInfo.avatarUrl}}" class="avatar-image" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+      <image wx:elif="{{patientInfo && patientInfo.avatarUrl}}" class="avatar-image" src="{{patientInfo.avatarUrl}}" mode="aspectFill"></image>
+      <text wx:else class="avatar-text">{{(patientInfo && patientInfo.name) ? patientInfo.name.charAt(0) : '患'}}</text>
+      <!-- 编辑图标提示 -->
+      <view class="avatar-edit-icon">✏️</view>
     </view>
-    <view class="user-info">
-      <!-- 优先显示微信昵称，如果没有则显示手动输入的姓名 -->
-      <text class="user-name">{{userInfo.nickName || userInfo.name}}</text>
-      <text class="user-desc">{{userInfo.age}}岁 · {{userInfo.gender}}</text>
-      <text class="user-care">护理天数: {{userInfo.careDays}}天</text>
+    <view class="user-info" bindtap="showEditModal">
+      <!-- 显示患者信息 -->
+      <text class="user-name">患者：{{(patientInfo && patientInfo.name) || (userInfo && (userInfo.nickName || userInfo.nickname)) || '无'}}</text>
+      <text class="user-desc" wx:if="{{patientInfo}}">{{patientInfo.age || '-'}}岁 · {{patientInfo.gender === 'male' ? '男' : (patientInfo.gender === 'female' ? '女' : patientInfo.gender || '-')}}</text>
+      <text class="user-care" wx:if="{{patientInfo && patientInfo.careDays}}">护理天数: {{patientInfo.careDays}}天</text>
+      <text class="edit-hint">点击编辑</text>
     </view>
-    <button class="edit-btn" bindtap="showEditModal">
-      <text class="btn-text">编辑</text>
-    </button>
   </view>
 
   <!-- 微信用户信息获取区域 -->

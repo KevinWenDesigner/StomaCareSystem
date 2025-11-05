@@ -40,6 +40,10 @@
           <text class="meta-icon">⭐</text>
           <text class="meta-text">{{course.rating}}分</text>
         </view>
+        <view class="meta-item meta-like" bindtap="likeCourse">
+          <text class="meta-icon">{{isLiked ? '❤️' : '🤍'}}</text>
+          <text class="meta-text">{{likeCount}}</text>
+        </view>
       </view>
     </view>
 

@@ -2,7 +2,7 @@
 
 .container {
   padding: 32rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  background: var(--bg-secondary);
   min-height: 100vh;
 }
 
@@ -15,15 +15,14 @@
 .page-title {
   font-size: 48rpx;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--gray-900);
   display: block;
   margin-bottom: 16rpx;
-  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
   font-size: 32rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gray-600);
   display: block;
   font-weight: 500;
 }
@@ -34,12 +33,11 @@
 }
 
 .record-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .record-header {
@@ -62,13 +60,13 @@
 }
 
 .edit-badge {
-  background: #FEF3C7;
-  color: #D97706;
+  background: var(--warning-light);
+  color: var(--warning-dark);
   font-size: 20rpx;
   font-weight: 600;
   padding: 4rpx 8rpx;
   border-radius: 6rpx;
-  border: 1rpx solid #F59E0B;
+  border: 1rpx solid var(--warning-color);
 }
 
 .record-date {
@@ -104,9 +102,9 @@
 
 .selection-count {
   font-size: 24rpx;
-  color: #3B82F6;
+  color: var(--primary-color);
   font-weight: 500;
-  background: rgba(59, 130, 246, 0.1);
+  background: var(--primary-lighter);
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
 }
@@ -119,19 +117,21 @@
 
 .pain-item {
   flex: 1;
-  background: #F3F4F6;
+  background: var(--gray-100);
   border-radius: 12rpx;
   padding: 20rpx 16rpx;
   text-align: center;
   transition: all 0.3s ease;
-  border: 2rpx solid transparent;
+  border: 2rpx solid var(--gray-200);
   cursor: pointer;
+  color: var(--gray-700);
 }
 
 .pain-item.active {
-  background: #3B82F6;
+  background: var(--primary-color);
   color: #FFFFFF;
-  border-color: #3B82F6;
+  border-color: var(--primary-color);
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.25);
 }
 
 .pain-item:active {
@@ -158,110 +158,50 @@
 }
 
 .symptom-tag {
-  background: #F3F4F6;
+  background: var(--gray-100);
   border-radius: 12rpx;
   padding: 16rpx 24rpx;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2rpx solid transparent;
-  cursor: pointer;
-  color: #374151;
+  border: 2rpx solid var(--gray-200);
+  color: var(--gray-700);
   position: relative;
-  overflow: hidden;
-  transform: scale(1);
+  min-width: 120rpx;
+  text-align: center;
 }
 
 /* 选中状态 - 增强视觉效果 */
 .symptom-tag.selected {
-  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%) !important;
-  color: #FFFFFF !important;
-  border-color: #3B82F6 !important;
-  border-width: 2rpx !important;
-  border-style: solid !important;
-  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4) !important;
-  transform: scale(1.08) !important;
-  font-weight: 700 !important;
-  position: relative;
-}
-
-/* 选中状态添加勾选图标 */
-.symptom-tag.selected::before {
-  content: "✓";
-  position: absolute;
-  top: 4rpx;
-  right: 8rpx;
-  font-size: 20rpx;
-  font-weight: bold;
+  background: var(--primary-color);
   color: #FFFFFF;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  width: 24rpx;
-  height: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  animation: pulse 2s infinite;
-}
-
-/* 脉冲动画 */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  border: 3rpx solid var(--primary-dark);
+  box-shadow: 0 8rpx 24rpx rgba(0, 120, 255, 0.4);
+  transform: scale(1.05);
+  font-weight: 700;
 }
 
 /* 选中状态的文字样式 */
 .symptom-tag.selected .tag-text {
+  color: #FFFFFF;
   font-weight: 700;
-  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
-}
-
-.symptom-tag-active {
-  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%) !important;
-  color: #FFFFFF !important;
-  border-color: #3B82F6 !important;
-  border-width: 2rpx !important;
-  border-style: solid !important;
-  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4) !important;
-  transform: scale(1.08) !important;
-  font-weight: 700 !important;
-  position: relative;
-}
-
-.symptom-tag.active {
-  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%) !important;
-  color: #FFFFFF !important;
-  border-color: #3B82F6 !important;
-  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4) !important;
-  transform: scale(1.08) !important;
-  font-weight: 700 !important;
-  position: relative;
 }
 
 .symptom-tag:active {
   transform: scale(0.95);
+  opacity: 0.8;
 }
 
 .tag-text {
   font-size: 28rpx;
   font-weight: 500;
+  display: block;
 }
 
 .symptom-tag.small {
   padding: 8rpx 16rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+  background: var(--primary-color);
   color: #FFFFFF;
-  border: 1rpx solid #3B82F6;
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.3);
+  border: 1rpx solid var(--primary-dark);
+  box-shadow: 0 2rpx 8rpx rgba(0, 120, 255, 0.25);
   font-weight: 600;
 }
 
@@ -294,7 +234,7 @@
 
 .form-textarea:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4rpx rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 4rpx rgba(0, 120, 255, 0.1);
 }
 
 /* 操作按钮容器 */
@@ -313,21 +253,22 @@
   padding: 24rpx 32rpx;
   font-size: 32rpx;
   font-weight: 600;
-  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(0, 120, 255, 0.25);
   transition: all 0.3s ease;
   flex: 1;
 }
 
 .submit-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
+  background: var(--primary-dark);
+  box-shadow: 0 2rpx 8rpx rgba(0, 120, 255, 0.3);
 }
 
 /* 取消按钮 */
 .cancel-btn {
-  background: #F3F4F6;
-  color: #374151;
-  border: 2rpx solid #D1D5DB;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 2rpx solid var(--gray-300);
   border-radius: 16rpx;
   padding: 24rpx 32rpx;
   font-size: 32rpx;
@@ -338,7 +279,7 @@
 
 .cancel-btn:active {
   transform: scale(0.95);
-  background: #E5E7EB;
+  background: var(--gray-200);
 }
 
 /* 统计概览 */
@@ -356,12 +297,12 @@
 .section-title {
   font-size: 36rpx;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--gray-900);
 }
 
 .section-subtitle {
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--gray-600);
 }
 
 .stats-grid {
@@ -371,14 +312,13 @@
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 20rpx;
   padding: 32rpx;
   display: flex;
   align-items: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20rpx);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
   transition: all 0.3s ease;
 }
 
@@ -420,19 +360,20 @@
 }
 
 .filter-tab {
-  background: rgba(255, 255, 255, 0.2);
+  background: #FFFFFF;
   border-radius: 12rpx;
   padding: 12rpx 24rpx;
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gray-600);
   transition: all 0.3s ease;
-  backdrop-filter: blur(10rpx);
+  border: 1rpx solid var(--gray-200);
 }
 
 .filter-tab.active {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--primary-color);
   color: #FFFFFF;
   font-weight: 600;
+  border-color: var(--primary-color);
 }
 
 .filter-tab:active {
@@ -442,15 +383,17 @@
 .empty-state {
   text-align: center;
   padding: 80rpx 32rpx;
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 20rpx;
-  backdrop-filter: blur(20rpx);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .empty-icon {
   font-size: 80rpx;
   display: block;
   margin-bottom: 24rpx;
+  color: var(--gray-400);
 }
 
 .empty-text {
@@ -474,12 +417,11 @@
 }
 
 .record-item {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 20rpx;
   padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
   transition: all 0.3s ease;
 }
 
@@ -591,4 +533,4 @@
   .pain-desc {
     font-size: 22rpx;
   }
-} 
+}

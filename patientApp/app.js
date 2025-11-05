@@ -6,7 +6,8 @@ App({
     userInfo: null,
     userType: 'patient',
     token: null,
-    apiBaseUrl: config.apiBaseUrl
+    apiBaseUrl: config.apiBaseUrl,
+    needRefreshIndex: false // 标记是否需要刷新首页
   },
 
   onLaunch() {

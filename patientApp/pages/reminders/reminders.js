@@ -1,9 +1,11 @@
 // patient-app/pages/reminders/reminders.js
 const app = getApp()
+const api = require('../../utils/api.js')
 
 Page({
   data: {
     loading: true,
+    useBackendData: true,
     currentTab: 'reminders',
     reminders: [
       {
@@ -128,14 +130,58 @@ Page({
   },
 
   // 加载提醒设置数据
-  loadReminderSettings() {
+  async loadReminderSettings() {
+    if (this.data.useBackendData) {
+      await this.loadFromBackend()
+    } else {
+      this.loadFromLocal()
+    }
+  },
+
+  // 从后端加载提醒
+  async loadFromBackend() {
     try {
-      // 从本地存储加载数据
+      const res = await api.getReminders()
+      if (res.success && res.data) {
+        const backendReminders = Array.isArray(res.data) ? res.data : []
+        const reminders = backendReminders.map(reminder => {
+          // 将数据库的 reminder_type 映射回前端 category
+          const dbReminderType = reminder.reminderType || reminder.reminder_type || 'custom'
+          const category = this.mapReminderTypeToCategory(dbReminderType)
+          
+          return {
+            id: reminder.id,
+            title: reminder.title,
+            description: reminder.description || '',
+            time: reminder.remindTime || reminder.remind_time,
+            enabled: reminder.enabled === 1,
+            repeat: reminder.frequency || 'daily',
+            category: category,
+            categoryName: this.getCategoryName(category),
+            icon: this.getCategoryIcon(category),
+            rawData: reminder
+          }
+        })
+        
+        this.setData({
+          reminders,
+          loading: false
+        })
+      }
+      console.log('提醒从后端加载完成')
+    } catch (error) {
+      console.error('从后端加载提醒失败:', error)
+      this.loadFromLocal()
+    }
+  },
+
+  // 从本地加载提醒
+  loadFromLocal() {
+    try {
       const savedReminders = wx.getStorageSync('reminders') || this.data.reminders
       const savedNotificationSettings = wx.getStorageSync('notificationSettings') || this.data.notificationSettings
       const savedTimeSettings = wx.getStorageSync('timeSettings') || this.data.timeSettings
       
-      // 为每个提醒添加分类名称
       const remindersWithCategoryName = savedReminders.map(reminder => {
         const category = this.data.categories.find(c => c.id === reminder.category)
         return {
@@ -154,8 +200,61 @@ Page({
       console.log('提醒设置数据加载完成')
     } catch (e) {
       console.error('加载提醒设置数据失败:', e)
-      app.showToast('数据加载失败', 'error')
+      app.showToast('数据加载失败', 'none')
     }
+  },
+
+  // 获取分类名称
+  getCategoryName(type) {
+    const category = this.data.categories.find(c => c.id === type)
+    return category ? category.name : '其他'
+  },
+
+  // 获取分类图标
+  getCategoryIcon(type) {
+    const icons = {
+      hygiene: '🧼',
+      care: '🔄',
+      monitoring: '📝',
+      exercise: '🏃‍♀️',
+      medical: '🏥',
+      medication: '💊',
+      nutrition: '💧',
+      // 数据库支持的类型
+      bag_change: '🔄',
+      checkup: '🏥',
+      diet: '🍎',
+      custom: '⏰'
+    }
+    return icons[type] || '⏰'
+  },
+
+  // 将前端分类映射到数据库支持的 reminder_type 枚举值
+  // 数据库支持: medication, bag_change, checkup, exercise, diet, custom
+  mapCategoryToReminderType(category) {
+    const mapping = {
+      'hygiene': 'bag_change',    // 清洁护理 -> 造口袋更换
+      'care': 'bag_change',        // 护理操作 -> 造口袋更换
+      'monitoring': 'checkup',     // 症状监测 -> 复查
+      'exercise': 'exercise',      // 康复运动 -> 运动
+      'medical': 'checkup',        // 医疗相关 -> 复查
+      'medication': 'medication',  // 药物管理 -> 药物
+      'nutrition': 'diet'          // 营养补充 -> 饮食
+    }
+    return mapping[category] || 'custom' // 默认返回 custom（自定义）
+  },
+
+  // 将数据库的 reminder_type 反向映射回前端分类
+  mapReminderTypeToCategory(reminderType) {
+    const mapping = {
+      'medication': 'medication',
+      'bag_change': 'care',
+      'checkup': 'medical',
+      'exercise': 'exercise',
+      'diet': 'nutrition',
+      'custom': 'care'
+    }
+    return mapping[reminderType] || 'care'
   },
 
   // 切换标签页
@@ -167,15 +266,38 @@ Page({
   },
 
   // 切换提醒开关
-  toggleReminder(e) {
+  async toggleReminder(e) {
     const reminderId = e.currentTarget.dataset.id
     const { reminders } = this.data
     
-    const updatedReminders = reminders.map(reminder => {
-      if (reminder.id === reminderId) {
-        return { ...reminder, enabled: !reminder.enabled }
+    const reminder = reminders.find(r => r.id === reminderId)
+    if (!reminder) return
+    
+    const newEnabledState = !reminder.enabled
+    
+    // 如果使用后端数据，先同步到后端
+    if (this.data.useBackendData && reminder.rawData) {
+      try {
+        await api.updateReminder(reminderId, {
+          enabled: newEnabledState ? 1 : 0
+        })
+        console.log('提醒状态已同步到后端')
+      } catch (error) {
+        console.error('同步提醒状态到后端失败:', error)
+        wx.showToast({
+          title: '同步失败，仅保存到本地',
+          icon: 'none',
+          duration: 2000
+        })
       }
-      return reminder
+    }
+    
+    // 更新本地数据
+    const updatedReminders = reminders.map(r => {
+      if (r.id === reminderId) {
+        return { ...r, enabled: newEnabledState }
+      }
+      return r
     })
     
     this.setData({
@@ -186,12 +308,11 @@ Page({
     this.saveReminderSettings()
     
     // 如果开启提醒，请求通知权限
-    const reminder = reminders.find(r => r.id === reminderId)
-    if (reminder && !reminder.enabled) {
+    if (newEnabledState) {
       this.requestNotificationPermission()
     }
     
-    app.showToast(reminder.enabled ? '提醒已关闭' : '提醒已开启', 'success')
+    app.showToast(newEnabledState ? '提醒已开启' : '提醒已关闭', 'success')
   },
 
   // 编辑提醒
@@ -217,35 +338,160 @@ Page({
     wx.showModal({
       title: '删除提醒',
       content: '确定要删除这个提醒吗？',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const { reminders } = this.data
-          const updatedReminders = reminders.filter(reminder => reminder.id !== reminderId)
-          
-          this.setData({
-            reminders: updatedReminders
-          })
-          
-          // 保存到本地存储
-          this.saveReminderSettings()
-          
-          app.showToast('提醒已删除', 'success')
+          await this.confirmDeleteReminder(reminderId)
         }
       }
     })
   },
 
+  // 确认删除提醒
+  async confirmDeleteReminder(reminderId) {
+    const { reminders } = this.data
+    const reminder = reminders.find(r => r.id === reminderId)
+    
+    // 如果使用后端数据且有原始数据，先从后端删除
+    if (this.data.useBackendData && reminder && reminder.rawData) {
+      try {
+        await api.deleteReminder(reminderId)
+        console.log('提醒已从后端删除')
+      } catch (error) {
+        console.error('从后端删除提醒失败:', error)
+        wx.showModal({
+          title: '删除失败',
+          content: '从服务器删除失败，是否仅删除本地数据？',
+          success: (res) => {
+            if (!res.confirm) {
+              return
+            }
+            // 继续删除本地数据
+            this.deleteLocalReminder(reminderId)
+          }
+        })
+        return
+      }
+    }
+    
+    // 删除本地数据
+    this.deleteLocalReminder(reminderId)
+  },
+
+  // 删除本地提醒数据
+  deleteLocalReminder(reminderId) {
+    const { reminders } = this.data
+    const updatedReminders = reminders.filter(reminder => reminder.id !== reminderId)
+    
+    this.setData({
+      reminders: updatedReminders
+    })
+    
+    // 保存到本地存储
+    this.saveReminderSettings()
+    
+    app.showToast('提醒已删除', 'success')
+  },
+
   // 添加提醒
   addReminder() {
+    // 跳转到添加提醒页面（可以在后续开发中实现）
+    // wx.navigateTo({
+    //   url: '/pages/reminders/add-reminder/add-reminder'
+    // })
+    
+    // 临时实现：显示对话框收集基本信息
     wx.showModal({
       title: '添加提醒',
-      content: '是否要添加新的提醒？',
-      success: (res) => {
-        if (res.confirm) {
-          app.showToast('添加提醒功能开发中', 'none')
+      content: '请输入提醒标题',
+      editable: true,
+      placeholderText: '例如：服药提醒',
+      success: async (res) => {
+        if (res.confirm && res.content) {
+          await this.createNewReminder(res.content)
         }
       }
     })
+  },
+
+  // 创建新提醒
+  async createNewReminder(title) {
+    try {
+      // 使用数据库支持的提醒类型（medication, bag_change, checkup, exercise, diet, custom）
+      const newReminderData = {
+        title: title,
+        description: '',
+        reminderType: 'custom', // 改为 'custom' 自定义类型，数据库支持的枚举值
+        remindTime: '08:00',
+        frequency: 'daily',
+        enabled: 1
+      }
+      
+      // 如果使用后端数据，先同步到后端
+      if (this.data.useBackendData) {
+        try {
+          wx.showLoading({ title: '创建中...' })
+          const res = await api.createReminder(newReminderData)
+          wx.hideLoading()
+          
+          if (res.success && res.data) {
+            // 添加后端返回的提醒到列表
+            const newReminder = {
+              id: res.data.id,
+              title: res.data.title,
+              description: res.data.description || '',
+              time: res.data.remindTime || res.data.remind_time,
+              enabled: res.data.enabled === 1,
+              repeat: res.data.frequency || 'daily',
+              category: res.data.reminderType || res.data.reminder_type || 'care',
+              categoryName: this.getCategoryName(res.data.reminderType || res.data.reminder_type),
+              icon: this.getCategoryIcon(res.data.reminderType || res.data.reminder_type),
+              rawData: res.data
+            }
+            
+            const updatedReminders = [newReminder, ...this.data.reminders]
+            this.setData({ reminders: updatedReminders })
+            
+            // 同时保存到本地
+            this.saveReminderSettings()
+            
+            console.log('提醒已同步到后端')
+            app.showToast('提醒创建成功', 'success')
+            return
+          }
+        } catch (error) {
+          console.error('创建提醒到后端失败:', error)
+          wx.hideLoading()
+          wx.showToast({
+            title: '创建失败，请重试',
+            icon: 'none',
+            duration: 2000
+          })
+          return
+        }
+      }
+      
+      // 仅添加到本地
+      const newReminder = {
+        id: Date.now(),
+        title: title,
+        description: '',
+        time: '08:00',
+        enabled: true,
+        repeat: 'daily',
+        category: 'care',
+        categoryName: '护理操作',
+        icon: '⏰'
+      }
+      
+      const updatedReminders = [newReminder, ...this.data.reminders]
+      this.setData({ reminders: updatedReminders })
+      this.saveReminderSettings()
+      
+      app.showToast('提醒已添加到本地', 'success')
+    } catch (error) {
+      console.error('创建提醒失败:', error)
+      app.showToast('创建提醒失败', 'error')
+    }
   },
 
   // 切换通知设置

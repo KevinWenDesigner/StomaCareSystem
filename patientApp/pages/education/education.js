@@ -1,8 +1,10 @@
 // patient-app/pages/education/education.js
 const app = getApp()
+const api = require('../../utils/api.js')
 
 Page({
   data: {
+    useBackendData: true, // 是否使用后端数据
     recommendedCourses: [
       {
         id: 'course_001',
@@ -390,7 +392,147 @@ Page({
   },
 
   // 加载学习数据
-  loadLearningData() {
+  async loadLearningData() {
+    if (this.data.useBackendData) {
+      await this.loadFromBackend()
+    } else {
+      this.loadFromLocal()
+    }
+  },
+
+  // 从后端加载数据
+  async loadFromBackend() {
+    try {
+      // 1. 获取课程列表
+      const coursesRes = await api.getCourses({ page: 1, pageSize: 50 })
+      console.log('获取课程列表响应:', coursesRes)
+      
+      if (coursesRes.success) {
+        // 处理分页响应格式: {success, data: [...], pagination: {...}}
+        const courses = Array.isArray(coursesRes.data) ? coursesRes.data : 
+                       (coursesRes.data && Array.isArray(coursesRes.data.records)) ? coursesRes.data.records : []
+        
+        console.log('解析的课程数据:', courses)
+        
+        // 将课程数据转换为前端格式，并按分类分组
+        if (courses.length > 0) {
+          // 转换课程数据的通用函数
+          const convertCourse = (course) => ({
+            id: course.id,  // 使用后端的数字ID
+            title: course.title,
+            description: course.description,
+            level: course.difficulty === 'beginner' ? 1 : (course.difficulty === 'intermediate' ? 2 : 3),
+            levelText: course.difficulty === 'beginner' ? '初级' : (course.difficulty === 'intermediate' ? '中级' : '高级'),
+            duration: course.duration ? `${Math.ceil(course.duration / 60)}分钟` : '30分钟',
+            students: course.view_count || course.viewCount || 0,
+            rating: 4.8,
+            progress: 0,
+            category: this.mapCategoryIdToType(course.category_id || course.categoryId),
+            rawData: course  // 保存原始数据，包含真实的数字ID
+          })
+          
+          // 按分类分组
+          const basicCourses = []
+          const practiceCourses = []
+          const dietCourses = []
+          const emergencyCourses = []
+          const psychologyCourses = []
+          
+          courses.forEach(course => {
+            const converted = convertCourse(course)
+            const categoryId = course.category_id || course.categoryId
+            
+            switch(categoryId) {
+              case 1:
+                basicCourses.push(converted)
+                break
+              case 2:
+                practiceCourses.push(converted)
+                break
+              case 3:
+                dietCourses.push(converted)
+                break
+              case 4:
+                emergencyCourses.push(converted)
+                break
+              case 5:
+                psychologyCourses.push(converted)
+                break
+              default:
+                console.warn('未知的课程分类ID:', categoryId)
+            }
+          })
+          
+          // 更新推荐课程（取前3个）
+          const recommendedCourses = courses.slice(0, 3).map(convertCourse)
+          
+          console.log('转换后的推荐课程:', recommendedCourses)
+          console.log('基础知识课程:', basicCourses.length)
+          console.log('实践操作课程:', practiceCourses.length)
+          console.log('饮食指导课程:', dietCourses.length)
+          console.log('应急处理课程:', emergencyCourses.length)
+          
+          // 更新所有课程数据
+          this.setData({ 
+            recommendedCourses,
+            basicCourses,
+            practiceCourses,
+            dietCourses,
+            emergencyCourses,
+            psychologyCourses
+          })
+        }
+      }
+
+      // 2. 获取学习记录
+      const learningRes = await api.getMyLearning()
+      console.log('获取学习记录响应:', learningRes)
+      
+      if (learningRes.success && learningRes.data) {
+        // 后端返回格式: {success, data: {records: [...], stats: {...}, pagination: {...}}}
+        const records = learningRes.data.records || []
+        const stats = learningRes.data.stats || {}
+        
+        console.log('学习记录:', records)
+        console.log('学习统计:', stats)
+        
+        const recentCourses = records.slice(0, 3).map(record => ({
+          id: record.course_id || record.courseId,
+          title: record.title,
+          progress: record.progress || 0,
+          lastStudyAt: record.last_study_at || record.lastStudyAt,
+          duration: record.duration ? `${Math.ceil(record.duration / 60)}分钟` : '',
+          coverImage: record.cover_image || record.coverImage
+        }))
+        
+        // 计算统计数据
+        const learningStats = {
+          courses: stats.total_courses || stats.totalCourses || records.length,
+          hours: stats.total_duration ? Math.ceil((stats.total_duration || stats.totalDuration) / 3600) : 0,
+          score: 0,
+          certificates: stats.completed_courses || stats.completedCourses || records.filter(r => r.completed).length
+        }
+        
+        console.log('最近学习的课程:', recentCourses)
+        console.log('学习统计数据:', learningStats)
+        
+        this.setData({
+          learningStats,
+          recentCourses
+        })
+      }
+
+      // 更新推荐课程的进度
+      this.updateCourseProgress()
+    } catch (error) {
+      console.error('从后端加载学习数据失败:', error)
+      // 如果后端失败，使用本地数据
+      this.loadFromLocal()
+    }
+  },
+
+  // 从本地加载数据
+  loadFromLocal() {
     try {
       const learningData = wx.getStorageSync('learningData') || {
         courses: [],
@@ -513,6 +655,19 @@ Page({
       default:
         return []
     }
+  },
+
+  // 映射分类ID到分类类型
+  mapCategoryIdToType(categoryId) {
+    // 根据数据库初始化脚本中的分类ID映射
+    const categoryMap = {
+      1: 'basic',      // 基础护理
+      2: 'practice',   // 实操技巧
+      3: 'diet',       // 饮食指导
+      4: 'emergency',  // 应急处理
+      5: 'psychology'  // 心理康复
+    }
+    return categoryMap[categoryId] || 'basic'
   },
 
   // 获取分类名称

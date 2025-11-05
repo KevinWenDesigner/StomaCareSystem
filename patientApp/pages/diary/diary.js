@@ -1,6 +1,7 @@
 // patient-app/pages/diary/diary.js
 const app = getApp()
-import { formatDate, getCurrentDate } from '../../utils/dateFormat.js'
+const api = require('../../utils/api.js')
+import { formatDate, getCurrentDate, formatDateISO } from '../../utils/dateFormat.js'
 
 Page({
   data: {
@@ -45,10 +46,8 @@ Page({
 
   onShow() {
     console.log('症状日记页面显示')
-    // 只在第一次显示时加载数据，避免重置选中状态
-    if (!this.data.records) {
-      this.loadData()
-    }
+    // 每次显示时都刷新数据，确保数据最新
+    this.loadData()
   },
 
   // 初始化页面
@@ -63,14 +62,20 @@ Page({
       selectedSymptoms = []
     }
     
+    // 初始化症状类型的选中状态
+    const symptomTypes = this.data.symptomTypes.map(item => ({
+      ...item,
+      selected: selectedSymptoms.includes(item.type)
+    }))
+    
     this.setData({
       todayDate,
-      selectedSymptoms: selectedSymptoms
+      selectedSymptoms: selectedSymptoms,
+      symptomTypes: symptomTypes
     })
     
     console.log('页面初始化完成，selectedSymptoms:', this.data.selectedSymptoms)
-    console.log('selectedSymptoms类型:', typeof this.data.selectedSymptoms)
-    console.log('selectedSymptoms是否为数组:', Array.isArray(this.data.selectedSymptoms))
+    console.log('symptomTypes:', this.data.symptomTypes)
     this.loadData()
   },
 
@@ -131,16 +136,22 @@ Page({
     
     console.log('更新后的症状列表:', selectedSymptoms)
     
+    // 更新症状类型的选中状态
+    const symptomTypes = this.data.symptomTypes.map(item => ({
+      ...item,
+      selected: selectedSymptoms.includes(item.type)
+    }))
+    
     // 更新数据
     this.setData({
-      selectedSymptoms: selectedSymptoms
+      selectedSymptoms: selectedSymptoms,
+      symptomTypes: symptomTypes
     })
     
     // 验证更新
     setTimeout(() => {
       console.log('验证更新后的数据:', this.data.selectedSymptoms)
-      console.log('验证数据类型:', typeof this.data.selectedSymptoms)
-      console.log('验证是否为数组:', Array.isArray(this.data.selectedSymptoms))
+      console.log('验证symptomTypes:', this.data.symptomTypes)
     }, 100)
   },
 
@@ -152,7 +163,7 @@ Page({
   },
 
   // 提交记录
-  submitRecord() {
+  async submitRecord() {
     // 如果是编辑模式，调用保存编辑功能
     if (this.data.isEditing) {
       this.saveEdit()
@@ -169,45 +180,143 @@ Page({
       return
     }
     
+    // 显示加载提示
+    wx.showLoading({ title: '提交中...' })
+    
     // 将选中的症状类型转换为症状名称
     const symptomNames = this.data.selectedSymptoms.map(type => {
       const symptomType = this.data.symptomTypes.find(s => s.type === type)
       return symptomType ? symptomType.name : type
     })
     
-    const record = {
-      id: Date.now().toString(),
-      date: this.data.todayDate,
+    // 准备后端API数据格式
+    // 将中文日期格式转换为ISO格式 (YYYY-MM-DD) 供后端使用
+    const diaryDate = formatDateISO(new Date())
+    
+    const diaryData = {
+      diaryDate: diaryDate,
       painLevel: this.data.selectedPainLevel,
-      symptoms: symptomNames, // 现在是数组
-      note: this.data.symptomNote,
-      timestamp: Date.now()
+      symptoms: this.data.selectedSymptoms, // 发送类型数组给后端
+      symptomNames: symptomNames, // 症状名称
+      notes: this.data.symptomNote || ''
     }
     
     try {
+      // 1. 先调用后端API保存
+      console.log('调用后端API保存日记:', diaryData)
+      const apiRes = await api.createDiary(diaryData)
+      
+      if (apiRes.success) {
+        console.log('后端保存成功:', apiRes.data)
+        
+        // 2. 保存到本地存储作为缓存
+        const record = {
+          id: apiRes.data.id || Date.now().toString(),
+          date: this.data.todayDate,
+          painLevel: this.data.selectedPainLevel,
+          symptoms: symptomNames,
+          note: this.data.symptomNote,
+          timestamp: Date.now(),
+          syncedToServer: true // 标记已同步到服务器
+        }
+        
+        const records = wx.getStorageSync('symptomRecords') || []
+        records.unshift(record)
+        
+        // 只保留最近100条记录
+        if (records.length > 100) {
+          records.splice(100)
+        }
+        
+        wx.setStorageSync('symptomRecords', records)
+        
+        // 3. 重置表单
+        const symptomTypes = this.data.symptomTypes.map(item => ({
+          ...item,
+          selected: false
+        }))
+        
+        this.setData({
+          selectedPainLevel: 0,
+          selectedSymptoms: [],
+          symptomNote: '',
+          records,
+          symptomTypes: symptomTypes
+        })
+        
+        this.filterRecords()
+        this.calculateWeeklyStats()
+        
+        // 4. 标记首页需要刷新
+        app.globalData.needRefreshIndex = true
+        
+        wx.hideLoading()
+        app.showToast('✅ 记录提交成功', 'success')
+      } else {
+        throw new Error(apiRes.message || '保存失败')
+      }
+    } catch (error) {
+      console.error('保存记录失败:', error)
+      wx.hideLoading()
+      
+      // 如果后端保存失败，询问是否只保存到本地
+      wx.showModal({
+        title: '保存失败',
+        content: '无法连接到服务器，是否仅保存到本地？',
+        confirmText: '仅本地保存',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 只保存到本地
+            this.saveToLocalOnly(symptomNames)
+          }
+        }
+      })
+    }
+  },
+  
+  // 仅保存到本地
+  saveToLocalOnly(symptomNames) {
+    try {
+      const record = {
+        id: Date.now().toString(),
+        date: this.data.todayDate,
+        painLevel: this.data.selectedPainLevel,
+        symptoms: symptomNames,
+        note: this.data.symptomNote,
+        timestamp: Date.now(),
+        syncedToServer: false // 标记未同步到服务器
+      }
+      
       const records = wx.getStorageSync('symptomRecords') || []
       records.unshift(record)
       
-      // 只保留最近100条记录
       if (records.length > 100) {
         records.splice(100)
       }
       
       wx.setStorageSync('symptomRecords', records)
       
+      // 重置表单
+      const symptomTypes = this.data.symptomTypes.map(item => ({
+        ...item,
+        selected: false
+      }))
+      
       this.setData({
         selectedPainLevel: 0,
-        selectedSymptoms: [], // 重置为空数组
+        selectedSymptoms: [],
         symptomNote: '',
-        records
+        records,
+        symptomTypes: symptomTypes
       })
       
       this.filterRecords()
       this.calculateWeeklyStats()
       
-      app.showToast('记录提交成功', 'success')
+      app.showToast('📱 已保存到本地', 'success')
     } catch (e) {
-      console.error('保存记录失败:', e)
+      console.error('本地保存失败:', e)
       app.showToast('保存失败，请重试', 'error')
     }
   },
@@ -327,6 +436,12 @@ Page({
       return symptomType ? symptomType.type : symptomName
     })
     
+    // 更新症状类型的选中状态
+    const symptomTypes = this.data.symptomTypes.map(item => ({
+      ...item,
+      selected: selectedSymptoms.includes(item.type)
+    }))
+    
     // 设置编辑状态
     this.setData({
       isEditing: true,
@@ -334,7 +449,8 @@ Page({
       editingRecord: record,
       selectedPainLevel: record.painLevel,
       selectedSymptoms: selectedSymptoms,
-      symptomNote: record.note || ''
+      symptomNote: record.note || '',
+      symptomTypes: symptomTypes
     })
     
     // 滚动到表单区域
@@ -348,13 +464,20 @@ Page({
 
   // 取消编辑
   cancelEdit() {
+    // 重置症状类型的选中状态
+    const symptomTypes = this.data.symptomTypes.map(item => ({
+      ...item,
+      selected: false
+    }))
+    
     this.setData({
       isEditing: false,
       editingRecordId: '',
       editingRecord: null,
       selectedPainLevel: 0,
       selectedSymptoms: [],
-      symptomNote: ''
+      symptomNote: '',
+      symptomTypes: symptomTypes
     })
     
     app.showToast('已取消编辑', 'none')
@@ -399,6 +522,12 @@ Page({
       records[recordIndex] = updatedRecord
       wx.setStorageSync('symptomRecords', records)
       
+      // 重置症状类型的选中状态
+      const symptomTypes = this.data.symptomTypes.map(item => ({
+        ...item,
+        selected: false
+      }))
+      
       // 重置编辑状态
       this.setData({
         isEditing: false,
@@ -407,7 +536,8 @@ Page({
         selectedPainLevel: 0,
         selectedSymptoms: [],
         symptomNote: '',
-        records
+        records,
+        symptomTypes: symptomTypes
       })
       
       this.filterRecords()

@@ -1,33 +1,41 @@
 /* patient-app/app.wxss */
 
-/* 颜色变量 - 替换为具体值 */
+/* 颜色变量 - Figma 风格蓝白配色 */
 page {
-  --primary-color: #3B82F6;
-  --primary-dark: #2563EB;
-  --primary-light: #60A5FA;
+  /* 主色调 - Figma 风格的鲜明蓝色 */
+  --primary-color: #0078FF;
+  --primary-dark: #0066DD;
+  --primary-light: #4D9FFF;
+  --primary-lighter: #E5F1FF;
   
-  --success-color: #10B981;
-  --success-dark: #059669;
-  --success-light: #34D399;
+  /* 辅助色 */
+  --success-color: #00C875;
+  --success-dark: #00A562;
+  --success-light: #B3E5D3;
   
-  --warning-color: #F59E0B;
-  --warning-dark: #D97706;
-  --warning-light: #FBBF24;
+  --warning-color: #FFAB00;
+  --warning-dark: #FF991F;
+  --warning-light: #FFE5B3;
   
-  --danger-color: #EF4444;
-  --danger-dark: #DC2626;
-  --danger-light: #F87171;
+  --danger-color: #FF3366;
+  --danger-dark: #E6003D;
+  --danger-light: #FFB3CC;
   
-  --gray-50: #F9FAFB;
-  --gray-100: #F3F4F6;
-  --gray-200: #E5E7EB;
-  --gray-300: #D1D5DB;
-  --gray-400: #9CA3AF;
-  --gray-500: #6B7280;
-  --gray-600: #4B5563;
-  --gray-700: #374151;
-  --gray-800: #1F2937;
-  --gray-900: #111827;
+  /* 灰度色阶 - 更清爽的灰色 */
+  --gray-50: #FAFBFC;
+  --gray-100: #F6F7F9;
+  --gray-200: #EBEEF2;
+  --gray-300: #DFE3E8;
+  --gray-400: #B0B8C1;
+  --gray-500: #808A98;
+  --gray-600: #676E7B;
+  --gray-700: #4F5762;
+  --gray-800: #323942;
+  --gray-900: #1F2532;
+  
+  /* 背景色 */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFBFC;
 }
 
 /* 通用布局 */
@@ -85,42 +93,42 @@ page {
 }
 
 .btn-primary {
-  background: #3B82F6;
+  background: var(--primary-color);
   color: #FFFFFF;
 }
 
 .btn-primary:active {
-  background: #2563EB;
+  background: var(--primary-dark);
   transform: scale(0.98);
 }
 
 .btn-success {
-  background: #10B981;
+  background: var(--success-color);
   color: #FFFFFF;
 }
 
 .btn-success:active {
-  background: #059669;
+  background: var(--success-dark);
   transform: scale(0.98);
 }
 
 .btn-warning {
-  background: #F59E0B;
+  background: var(--warning-color);
   color: #FFFFFF;
 }
 
 .btn-warning:active {
-  background: #D97706;
+  background: var(--warning-dark);
   transform: scale(0.98);
 }
 
 .btn-danger {
-  background: #EF4444;
+  background: var(--danger-color);
   color: #FFFFFF;
 }
 
 .btn-danger:active {
-  background: #DC2626;
+  background: var(--danger-dark);
   transform: scale(0.98);
 }
 
@@ -158,18 +166,18 @@ page {
 }
 
 .input:focus {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 4rpx rgba(59, 130, 246, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(0, 120, 255, 0.1);
 }
 
 .input.error {
-  border-color: #EF4444;
-  box-shadow: 0 0 0 4rpx rgba(239, 68, 68, 0.1);
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 4rpx rgba(255, 51, 102, 0.1);
 }
 
 .input.success {
-  border-color: #10B981;
-  box-shadow: 0 0 0 4rpx rgba(16, 185, 129, 0.1);
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 4rpx rgba(0, 200, 117, 0.1);
 }
 
 /* 标签样式 */
@@ -184,23 +192,23 @@ page {
 }
 
 .tag-primary {
-  background: #60A5FA;
-  color: #2563EB;
+  background: var(--primary-lighter);
+  color: var(--primary-dark);
 }
 
 .tag-success {
-  background: #34D399;
-  color: #059669;
+  background: var(--success-light);
+  color: var(--success-dark);
 }
 
 .tag-warning {
-  background: #FBBF24;
-  color: #D97706;
+  background: var(--warning-light);
+  color: var(--warning-dark);
 }
 
 .tag-danger {
-  background: #F87171;
-  color: #DC2626;
+  background: var(--danger-light);
+  color: var(--danger-dark);
 }
 
 .tag-gray {
@@ -223,19 +231,19 @@ page {
 }
 
 .badge-primary {
-  background: #3B82F6;
+  background: var(--primary-color);
 }
 
 .badge-success {
-  background: #10B981;
+  background: var(--success-color);
 }
 
 .badge-warning {
-  background: #F59E0B;
+  background: var(--warning-color);
 }
 
 .badge-danger {
-  background: #EF4444;
+  background: var(--danger-color);
 }
 
 .badge-gray {
@@ -260,8 +268,8 @@ page {
   display: inline-block;
   width: 32rpx;
   height: 32rpx;
-  border: 4rpx solid #E5E7EB;
-  border-top: 4rpx solid #3B82F6;
+  border: 4rpx solid var(--gray-200);
+  border-top: 4rpx solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

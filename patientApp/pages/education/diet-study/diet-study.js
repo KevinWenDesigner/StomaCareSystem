@@ -1,5 +1,6 @@
 // patient-app/pages/education/diet-study/diet-study.js
 const app = getApp()
+const api = require('../../../utils/api.js') // 导入API工具，用于后端数据同步
 import { getCurrentDateTime } from '../../../utils/dateFormat.js'
 
 Page({
@@ -11,6 +12,8 @@ Page({
     isCompleted: false,
     showNutritionCalculator: false,
     showRecipeRecommendation: false,
+    useBackendData: true, // 是否使用后端数据（默认开启）
+    studyStartTime: null, // 学习开始时间，用于计算学习时长
     nutritionData: {
       weight: 60,
       height: 170,
@@ -27,6 +30,10 @@ Page({
 
   onLoad() {
     console.log('饮食指导学习页面加载')
+    // 记录学习开始时间，用于计算学习时长
+    this.setData({
+      studyStartTime: Date.now()
+    })
     this.loadCourseData()
   },
 
@@ -270,8 +277,74 @@ Page({
     ]
   },
 
-  // 更新学习进度
-  updateStudyProgress(progress) {
+  // 更新学习进度（支持后端同步）
+  async updateStudyProgress(progress) {
+    try {
+      const course = this.data.course
+      
+      // 计算学习时长（秒）
+      const now = Date.now()
+      const studyDuration = this.data.studyStartTime ? Math.floor((now - this.data.studyStartTime) / 1000) : 0
+      
+      // 获取课程ID（支持多种数据结构）
+      const courseId = course.rawData?.id || course.id
+      
+      console.log('准备更新学习进度:', {
+        courseId,
+        progress,
+        studyDuration,
+        useBackendData: this.data.useBackendData,
+        hasCourseId: !!courseId
+      })
+      
+      if (this.data.useBackendData && courseId) {
+        // 同步到后端数据库
+        try {
+          const progressData = {
+            progress: progress,
+            lastPosition: 0,
+            studyDuration: studyDuration,
+            completed: progress >= 100 ? 1 : 0
+          }
+          
+          console.log('调用后端API记录进度:', courseId, progressData)
+          const res = await api.recordCourseProgress(courseId, progressData)
+          console.log('学习进度已同步到后端:', res)
+          
+          // 同时保存到本地（作为备份）
+          this.updateLocalProgress(progress)
+          
+          // 显示成功提示
+          wx.showToast({
+            title: '进度已保存',
+            icon: 'success',
+            duration: 1500
+          })
+        } catch (error) {
+          console.error('同步进度到后端失败:', error)
+          console.error('错误详情:', error.message || error)
+          // 失败时仍保存到本地
+          this.updateLocalProgress(progress)
+          
+          // 显示友好提示
+          wx.showToast({
+            title: '进度已保存到本地',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      } else {
+        // 仅保存到本地
+        console.log('仅保存到本地存储')
+        this.updateLocalProgress(progress)
+      }
+    } catch (e) {
+      console.error('更新学习进度失败:', e)
+    }
+  },
+  
+  // 更新本地进度（辅助方法）
+  updateLocalProgress(progress) {
     try {
       const course = this.data.course
       const learningData = wx.getStorageSync('learningData') || { courses: [] }
@@ -305,9 +378,9 @@ Page({
       
       wx.setStorageSync('learningData', learningData)
       
-      console.log('学习进度已更新:', progress)
+      console.log('本地学习进度已更新:', progress)
     } catch (e) {
-      console.error('更新学习进度失败:', e)
+      console.error('更新本地学习进度失败:', e)
     }
   },
 
