@@ -521,6 +521,23 @@
                     })
                 });
 
+                // 检查HTTP状态码
+                if (!response.ok) {
+                    // 服务器返回错误状态
+                    let errorMessage = `服务器错误 (${response.status})`;
+                    
+                    try {
+                        const result = await response.json();
+                        errorMessage = result.message || result.error || errorMessage;
+                        console.error('后端返回错误:', result);
+                    } catch (e) {
+                        console.error('无法解析错误响应');
+                    }
+                    
+                    showError(errorMessage + '\n\n请联系管理员检查后端服务');
+                    return;
+                }
+
                 const result = await response.json();
 
                 if (result.success && result.data && result.data.token) {

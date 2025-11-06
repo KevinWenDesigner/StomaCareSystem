@@ -11,7 +11,8 @@
     "test-db": "node test-connection.js",
     "insert-care-plan": "node src/scripts/insertCarePlanTestData.js",
     "test-education": "node test-education-api.js",
-    "insert-test-data": "node src/scripts/insertTestData.js"
+    "insert-test-data": "node src/scripts/insertTestData.js",
+    "check-health": "node check-health.js"
   },
   "keywords": [
     "stoma-care",

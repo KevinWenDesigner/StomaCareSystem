@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>患者管理数据大屏 - 造口护理智能管理系统</title>
-    <script>
-        window.location.href = "login.html";
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 生产环境配置文件 -->
     <script src="config.prod.js"></script>
@@ -1034,6 +1031,18 @@
                         'Content-Type': 'application/json'
                     }
                 });
+
+                // 如果是 401/403，说明 token 无效
+                if (response.status === 401 || response.status === 403) {
+                    console.error('Token 无效或已过期，请重新登录');
+                    // 清除 token
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userInfo');
+                    // 跳转到登录页
+                    alert('登录已过期，请重新登录');
+                    window.location.href = 'login.html';
+                    return;
+                }
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
