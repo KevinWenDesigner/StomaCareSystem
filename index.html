@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>患者管理数据大屏 - 造口护理智能管理系统</title>
+    <script>
+        window.location.href = "login.html";
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 生产环境配置文件 -->
     <script src="config.prod.js"></script>
@@ -802,6 +805,7 @@
             <h1>🏥 患者管理数据大屏</h1>
             <div class="subtitle">造口护理智能管理系统 - 实时数据监控</div>
             <div class="update-time" id="updateTime">最后更新: --</div>
+            <button onclick="logout()" style="position: absolute; top: 20px; right: 30px; padding: 8px 20px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(220, 38, 38, 1)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.9)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)'">🚪 退出登录</button>
         </div>
 
         <!-- 主体 -->
@@ -1763,7 +1767,7 @@
                 <div class="error-message">
                     ❌ ${message}
                     <br><br>
-                    <a href="dashboard-login.html" style="color: #fff; text-decoration: underline;">返回登录页面</a>
+                    <a href="login.html" style="color: #fff; text-decoration: underline;">返回登录页面</a>
                 </div>
             `;
         }
@@ -1772,7 +1776,8 @@
         async function init() {
             // 检查token
             if (!CONFIG.token) {
-                showError('未登录，请先登录系统');
+                console.log('未检测到登录token，跳转到登录页面...');
+                window.location.href = 'login.html';
                 return;
             }
 
@@ -1799,6 +1804,18 @@
                 loadDashboardData();
             }
         });
+
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                // 清除token和用户信息
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                console.log('已退出登录，跳转到登录页面...');
+                // 跳转到登录页面
+                window.location.href = 'login.html';
+            }
+        }
     </script>
 </body>
 </html>

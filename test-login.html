@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录测试页面</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        label {
+            display: inline-block;
+            width: 80px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 登录功能测试页面</h1>
+    
+    <div class="test-section">
+        <h2>1️⃣ 后端健康检查</h2>
+        <button onclick="testHealth()">测试后端连接</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2️⃣ 登录测试</h2>
+        <div>
+            <label>用户名：</label>
+            <input type="text" id="username" value="nurse001">
+        </div>
+        <div>
+            <label>密码：</label>
+            <input type="password" id="password" value="nurse123">
+        </div>
+        <br>
+        <button onclick="testLogin()">测试登录</button>
+        <button onclick="testLoginAdmin()">测试管理员登录</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3️⃣ Token 验证</h2>
+        <button onclick="testDashboard()">测试数据大屏API（需要先登录）</button>
+        <button onclick="clearToken()">清除 Token</button>
+        <div id="dashboardResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4️⃣ 当前状态</h2>
+        <button onclick="showStatus()">查看登录状态</button>
+        <div id="statusResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5️⃣ 快速跳转</h2>
+        <button onclick="goToLogin()">跳转到登录页面</button>
+        <button onclick="goToDashboard()">跳转到数据大屏</button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = 'result ' + (isSuccess ? 'success' : 'error');
+            element.textContent = message;
+        }
+
+        async function testHealth() {
+            try {
+                showResult('healthResult', '正在测试...', true);
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('healthResult', 
+                        `✅ 后端服务正常！\n\n` +
+                        `响应状态: ${response.status}\n` +
+                        `响应数据: ${JSON.stringify(data, null, 2)}`,
+                        true
+                    );
+                } else {
+                    showResult('healthResult', `❌ 后端返回错误: ${response.status}`, false);
+                }
+            } catch (error) {
+                showResult('healthResult', 
+                    `❌ 无法连接到后端服务！\n\n` +
+                    `错误: ${error.message}\n\n` +
+                    `请确认：\n` +
+                    `1. 后端服务是否启动（cd backend && npm start）\n` +
+                    `2. 后端运行在 http://localhost:3000`,
+                    false
+                );
+            }
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                showResult('loginResult', '正在登录...', true);
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        userType: 'nurse'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.token) {
+                    // 保存token
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('userInfo', JSON.stringify(data.data.user));
+                    
+                    showResult('loginResult', 
+                        `✅ 登录成功！\n\n` +
+                        `Token: ${data.data.token.substring(0, 50)}...\n` +
+                        `用户: ${JSON.stringify(data.data.user, null, 2)}\n\n` +
+                        `Token 已保存到 localStorage`,
+                        true
+                    );
+                } else {
+                    showResult('loginResult', 
+                        `❌ 登录失败！\n\n` +
+                        `响应: ${JSON.stringify(data, null, 2)}`,
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult('loginResult', 
+                    `❌ 登录请求失败！\n\n` +
+                    `错误: ${error.message}`,
+                    false
+                );
+            }
+        }
+
+        async function testLoginAdmin() {
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+            await testLogin();
+        }
+
+        async function testDashboard() {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                showResult('dashboardResult', 
+                    `❌ 没有找到 Token！\n\n` +
+                    `请先执行"测试登录"获取 Token`,
+                    false
+                );
+                return;
+            }
+
+            try {
+                showResult('dashboardResult', '正在请求数据...', true);
+                const response = await fetch(`${API_BASE}/dashboard/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('dashboardResult', 
+                        `✅ 数据获取成功！Token 验证通过！\n\n` +
+                        `患者统计:\n` +
+                        `- 总患者数: ${data.data.patientStats.total_patients}\n` +
+                        `- 活跃患者: ${data.data.patientStats.active_patients}\n\n` +
+                        `评估统计:\n` +
+                        `- 总评估次数: ${data.data.assessmentStats.total_assessments}\n` +
+                        `- 今日评估: ${data.data.assessmentStats.today_assessments}\n` +
+                        `- 待审核: ${data.data.assessmentStats.pending_review}`,
+                        true
+                    );
+                } else {
+                    showResult('dashboardResult', 
+                        `❌ Token 验证失败或数据获取失败！\n\n` +
+                        `响应: ${JSON.stringify(data, null, 2)}`,
+                        false
+                    );
+                }
+            } catch (error) {
+                showResult('dashboardResult', 
+                    `❌ 请求失败！\n\n` +
+                    `错误: ${error.message}`,
+                    false
+                );
+            }
+        }
+
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userInfo');
+            showResult('dashboardResult', '✅ Token 已清除', true);
+        }
+
+        function showStatus() {
+            const token = localStorage.getItem('token');
+            const userInfo = localStorage.getItem('userInfo');
+            
+            if (token) {
+                const user = JSON.parse(userInfo || '{}');
+                showResult('statusResult', 
+                    `✅ 已登录\n\n` +
+                    `Token: ${token.substring(0, 50)}...\n\n` +
+                    `用户信息:\n${JSON.stringify(user, null, 2)}`,
+                    true
+                );
+            } else {
+                showResult('statusResult', `❌ 未登录\n\nlocalStorage 中没有 Token`, false);
+            }
+        }
+
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+
+        function goToDashboard() {
+            window.location.href = 'index.html';
+        }
+
+        // 页面加载时显示状态
+        window.addEventListener('load', () => {
+            showStatus();
+        });
+    </script>
+</body>
+</html>
+

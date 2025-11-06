@@ -16,7 +16,19 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // 中间件配置
-app.use(cors()); // 启用CORS
+// CORS 配置 - 允许前端跨域访问
+app.use(cors({
+    origin: [
+        'https://kevinwendesigner.github.io',  // ⚠️ GitHub Pages 部署后，替换为实际地址
+        'http://localhost:3000',            // 本地开发
+        'http://localhost:8080',            // 本地开发备用端口
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:8080'
+    ],
+    credentials: true,                      // 允许携带凭证(cookies/token)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(express.json()); // 解析JSON请求体
 app.use(express.urlencoded({ extended: true })); // 解析URL编码请求体
 
