@@ -141,7 +141,19 @@ async function upgradeAssessmentsTable() {
       }
     }
     
-    // 7. 修改 risk_level 字段以支持更多分期
+    // 8. 扩展 skin_condition 字段长度（修复AI返回内容过长问题）
+    console.log('📝 扩展 skin_condition 字段长度...');
+    try {
+      await connection.query(`
+        ALTER TABLE assessments 
+        MODIFY COLUMN skin_condition TEXT COMMENT '周围皮肤状况（支持AI详细描述）'
+      `);
+      console.log('✅ skin_condition 字段已扩展为TEXT类型');
+    } catch (err) {
+      console.log('⚠️  skin_condition 字段修改失败:', err.message);
+    }
+    
+    // 9. 修改 risk_level 字段以支持更多分期
     console.log('📝 修改 risk_level 字段类型...');
     try {
       await connection.query(`
@@ -153,7 +165,7 @@ async function upgradeAssessmentsTable() {
       console.log('⚠️  risk_level 字段修改失败（可能已是VARCHAR类型）:', err.message);
     }
     
-    // 8. 添加索引以提高查询性能
+    // 10. 添加索引以提高查询性能
     console.log('📝 添加索引...');
     try {
       await connection.query(`

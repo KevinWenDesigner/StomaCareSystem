@@ -2,6 +2,22 @@ const AuthService = require('../services/authService');
 const response = require('../utils/response');
 
 class AuthController {
+  // 通用登录接口（用于测试和Web端）
+  static async login(req, res, next) {
+    try {
+      const { username, password, userType } = req.body;
+      
+      if (!username || !password) {
+        return response.error(res, '用户名和密码不能为空', 400);
+      }
+      
+      const result = await AuthService.login(username, password, userType);
+      return response.success(res, result, '登录成功');
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // 患者微信登录
   static async patientLogin(req, res, next) {
     try {

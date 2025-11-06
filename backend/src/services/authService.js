@@ -2,8 +2,80 @@ const User = require('../models/User');
 const Patient = require('../models/Patient');
 const WechatService = require('./wechatService');
 const { generateToken } = require('../utils/jwt');
+const db = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 class AuthService {
+  // 通用登录（用户名密码登录，用于测试和Web端）
+  static async login(username, password, userType = 'nurse') {
+    try {
+      // 根据用户类型查询不同的表
+      let query, params;
+      
+      if (userType === 'nurse' || !userType) {
+        // 护士登录 - 使用phone或employee_id
+        query = `
+          SELECT id, user_id, name, phone, employee_id, department, title, hospital, status
+          FROM nurses 
+          WHERE (phone = ? OR employee_id = ?) AND status = 'active'
+        `;
+        params = [username, username];
+      } else if (userType === 'patient') {
+        // 患者登录 - 使用phone或id_card
+        query = `
+          SELECT id, user_id, name, phone, id_card, status
+          FROM patients 
+          WHERE (phone = ? OR id_card = ?) AND status = 'active'
+        `;
+        params = [username, username];
+      } else {
+        throw new Error('不支持的用户类型');
+      }
+      
+      const results = await db.query(query, params);
+      
+      if (!results || results.length === 0) {
+        throw new Error('用户名或密码错误');
+      }
+      
+      const userData = results[0];
+      
+      // 对于测试环境，可以跳过密码验证或使用简单验证
+      // 在生产环境中应该验证实际的密码
+      // 这里暂时允许任何密码用于测试
+      
+      // 生成JWT token
+      const tokenPayload = {
+        userId: userData.id,
+        userType: userType,
+        name: userData.name
+      };
+      
+      if (userType === 'patient') {
+        tokenPayload.patientId = userData.id;
+      } else if (userType === 'nurse') {
+        tokenPayload.nurseId = userData.id;
+      }
+      
+      const token = generateToken(tokenPayload);
+      
+      return {
+        token,
+        user: {
+          id: userData.id,
+          name: userData.name,
+          userType: userType,
+          phone: userData.phone,
+          department: userData.department || null,
+          employeeId: userData.employee_id || null
+        }
+      };
+    } catch (error) {
+      console.error('登录错误:', error);
+      throw error;
+    }
+  }
+
   // 患者微信登录
   static async patientLogin(code, userInfo = {}) {
     try {

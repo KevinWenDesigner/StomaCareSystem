@@ -3,6 +3,9 @@ const router = express.Router();
 const AuthController = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/auth');
 
+// 通用登录接口（用于测试和Web端）
+router.post('/login', AuthController.login);
+
 // 患者登录
 router.post('/login/patient', AuthController.patientLogin);
 
