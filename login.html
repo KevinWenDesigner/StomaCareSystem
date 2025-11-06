@@ -552,6 +552,10 @@
                         localStorage.removeItem('rememberedUsername');
                     }
                     
+                    // 清除可能存在的跳转标记
+                    sessionStorage.removeItem('fromIndex');
+                    sessionStorage.setItem('toIndex', 'true');
+                    
                     // 显示成功消息
                     alert('✅ 登录成功！即将跳转到数据大屏...');
                     
@@ -609,12 +613,22 @@
             // 创建粒子背景
             createParticles();
             
-            // 如果已经有token，直接跳转到数据大屏
-            const token = localStorage.getItem('token');
-            if (token) {
-                console.log('检测到已登录，跳转到数据大屏...');
-                window.location.href = 'index.html';
-                return;
+            // 检查是否刚从 index.html 跳转过来（避免无限循环）
+            const fromIndex = sessionStorage.getItem('fromIndex');
+            if (fromIndex === 'true') {
+                // 如果是从 index 跳转过来的，说明 token 无效，清除标记
+                sessionStorage.removeItem('fromIndex');
+                console.log('从数据大屏跳转而来，token 可能已过期');
+            } else {
+                // 如果有 token 且不是从 index 跳转来的，尝试跳转到数据大屏
+                const token = localStorage.getItem('token');
+                if (token) {
+                    console.log('检测到已登录，跳转到数据大屏...');
+                    // 设置标记，防止循环
+                    sessionStorage.setItem('toIndex', 'true');
+                    window.location.href = 'index.html';
+                    return;
+                }
             }
             
             // 如果有记住的用户名，自动填充

@@ -1038,6 +1038,8 @@
                     // 清除 token
                     localStorage.removeItem('token');
                     localStorage.removeItem('userInfo');
+                    // 设置标记，表示是从 index 跳转到 login
+                    sessionStorage.setItem('fromIndex', 'true');
                     // 跳转到登录页
                     alert('登录已过期，请重新登录');
                     window.location.href = 'login.html';
@@ -1783,9 +1785,14 @@
 
         // 初始化
         async function init() {
+            // 清除来自 login 的标记
+            sessionStorage.removeItem('toIndex');
+            
             // 检查token
             if (!CONFIG.token) {
                 console.log('未检测到登录token，跳转到登录页面...');
+                // 设置标记，表示是从 index 跳转到 login
+                sessionStorage.setItem('fromIndex', 'true');
                 window.location.href = 'login.html';
                 return;
             }
@@ -1820,6 +1827,8 @@
                 // 清除token和用户信息
                 localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
+                // 设置标记，表示是从 index 主动退出
+                sessionStorage.setItem('fromIndex', 'true');
                 console.log('已退出登录，跳转到登录页面...');
                 // 跳转到登录页面
                 window.location.href = 'login.html';
