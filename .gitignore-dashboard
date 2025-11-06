@@ -1,0 +1,39 @@
+# 用于 GitHub Pages 部署的 .gitignore
+# 只保留数据大屏所需的文件
+
+# 排除后端文件
+backend/
+node_modules/
+
+# 排除小程序文件
+nurseApp/
+patientApp/
+
+# 排除原型文件
+PD/
+
+# 排除上传文件
+uploads/
+
+# 排除其他 HTML 页面（只保留 index.html）
+patient-dashboard.html
+
+# 排除日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 排除系统文件
+.DS_Store
+Thumbs.db
+
+# 排除开发配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 排除测试文件
+test-api.js
+
