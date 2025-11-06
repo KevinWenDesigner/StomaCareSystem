@@ -1,23 +1,24 @@
 /* patient-app/pages/education/education.wxss */
 
 .container {
-  padding: 32rpx;
-  background: var(--bg-secondary);
   min-height: 100vh;
+  background: var(--bg-secondary);
+  padding: 32rpx 24rpx;
+  box-sizing: border-box;
 }
 
 /* 页面标题 */
 .page-header {
-  text-align: center;
   margin-bottom: 48rpx;
 }
 
 .page-title {
-  font-size: 48rpx;
+  font-size: 52rpx;
   font-weight: 800;
   color: var(--gray-900);
   display: block;
   margin-bottom: 16rpx;
+  line-height: 1.3;
 }
 
 .page-subtitle {
@@ -25,11 +26,12 @@
   color: var(--gray-600);
   display: block;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 /* 课程分类 */
 .category-section {
-  margin-bottom: 48rpx;
+  margin-bottom: 60rpx;
 }
 
 .section-header {
@@ -40,14 +42,19 @@
 }
 
 .section-title {
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: 700;
   color: var(--gray-900);
+  line-height: 1.3;
+  display: block;
+  margin-bottom: 8rpx;
 }
 
 .section-subtitle {
   font-size: 28rpx;
   color: var(--gray-600);
+  line-height: 1.4;
+  display: block;
 }
 
 .category-grid {
@@ -58,8 +65,8 @@
 
 .category-card {
   background: #FFFFFF;
-  border-radius: 20rpx;
-  padding: 32rpx;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
   text-align: center;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
   border: 1rpx solid var(--gray-200);
@@ -68,91 +75,96 @@
 
 .category-card:active {
   transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .category-icon {
-  font-size: 64rpx;
+  font-size: 72rpx;
   display: block;
   margin-bottom: 20rpx;
+  color: var(--primary-color);
 }
 
 .category-title {
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  color: var(--gray-800);
+  color: var(--gray-900);
   display: block;
   margin-bottom: 12rpx;
+  line-height: 1.3;
 }
 
 .category-desc {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: var(--gray-600);
   display: block;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 /* 推荐课程 */
 .recommended-section {
-  margin-bottom: 48rpx;
+  margin-bottom: 60rpx;
 }
 
 .course-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 28rpx;
 }
 
 .course-item {
   background: #FFFFFF;
-  border-radius: 20rpx;
-  padding: 32rpx;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
   border: 1rpx solid var(--gray-200);
   transition: all 0.3s ease;
 }
 
 .course-item:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .course-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
 }
 
 .course-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 700;
-  color: var(--gray-800);
+  color: var(--gray-900);
+  line-height: 1.3;
 }
 
 .course-level {
   padding: 8rpx 16rpx;
-  border-radius: 8rpx;
+  border-radius: 12rpx;
   font-size: 24rpx;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .level-1 {
-  background: var(--success-light);
-  color: var(--success-color);
+  background: #DBEAFE;
+  color: #1E40AF;
 }
 
 .level-2 {
-  background: var(--warning-light);
-  color: var(--warning-color);
+  background: #FEF3C7;
+  color: #D97706;
 }
 
 .level-3 {
-  background: var(--danger-light);
-  color: var(--danger-color);
+  background: #FEE2E2;
+  color: #DC2626;
 }
 
 .course-desc {
-  font-size: 28rpx;
-  color: var(--gray-600);
+  font-size: 30rpx;
+  color: var(--gray-700);
   line-height: 1.5;
   margin-bottom: 20rpx;
   display: block;
@@ -175,8 +187,8 @@
 }
 
 .meta-text {
-  font-size: 24rpx;
-  color: var(--gray-500);
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .course-progress {
@@ -201,26 +213,26 @@
 }
 
 .progress-text {
-  font-size: 24rpx;
-  color: var(--gray-500);
+  font-size: 26rpx;
+  color: var(--gray-600);
   text-align: right;
 }
 
 /* 学习进度 */
 .progress-section {
-  margin-bottom: 48rpx;
+  margin-bottom: 60rpx;
 }
 
 .progress-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20rpx;
+  gap: 24rpx;
 }
 
 .progress-card {
   background: #FFFFFF;
-  border-radius: 20rpx;
-  padding: 32rpx;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
   display: flex;
   align-items: center;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
@@ -229,12 +241,14 @@
 }
 
 .progress-card:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .progress-icon {
   font-size: 56rpx;
   margin-right: 24rpx;
+  color: var(--primary-color);
 }
 
 .progress-content {
@@ -242,31 +256,35 @@
 }
 
 .progress-number {
-  font-size: 44rpx;
-  font-weight: 800;
-  color: var(--primary-color);
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--gray-900);
   display: block;
   margin-bottom: 8rpx;
+  line-height: 1.3;
 }
 
 .progress-label {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: var(--gray-600);
   display: block;
+  line-height: 1.4;
 }
 
 /* 最近学习 */
 .recent-section {
-  margin-bottom: 48rpx;
+  margin-bottom: 60rpx;
 }
 
 .view-all-btn {
   background: var(--primary-color);
   border: none;
   border-radius: 12rpx;
-  padding: 12rpx 24rpx;
-  font-size: 28rpx;
+  padding: 20rpx 36rpx;
+  font-size: 30rpx;
+  font-weight: 600;
   color: #FFFFFF;
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -277,44 +295,43 @@
 
 .empty-state {
   text-align: center;
-  padding: 80rpx 32rpx;
-  background: #FFFFFF;
-  border-radius: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
-  border: 1rpx solid var(--gray-200);
+  padding: 48rpx 32rpx;
+  margin: 0;
 }
 
 .empty-icon {
-  font-size: 80rpx;
+  font-size: 72rpx;
   display: block;
-  margin-bottom: 24rpx;
+  margin-bottom: 16rpx;
   color: var(--gray-400);
 }
 
 .empty-text {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
   color: var(--gray-700);
   display: block;
   margin-bottom: 12rpx;
+  line-height: 1.4;
 }
 
 .empty-subtext {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: var(--gray-500);
   display: block;
+  line-height: 1.5;
 }
 
 .recent-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 28rpx;
 }
 
 .recent-item {
   background: #FFFFFF;
-  border-radius: 20rpx;
-  padding: 36rpx;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
   display: flex;
   align-items: flex-start;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
@@ -323,13 +340,14 @@
 }
 
 .recent-item:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .recent-icon {
-  font-size: 36rpx;
+  font-size: 40rpx;
   margin-right: 20rpx;
-  color: var(--gray-400);
+  color: var(--primary-color);
   margin-top: 4rpx;
 }
 
@@ -341,17 +359,18 @@
 }
 
 .recent-title {
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 700;
-  color: var(--gray-800);
+  color: var(--gray-900);
   display: block;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .recent-time {
-  font-size: 22rpx;
-  color: var(--gray-400);
+  font-size: 26rpx;
+  color: var(--gray-500);
   display: block;
+  line-height: 1.4;
 }
 
 .recent-progress-text {
@@ -362,31 +381,7 @@
   margin-top: 4rpx;
 }
 
-/* 响应式设计 */
-@media (max-width: 750rpx) {
-  .container {
-    padding: 24rpx;
-  }
-  
-  .category-grid {
-    grid-template-columns: 1fr;
-    gap: 20rpx;
-  }
-  
-  .progress-grid {
-    grid-template-columns: 1fr;
-    gap: 16rpx;
-  }
-  
-  .category-card {
-    padding: 28rpx;
-  }
-  
-  .course-item {
-    padding: 28rpx;
-  }
-  
-  .progress-card {
-    padding: 28rpx;
-  }
+/* 按钮文字 */
+.btn-text {
+  color: #FFFFFF;
 }

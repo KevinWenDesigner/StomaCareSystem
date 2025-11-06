@@ -1,20 +1,25 @@
 /* patient-app/pages/reminders/reminders.wxss */
+/* 统一Figma风格 - 与首页一致 */
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  padding: 32rpx;
+  background: var(--bg-secondary); /* 浅灰白色背景，与首页一致 */
+  padding: 32rpx 24rpx;
   box-sizing: border-box;
   padding-bottom: 120rpx;
 }
 
-/* 页面头部 */
+/* 页面头部 - Figma风格 */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 48rpx;
-  padding: 20rpx 0;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .header-left {
@@ -24,16 +29,15 @@
 
 .back-icon {
   font-size: 36rpx;
-  color: #FFFFFF;
+  color: var(--gray-900);
   font-weight: bold;
   margin-right: 16rpx;
 }
 
 .page-title {
-  font-size: 40rpx;
-  font-weight: 800;
-  color: #FFFFFF;
-  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  font-size: 42rpx;
+  font-weight: 700;
+  color: var(--gray-900);
   max-width: 400rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -47,11 +51,12 @@
 
 .test-btn {
   font-size: 28rpx;
-  color: #FFFFFF;
+  color: var(--primary-color);
   font-weight: 600;
-  padding: 8rpx 16rpx;
-  border-radius: 8rpx;
-  background: rgba(255, 255, 255, 0.2);
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  background: var(--primary-lighter);
+  border: none;
 }
 
 /* 加载状态 */
@@ -64,7 +69,7 @@
 
 .loading-text {
   font-size: 32rpx;
-  color: #FFFFFF;
+  color: var(--gray-600);
   opacity: 0.8;
 }
 
@@ -75,34 +80,33 @@
   gap: 32rpx;
 }
 
-/* 标签页导航 */
+/* 标签页导航 - Figma风格 */
 .tab-navigation {
   display: flex;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
   padding: 8rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .tab-item {
   flex: 1;
-  padding: 16rpx 24rpx;
+  padding: 20rpx 24rpx;
   border-radius: 12rpx;
   text-align: center;
   transition: all 0.3s ease;
 }
 
 .tab-item.active {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.3);
+  background: var(--primary-color);
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.2);
 }
 
 .tab-text {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-700);
 }
 
 .tab-item.active .tab-text {
@@ -124,18 +128,19 @@
 }
 
 .reminders-title {
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--gray-900);
 }
 
 .add-reminder-btn {
-  font-size: 24rpx;
-  color: #FFFFFF;
+  font-size: 26rpx;
+  color: var(--primary-color);
   font-weight: 600;
-  padding: 8rpx 16rpx;
-  border-radius: 8rpx;
-  background: rgba(255, 255, 255, 0.2);
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  background: var(--primary-lighter);
+  border: none;
 }
 
 .reminders-list {
@@ -145,13 +150,17 @@
 }
 
 .reminder-item {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16rpx;
-  padding: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
   transition: all 0.3s ease;
+}
+
+.reminder-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .reminder-item.disabled {
@@ -189,14 +198,14 @@
 }
 
 .reminder-title {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .reminder-desc {
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .reminder-actions {
@@ -206,8 +215,8 @@
 }
 
 .reminder-time {
-  font-size: 24rpx;
-  color: #F59E0B;
+  font-size: 28rpx;
+  color: var(--primary-color);
   font-weight: 600;
 }
 
@@ -229,7 +238,7 @@
 }
 
 .switch-track.enabled {
-  background: #F59E0B;
+  background: var(--primary-color);
 }
 
 .switch-thumb {
@@ -315,13 +324,13 @@
 }
 
 .edit-btn {
-  color: #F59E0B;
-  background: rgba(245, 158, 11, 0.1);
+  color: var(--primary-color);
+  background: var(--primary-lighter);
 }
 
 .delete-btn {
-  color: #EF4444;
-  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+  background: var(--danger-light);
 }
 
 /* 通知设置页面 */
@@ -332,12 +341,11 @@
 }
 
 .settings-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .card-header {
@@ -345,9 +353,10 @@
 }
 
 .card-title {
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  color: #F59E0B;
+  color: var(--gray-900);
+  line-height: 1.3;
 }
 
 .settings-list {
@@ -387,14 +396,14 @@
 }
 
 .setting-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .setting-desc {
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 /* 时间设置页面 */
@@ -414,10 +423,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
+  padding: 24rpx;
+  background: var(--gray-50);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--gray-200);
 }
 
 .time-info {
@@ -439,14 +448,14 @@
 }
 
 .time-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .time-desc {
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .time-value {
@@ -460,14 +469,14 @@
 }
 
 .time-text {
-  font-size: 26rpx;
-  color: #F59E0B;
+  font-size: 28rpx;
+  color: var(--primary-color);
   font-weight: 600;
 }
 
 .time-arrow {
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: 24rpx;
+  color: var(--gray-600);
 }
 
 .quiet-hours-setting {
@@ -510,10 +519,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
+  padding: 24rpx;
+  background: var(--gray-50);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--gray-200);
 }
 
 .permission-info {
@@ -535,70 +544,75 @@
 }
 
 .permission-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .permission-desc {
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .permission-btn {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  background: var(--primary-color);
   color: #FFFFFF;
-  padding: 12rpx 24rpx;
-  border-radius: 8rpx;
-  font-size: 24rpx;
+  padding: 16rpx 28rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
   font-weight: 600;
   border: none;
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.2);
 }
 
-/* 底部操作按钮 */
+.permission-btn:active {
+  transform: scale(0.95);
+  background: var(--primary-dark);
+}
+
+/* 底部操作按钮 - Figma风格 */
 .bottom-actions {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20rpx);
+  background: #FFFFFF;
   padding: 24rpx 32rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
+  border-top: 1rpx solid var(--gray-200);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
   display: flex;
   gap: 16rpx;
 }
 
 .action-btn {
   flex: 1;
-  padding: 24rpx 32rpx;
-  border-radius: 16rpx;
-  font-size: 32rpx;
+  padding: 28rpx 32rpx;
+  border-radius: 20rpx;
+  font-size: 34rpx;
   font-weight: 600;
   border: none;
   transition: all 0.3s ease;
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  background: var(--primary-color);
   color: #FFFFFF;
-  box-shadow: 0 4rpx 16rpx rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.2);
 }
 
 .action-btn.primary:active {
   transform: scale(0.95);
-  box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.4);
+  background: var(--primary-dark);
 }
 
 .action-btn.secondary {
-  background: #F3F4F6;
-  color: #374151;
-  border: 2rpx solid #D1D5DB;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  border: 1rpx solid var(--gray-200);
 }
 
 .action-btn.secondary:active {
-  background: #E5E7EB;
+  background: var(--gray-200);
   transform: scale(0.95);
 }
 

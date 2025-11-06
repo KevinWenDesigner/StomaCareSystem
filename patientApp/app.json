@@ -64,6 +64,7 @@
       }
     ]
   },
+  "lazyCodeLoading": "requiredComponents",
   "functionalPages": false,
   "subpackages": [],
   "preloadRule": {},

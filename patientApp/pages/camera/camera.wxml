@@ -6,27 +6,6 @@
     <text class="page-subtitle">拍照获得专业评估建议</text>
   </view>
 
-  <!-- 自动拍照模式 -->
-  <view class="auto-capture-section">
-    <view class="auto-capture-card">
-      <view class="auto-capture-header">
-        <text class="auto-capture-title">自动拍照模式</text>
-        <text class="auto-capture-desc">3秒倒计时自动拍照，确保拍摄稳定</text>
-      </view>
-      
-      <view class="auto-capture-controls">
-        <button class="auto-capture-btn {{autoCapture ? 'active' : ''}}" bindtap="toggleAutoCapture">
-          <text class="btn-text">{{autoCapture ? '取消自动' : '开启自动'}}</text>
-        </button>
-        
-        <view wx:if="{{autoCapture}}" class="countdown-display">
-          <text class="countdown-text">{{captureCountdown}}</text>
-          <text class="countdown-label">秒后拍照</text>
-        </view>
-      </view>
-    </view>
-  </view>
-
   <!-- 拍照区域 -->
   <view class="camera-section">
     <view class="camera-preview">
@@ -44,6 +23,9 @@
       </button>
       <button class="camera-btn outline" bindtap="chooseImage">
         <text class="btn-text">选择照片</text>
+      </button>
+      <button wx:if="{{photoPath && assessmentResult}}" class="camera-btn save-btn" bindtap="savePhotoToAlbum">
+        <text class="btn-text">💾 保存照片</text>
       </button>
     </view>
   </view>
@@ -103,13 +85,41 @@
     
     <view class="result-card">
       <view class="result-header">
-        <text class="result-title">造口状态评估</text>
+        <text class="result-title">{{assessmentResult.woundTypeText || '造口'}}状态评估</text>
         <view class="result-score score-{{assessmentResult.level}}">
           <text class="score-text">{{assessmentResult.score}}分</text>
         </view>
       </view>
       
-      <text class="result-desc">{{assessmentResult.description}}</text>
+      <!-- 通义千问详细分析 -->
+      <view class="qwen-analysis">
+        <view class="analysis-item">
+          <text class="analysis-label">🎨 {{assessmentResult.woundTypeText || '造口'}}颜色</text>
+          <text class="analysis-value">{{assessmentResult.description}}</text>
+        </view>
+        
+        <view class="analysis-item" wx:if="{{assessmentResult.stomaSize}}">
+          <text class="analysis-label">📏 {{assessmentResult.woundTypeText || '造口'}}大小</text>
+          <text class="analysis-value">{{assessmentResult.stomaSize}}</text>
+        </view>
+        
+        <view class="analysis-item" wx:if="{{assessmentResult.skinCondition}}">
+          <text class="analysis-label">👁️ 周围皮肤状况</text>
+          <text class="analysis-value">{{assessmentResult.skinCondition}}</text>
+        </view>
+        
+        <!-- 问题列表 -->
+        <view class="analysis-item" wx:if="{{assessmentResult.issues && assessmentResult.issues.length > 0}}">
+          <text class="analysis-label">⚠️ 发现问题</text>
+          <text class="analysis-value">{{assessmentResult.issuesText}}</text>
+        </view>
+        
+        <!-- AI置信度 -->
+        <view class="analysis-item" wx:if="{{assessmentResult.confidence}}">
+          <text class="analysis-label">🤖 AI置信度</text>
+          <text class="analysis-value">{{assessmentResult.confidence * 100}}%</text>
+        </view>
+      </view>
       
       <!-- AI分析指标 -->
       <view class="analysis-metrics">
@@ -151,13 +161,13 @@
           <text class="detail-label">评估等级</text>
           <text class="detail-value">{{assessmentResult.levelText}}</text>
         </view>
-        <view class="detail-item">
-          <text class="detail-label">建议措施</text>
-          <text class="detail-value">{{assessmentResult.suggestion}}</text>
+        <view class="detail-item" wx:if="{{assessmentResult.pressureStageText}}">
+          <text class="detail-label">NPUAP 分期</text>
+          <text class="detail-value pressure-stage-{{assessmentResult.pressureStage}}">{{assessmentResult.pressureStageText}}</text>
         </view>
-        <view class="detail-item">
-          <text class="detail-label">注意事项</text>
-          <text class="detail-value">{{assessmentResult.attention}}</text>
+        <view class="detail-item detail-item-full">
+          <text class="detail-label">🤖 AI详细分析</text>
+          <text class="detail-value detail-analysis">{{assessmentResult.attention}}</text>
         </view>
       </view>
     </view>

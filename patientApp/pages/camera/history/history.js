@@ -48,21 +48,35 @@ Page({
       
       if (res.success && res.data) {
         const backendData = Array.isArray(res.data) ? res.data : []
+        const config = require('../../../config.js')
         
         // 转换后端数据格式为前端需要的格式
-        const historyList = backendData.map(item => ({
-          id: item.id,
-          imageUrl: item.imageUrl || item.image_url,
-          time: item.createdAt || item.created_at,
-          score: this.calculateScore(item.riskLevel || item.risk_level),
-          level: item.riskLevel || item.risk_level,
-          levelText: this.getRiskLevelText(item.riskLevel || item.risk_level),
-          description: item.suggestions || '暂无描述',
-          stomaColor: item.stomaColor || item.stoma_color,
-          stomaSize: item.stomaSize || item.stoma_size,
-          skinCondition: item.skinCondition || item.skin_condition,
-          rawData: item
-        }))
+        const historyList = backendData.map(item => {
+          const imageUrl = item.imageUrl || item.image_url
+          // 拼接完整的服务器URL
+          const fullImageUrl = imageUrl 
+            ? (imageUrl.startsWith('http') 
+                ? imageUrl 
+                : `${config.apiBaseUrl.replace('/api', '')}${imageUrl}`)
+            : ''
+          
+          console.log('图片URL转换:', imageUrl, '→', fullImageUrl)
+          
+          return {
+            id: item.id,
+            photoPath: fullImageUrl,  // 使用完整的服务器URL
+            imageUrl: imageUrl,  // 保留原始相对路径
+            time: item.createdAt || item.created_at,
+            score: this.calculateScore(item.riskLevel || item.risk_level),
+            level: item.riskLevel || item.risk_level,
+            levelText: this.getRiskLevelText(item.riskLevel || item.risk_level),
+            description: item.suggestions || item.stomaColor || '暂无描述',
+            stomaColor: item.stomaColor || item.stoma_color,
+            stomaSize: item.stomaSize || item.stoma_size,
+            skinCondition: item.skinCondition || item.skin_condition,
+            rawData: item
+          }
+        })
         
         // 按时间倒序排列
         historyList.sort((a, b) => new Date(b.time) - new Date(a.time))

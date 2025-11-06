@@ -223,6 +223,21 @@ Page({
       // 先尝试从本地获取并立即显示
       let patientInfo = wx.getStorageSync('patientInfo')
       if (patientInfo) {
+        // 计算年龄（从本地缓存数据）
+        if (patientInfo.birth_date || patientInfo.birthDate) {
+          const birthDate = new Date(patientInfo.birth_date || patientInfo.birthDate)
+          const now = new Date()
+          patientInfo.age = now.getFullYear() - birthDate.getFullYear()
+        }
+        
+        // 计算护理天数（从本地缓存数据）
+        if (patientInfo.surgery_date || patientInfo.surgeryDate) {
+          const surgeryDate = new Date(patientInfo.surgery_date || patientInfo.surgeryDate)
+          const now = new Date()
+          const diffTime = Math.abs(now - surgeryDate)
+          patientInfo.careDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        }
+        
         this.setData({ patientInfo })
         console.log('使用本地缓存的患者信息')
       }
@@ -232,6 +247,22 @@ Page({
         const res = await api.getMyPatient()
         if (res.success && res.data) {
           patientInfo = res.data
+          
+          // 计算年龄（从后端数据）
+          if (patientInfo.birth_date || patientInfo.birthDate) {
+            const birthDate = new Date(patientInfo.birth_date || patientInfo.birthDate)
+            const now = new Date()
+            patientInfo.age = now.getFullYear() - birthDate.getFullYear()
+          }
+          
+          // 计算护理天数（从后端数据）
+          if (patientInfo.surgery_date || patientInfo.surgeryDate) {
+            const surgeryDate = new Date(patientInfo.surgery_date || patientInfo.surgeryDate)
+            const now = new Date()
+            const diffTime = Math.abs(now - surgeryDate)
+            patientInfo.careDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          }
+          
           wx.setStorageSync('patientInfo', patientInfo)
           this.setData({ patientInfo })
           console.log('已更新患者信息')

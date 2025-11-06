@@ -259,18 +259,117 @@ Page({
       console.error('保存记录失败:', error)
       wx.hideLoading()
       
-      // 如果后端保存失败，询问是否只保存到本地
-      wx.showModal({
-        title: '保存失败',
-        content: '无法连接到服务器，是否仅保存到本地？',
-        confirmText: '仅本地保存',
-        cancelText: '取消',
-        success: (res) => {
-          if (res.confirm) {
-            // 只保存到本地
-            this.saveToLocalOnly(symptomNames)
+      // 检查是否是重复记录错误（409冲突）
+      if (error.statusCode === 409) {
+        wx.showModal({
+          title: '今日已有记录',
+          content: '今天已经有一条日记记录了，是否要更新今天的记录？',
+          confirmText: '更新记录',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              // 更新今天的记录
+              this.updateTodayRecord(symptomNames, diaryData)
+            }
           }
+        })
+      } else {
+        // 其他错误，询问是否只保存到本地
+        wx.showModal({
+          title: '保存失败',
+          content: error.message || '无法连接到服务器，是否仅保存到本地？',
+          confirmText: '仅本地保存',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              // 只保存到本地
+              this.saveToLocalOnly(symptomNames)
+            }
+          }
+        })
+      }
+    }
+  },
+  
+  // 更新今天的记录
+  async updateTodayRecord(symptomNames, diaryData) {
+    try {
+      wx.showLoading({ title: '更新中...' })
+      
+      // 先获取今天的记录ID
+      const patientInfo = wx.getStorageSync('patientInfo')
+      if (!patientInfo || !patientInfo.id) {
+        throw new Error('获取患者信息失败')
+      }
+      
+      // 查询今天的记录
+      const existingRes = await api.getDiaryByDate(patientInfo.id, diaryData.diaryDate)
+      
+      if (existingRes.success && existingRes.data) {
+        const diaryId = existingRes.data.id
+        
+        // 更新记录
+        const updateRes = await api.updateDiary(diaryId, diaryData)
+        
+        if (updateRes.success) {
+          console.log('更新成功:', updateRes.data)
+          
+          // 更新本地存储
+          const record = {
+            id: diaryId,
+            date: this.data.todayDate,
+            painLevel: this.data.selectedPainLevel,
+            symptoms: symptomNames,
+            note: this.data.symptomNote,
+            timestamp: Date.now(),
+            syncedToServer: true
+          }
+          
+          const records = wx.getStorageSync('symptomRecords') || []
+          // 查找并替换今天的记录
+          const todayIndex = records.findIndex(r => r.date === this.data.todayDate)
+          if (todayIndex >= 0) {
+            records[todayIndex] = record
+          } else {
+            records.unshift(record)
+          }
+          
+          wx.setStorageSync('symptomRecords', records)
+          
+          // 重置表单
+          const symptomTypes = this.data.symptomTypes.map(item => ({
+            ...item,
+            selected: false
+          }))
+          
+          this.setData({
+            selectedPainLevel: 0,
+            selectedSymptoms: [],
+            symptomNote: '',
+            records,
+            symptomTypes: symptomTypes
+          })
+          
+          this.filterRecords()
+          this.calculateWeeklyStats()
+          
+          app.globalData.needRefreshIndex = true
+          
+          wx.hideLoading()
+          app.showToast('✅ 记录更新成功', 'success')
+        } else {
+          throw new Error(updateRes.message || '更新失败')
         }
+      } else {
+        throw new Error('未找到今天的记录')
+      }
+    } catch (error) {
+      console.error('更新记录失败:', error)
+      wx.hideLoading()
+      wx.showToast({
+        title: error.message || '更新失败',
+        icon: 'none',
+        duration: 2000
       })
     }
   },

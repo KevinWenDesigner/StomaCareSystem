@@ -4,9 +4,13 @@ class Assessment {
   // 创建评估记录
   static async create(assessmentData) {
     const sql = `
-      INSERT INTO assessments (patient_id, image_url, assessment_date, ai_result,
-        stoma_color, stoma_size, skin_condition, risk_level, suggestions)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO assessments (
+        patient_id, image_url, assessment_date, ai_result,
+        stoma_color, stoma_size, skin_condition, 
+        risk_level, score, pressure_stage, confidence,
+        issues, detailed_analysis, is_stoma, wound_type, suggestions
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       assessmentData.patientId,
@@ -17,6 +21,13 @@ class Assessment {
       assessmentData.stomaSize || null,
       assessmentData.skinCondition || null,
       assessmentData.riskLevel || null,
+      assessmentData.score || 0,
+      assessmentData.pressureStage || null,
+      assessmentData.confidence || 0.85,
+      JSON.stringify(assessmentData.issues || []),
+      assessmentData.detailedAnalysis || null,
+      assessmentData.isStoma !== false ? 1 : 0,
+      assessmentData.woundType || 'stoma',
       assessmentData.suggestions || null
     ];
     
@@ -42,6 +53,13 @@ class Assessment {
           assessment.ai_result = JSON.parse(assessment.ai_result);
         } catch (e) {
           assessment.ai_result = {};
+        }
+      }
+      if (assessment.issues) {
+        try {
+          assessment.issues = JSON.parse(assessment.issues);
+        } catch (e) {
+          assessment.issues = [];
         }
       }
       return assessment;
@@ -73,6 +91,13 @@ class Assessment {
           assessment.ai_result = JSON.parse(assessment.ai_result);
         } catch (e) {
           assessment.ai_result = {};
+        }
+      }
+      if (assessment.issues) {
+        try {
+          assessment.issues = JSON.parse(assessment.issues);
+        } catch (e) {
+          assessment.issues = [];
         }
       }
       return assessment;
@@ -130,6 +155,13 @@ class Assessment {
           assessment.ai_result = JSON.parse(assessment.ai_result);
         } catch (e) {
           assessment.ai_result = {};
+        }
+      }
+      if (assessment.issues) {
+        try {
+          assessment.issues = JSON.parse(assessment.issues);
+        } catch (e) {
+          assessment.issues = [];
         }
       }
       return assessment;

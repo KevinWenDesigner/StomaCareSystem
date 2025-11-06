@@ -1,20 +1,25 @@
 /* patient-app/pages/health-report/health-report.wxss */
+/* 统一Figma风格 - 与首页一致 */
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  padding: 32rpx;
+  background: var(--bg-secondary); /* 浅灰白色背景，与首页一致 */
+  padding: 32rpx 24rpx;
   box-sizing: border-box;
   padding-bottom: 120rpx;
 }
 
-/* 页面头部 */
+/* 页面头部 - Figma风格 */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 48rpx;
-  padding: 20rpx 0;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .header-left {
@@ -24,16 +29,15 @@
 
 .back-icon {
   font-size: 36rpx;
-  color: #FFFFFF;
+  color: var(--gray-900);
   font-weight: bold;
   margin-right: 16rpx;
 }
 
 .page-title {
-  font-size: 40rpx;
-  font-weight: 800;
-  color: #FFFFFF;
-  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  font-size: 42rpx;
+  font-weight: 700;
+  color: var(--gray-900);
   max-width: 400rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -47,11 +51,12 @@
 
 .share-btn {
   font-size: 28rpx;
-  color: #FFFFFF;
+  color: var(--primary-color);
   font-weight: 600;
-  padding: 8rpx 16rpx;
-  border-radius: 8rpx;
-  background: rgba(255, 255, 255, 0.2);
+  padding: 16rpx 24rpx;
+  border-radius: 12rpx;
+  background: var(--primary-lighter);
+  border: none;
 }
 
 /* 加载状态 */
@@ -64,7 +69,7 @@
 
 .loading-text {
   font-size: 32rpx;
-  color: #FFFFFF;
+  color: var(--gray-600);
   opacity: 0.8;
 }
 
@@ -75,34 +80,33 @@
   gap: 32rpx;
 }
 
-/* 标签页导航 */
+/* 标签页导航 - Figma风格 */
 .tab-navigation {
   display: flex;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
   padding: 8rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .tab-item {
   flex: 1;
-  padding: 16rpx 24rpx;
+  padding: 20rpx 24rpx;
   border-radius: 12rpx;
   text-align: center;
   transition: all 0.3s ease;
 }
 
 .tab-item.active {
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.3);
+  background: var(--primary-color);
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.2);
 }
 
 .tab-text {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-700);
 }
 
 .tab-item.active .tab-text {
@@ -116,14 +120,13 @@
   gap: 24rpx;
 }
 
-/* 健康评分卡片 */
+/* 健康评分卡片 - Figma风格 */
 .health-score-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
   text-align: center;
 }
 
@@ -135,14 +138,14 @@
 }
 
 .score-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 700;
-  color: #3B82F6;
+  color: var(--gray-900);
 }
 
 .score-date {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-500);
 }
 
 .score-display {
@@ -153,15 +156,15 @@
 }
 
 .score-value {
-  font-size: 72rpx;
+  font-size: 80rpx;
   font-weight: 800;
-  color: #3B82F6;
+  color: var(--primary-color);
   line-height: 1;
 }
 
 .score-unit {
   font-size: 32rpx;
-  color: #6B7280;
+  color: var(--gray-600);
   margin-left: 8rpx;
 }
 
@@ -191,14 +194,13 @@
   color: #991B1B;
 }
 
-/* 信息部分 */
+/* 信息部分 - Figma风格 */
 .info-section, .vitals-section, .stoma-section, .symptoms-section {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 .section-header {
@@ -206,9 +208,10 @@
 }
 
 .section-title {
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  color: #3B82F6;
+  color: var(--gray-900);
+  line-height: 1.3;
 }
 
 /* 信息网格 */
@@ -225,14 +228,14 @@
 }
 
 .info-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .info-value {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 /* 生命体征网格 */
@@ -247,10 +250,10 @@
   flex-direction: column;
   align-items: center;
   gap: 8rpx;
-  padding: 20rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
+  padding: 24rpx;
+  background: var(--gray-50);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--gray-200);
 }
 
 .vital-icon {
@@ -258,14 +261,14 @@
 }
 
 .vital-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .vital-value {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 /* 造口状态网格 */
@@ -279,15 +282,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
+  padding: 20rpx;
+  background: var(--gray-50);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--gray-200);
 }
 
 .stoma-label {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: 28rpx;
+  color: var(--gray-700);
 }
 
 .stoma-value {
@@ -314,15 +317,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
+  padding: 20rpx;
+  background: var(--gray-50);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--gray-200);
 }
 
 .symptom-label {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: 28rpx;
+  color: var(--gray-700);
 }
 
 .symptom-value-container {
@@ -360,14 +363,12 @@
 }
 
 .trend-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
   transition: all 0.3s ease;
-  animation: slideInUp 0.6s ease-out;
 }
 
 @keyframes slideInUp {
@@ -381,9 +382,9 @@
   }
 }
 
-.trend-card:hover {
-  transform: translateY(-2rpx);
-  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.15);
+.trend-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .trend-header {
@@ -391,17 +392,19 @@
 }
 
 .trend-title {
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  color: #3B82F6;
+  color: var(--gray-900);
   display: block;
   margin-bottom: 8rpx;
+  line-height: 1.3;
 }
 
 .trend-subtitle {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
   display: block;
+  line-height: 1.4;
 }
 
 /* 趋势图表 */
@@ -727,12 +730,11 @@
 }
 
 .recommendations-section, .risks-section, .improvements-section {
-  background: rgba(255, 255, 255, 0.95);
+  background: #FFFFFF;
   border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(20rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid var(--gray-200);
 }
 
 /* 建议列表 */
@@ -771,9 +773,9 @@
 }
 
 .recommendation-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .recommendation-priority {
@@ -803,8 +805,8 @@
 }
 
 .recommendation-content {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: 28rpx;
+  color: var(--gray-700);
   line-height: 1.5;
 }
 
@@ -844,9 +846,9 @@
 }
 
 .risk-factor {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .risk-level {
@@ -871,8 +873,8 @@
 }
 
 .risk-description {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: 28rpx;
+  color: var(--gray-700);
   line-height: 1.5;
 }
 
@@ -884,10 +886,10 @@
 }
 
 .improvement-item {
-  padding: 20rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
+  padding: 24rpx;
+  background: var(--gray-50);
+  border-radius: 16rpx;
+  border: 1rpx solid var(--gray-200);
 }
 
 .improvement-header {
@@ -898,15 +900,15 @@
 }
 
 .improvement-area {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #374151;
+  color: var(--gray-900);
 }
 
 .improvement-progress {
-  font-size: 24rpx;
+  font-size: 26rpx;
   font-weight: 600;
-  color: #3B82F6;
+  color: var(--primary-color);
 }
 
 .improvement-details {
@@ -916,8 +918,8 @@
 }
 
 .improvement-current, .improvement-target {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: 26rpx;
+  color: var(--gray-600);
 }
 
 .progress-bar {
@@ -930,55 +932,54 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  background: var(--primary-color);
   border-radius: 4rpx;
   transition: width 0.3s ease;
 }
 
-/* 底部操作按钮 */
+/* 底部操作按钮 - Figma风格 */
 .bottom-actions {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20rpx);
+  background: #FFFFFF;
   padding: 24rpx 32rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
+  border-top: 1rpx solid var(--gray-200);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
   display: flex;
   gap: 16rpx;
 }
 
 .action-btn {
   flex: 1;
-  padding: 24rpx 32rpx;
-  border-radius: 16rpx;
-  font-size: 32rpx;
+  padding: 28rpx 32rpx;
+  border-radius: 20rpx;
+  font-size: 34rpx;
   font-weight: 600;
   border: none;
   transition: all 0.3s ease;
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  background: var(--primary-color);
   color: #FFFFFF;
-  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.2);
 }
 
 .action-btn.primary:active {
   transform: scale(0.95);
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
+  background: var(--primary-dark);
 }
 
 .action-btn.secondary {
-  background: #F3F4F6;
-  color: #374151;
-  border: 2rpx solid #D1D5DB;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  border: 1rpx solid var(--gray-200);
 }
 
 .action-btn.secondary:active {
-  background: #E5E7EB;
+  background: var(--gray-200);
   transform: scale(0.95);
 }
 

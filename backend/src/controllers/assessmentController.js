@@ -24,7 +24,7 @@ class AssessmentController {
       // 调用AI分析
       const aiResult = await AIService.analyzeImage(imagePath);
       
-      // 保存评估记录
+      // 保存评估记录（包含完整的AI分析数据）
       const assessmentData = {
         patientId,
         imageUrl,
@@ -33,7 +33,16 @@ class AssessmentController {
         stomaSize: aiResult.stomaSize,
         skinCondition: aiResult.skinCondition,
         riskLevel: aiResult.riskLevel,
-        suggestions: aiResult.suggestions.join('\n')
+        score: aiResult.score || 0,
+        pressureStage: aiResult.pressureStage || null,
+        confidence: aiResult.confidence || 0.85,
+        issues: aiResult.issues || [],
+        detailedAnalysis: aiResult.detailedAnalysis || '',
+        isStoma: aiResult.isStoma !== false,
+        woundType: aiResult.woundType || 'stoma',
+        suggestions: Array.isArray(aiResult.suggestions) 
+          ? aiResult.suggestions.join('\n') 
+          : (aiResult.suggestions || '')
       };
       
       const assessmentId = await Assessment.create(assessmentData);
@@ -42,12 +51,20 @@ class AssessmentController {
       return response.created(res, {
         ...assessment,
         aiAnalysis: {
+          canAssess: aiResult.canAssess,
+          woundType: aiResult.woundType,
+          isStoma: aiResult.isStoma,
+          notAssessableReason: aiResult.notAssessableReason,
           stomaColor: aiResult.stomaColor,
           stomaSize: aiResult.stomaSize,
           skinCondition: aiResult.skinCondition,
+          pressureStage: aiResult.pressureStage,
           riskLevel: aiResult.riskLevel,
+          score: aiResult.score,
+          issues: aiResult.issues,
           suggestions: aiResult.suggestions,
-          confidence: aiResult.confidence
+          confidence: aiResult.confidence,
+          detailedAnalysis: aiResult.detailedAnalysis
         }
       });
     } catch (error) {

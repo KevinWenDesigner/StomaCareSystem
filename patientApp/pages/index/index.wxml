@@ -26,7 +26,7 @@
         </view>
         <view class="user-welcome">
           <text class="page-subtitle">欢迎回来，{{patientInfo && patientInfo.name ? patientInfo.name : '患者'}}</text>
-          <text class="user-care-info" wx:if="{{patientInfo}}">{{patientInfo.age || '-'}}岁 · {{patientInfo.gender || '-'}} · 护理{{patientInfo.careDays || 0}}天</text>
+          <text class="user-care-info" wx:if="{{patientInfo}}">{{patientInfo.age || '-'}}岁 · {{patientInfo.gender === 'male' ? '男' : (patientInfo.gender === 'female' ? '女' : patientInfo.gender || '-')}} · 护理{{patientInfo.careDays || 0}}天</text>
         </view>
       </view>
     </view>
