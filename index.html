@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>患者管理数据大屏 - 造口护理智能管理系统</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <!-- 生产环境配置文件 -->
-    <script src="config.prod.js"></script>
+    <!-- 配置文件：开发环境用config.dev.js，生产环境用config.prod.js -->
+    <script src="config.dev.js"></script>
     <style>
         * {
             margin: 0;
@@ -1763,13 +1763,72 @@
         // 显示错误信息
         function showError(message) {
             const dashboardBody = document.getElementById('dashboardBody');
+            const apiUrl = CONFIG.apiBaseUrl;
+            const hasToken = !!CONFIG.token;
+            
             dashboardBody.innerHTML = `
                 <div class="error-message">
                     ❌ ${message}
                     <br><br>
-                    <a href="login.html" style="color: #fff; text-decoration: underline;">返回登录页面</a>
+                    <div style="font-size: 0.9em; opacity: 0.8; margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                        <strong>诊断信息：</strong><br>
+                        • API地址: ${apiUrl}<br>
+                        • Token状态: ${hasToken ? '已配置 ✓' : '未配置 ✗'}<br>
+                        • 浏览器: ${navigator.userAgent.split(' ').pop()}<br><br>
+                        <strong>可能的原因：</strong><br>
+                        1. 后端服务未启动（请检查 npm start）<br>
+                        2. API地址配置错误（检查 config.dev.js）<br>
+                        3. 数据库未初始化或无数据<br>
+                        4. Token已过期（请重新登录）<br>
+                        5. 跨域问题（检查后端CORS配置）<br>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <button onclick="testConnection()" style="padding: 10px 20px; margin: 0 10px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">测试连接</button>
+                        <a href="login.html" style="display: inline-block; padding: 10px 20px; margin: 0 10px; background: #ef4444; border-radius: 8px; color: #fff; text-decoration: none; font-size: 14px;">返回登录</a>
+                    </div>
                 </div>
             `;
+        }
+        
+        // 测试API连接
+        async function testConnection() {
+            const resultDiv = document.querySelector('.error-message');
+            resultDiv.innerHTML += '<div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.2); border-radius: 8px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;"><strong>正在测试连接...</strong><br><br></div>';
+            
+            const tests = [
+                { name: '1. 健康检查', url: `${CONFIG.apiBaseUrl}/health`, auth: false },
+                { name: '2. Dashboard API', url: `${CONFIG.apiBaseUrl}/dashboard/stats`, auth: true }
+            ];
+            
+            const testDiv = resultDiv.querySelector('div:last-child');
+            
+            for (const test of tests) {
+                testDiv.innerHTML += `<div style="margin: 10px 0;">测试 ${test.name}...</div>`;
+                try {
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (test.auth && CONFIG.token) {
+                        headers['Authorization'] = `Bearer ${CONFIG.token}`;
+                    }
+                    
+                    const response = await fetch(test.url, { headers });
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        testDiv.innerHTML += `<div style="color: #4ade80;">✓ ${test.name}: 成功 (${response.status})</div>`;
+                        if (test.name.includes('健康检查')) {
+                            testDiv.innerHTML += `<div style="color: #93c5fd; font-size: 0.85em; margin-left: 20px;">服务器响应: ${data.message}</div>`;
+                        }
+                    } else {
+                        testDiv.innerHTML += `<div style="color: #f87171;">✗ ${test.name}: 失败 (${response.status})</div>`;
+                        testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${data.message || '未知错误'}</div>`;
+                    }
+                } catch (error) {
+                    testDiv.innerHTML += `<div style="color: #f87171;">✗ ${test.name}: 网络错误</div>`;
+                    testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${error.message}</div>`;
+                }
+            }
+            
+            testDiv.innerHTML += '<br><strong>测试完成</strong>';
         }
 
         // 初始化
