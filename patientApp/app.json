@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/camera/camera",
     "pages/camera/history/history",
+    "pages/camera/compare/compare",
     "pages/diary/diary",
     "pages/education/education",
     "pages/education/course-list/course-list",

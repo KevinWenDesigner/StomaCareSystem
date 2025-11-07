@@ -169,8 +169,10 @@
         .dashboard-header .update-time {
             font-size: clamp(0.65rem, 1.1vw, 0.85rem);
             opacity: 0.7;
-            margin-top: 0.3vh;
-            position: relative;
+            position: absolute;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
             z-index: 1;
             color: #60a5fa;
             animation: blink 2s ease-in-out infinite;
@@ -802,7 +804,6 @@
             <h1>🏥 患者管理数据大屏</h1>
             <div class="subtitle">造口护理智能管理系统 - 实时数据监控</div>
             <div class="update-time" id="updateTime">最后更新: --</div>
-            <button onclick="logout()" style="position: absolute; top: 20px; right: 30px; padding: 8px 20px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.background='rgba(220, 38, 38, 1)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.9)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)'">🚪 退出登录</button>
         </div>
 
         <!-- 主体 -->

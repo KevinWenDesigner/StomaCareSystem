@@ -1,4 +1,5 @@
 <!--patient-app/pages/camera/history/history.wxml-->
+<wxs module="utils" src="./history.wxs"></wxs>
 <view class="container">
   <!-- 页面标题 -->
   <view class="page-header">
@@ -8,11 +9,28 @@
 
   <!-- 操作按钮 -->
   <view class="action-bar">
+    <button class="action-btn primary" bindtap="toggleCompareMode">
+      {{compareMode ? '取消对比' : '对比评估'}}
+    </button>
     <button class="action-btn" bindtap="exportRecords">
-      <text class="btn-text">导出记录</text>
+      导出记录
     </button>
     <button class="action-btn danger" bindtap="clearAllRecords">
-      <text class="btn-text">清空记录</text>
+      清空记录
+    </button>
+  </view>
+
+  <!-- 对比模式提示和操作栏 -->
+  <view wx:if="{{compareMode}}" class="compare-bar">
+    <view class="compare-info">
+      <text class="info-text" user-select="false">已选 {{selectedRecords.length}} 条记录 (需2~5条)</text>
+    </view>
+    <button 
+      class="compare-btn {{selectedRecords.length >= 2 ? 'active' : 'disabled'}}"
+      bindtap="startCompare"
+      disabled="{{selectedRecords.length < 2}}"
+    >
+      开始对比
     </button>
   </view>
 
@@ -20,15 +38,15 @@
   <view class="stats-section">
     <view class="stats-card">
       <view class="stats-item">
-        <text class="stats-number">{{historyList.length}}</text>
+        <text class="stats-number" user-select="true">{{historyList.length}}</text>
         <text class="stats-label">总记录数</text>
       </view>
       <view class="stats-item">
-        <text class="stats-number">{{averageScore}}</text>
+        <text class="stats-number" user-select="true">{{averageScore}}</text>
         <text class="stats-label">平均评分</text>
       </view>
       <view class="stats-item">
-        <text class="stats-number">{{latestRecord}}</text>
+        <text class="stats-number" user-select="true">{{latestRecord}}</text>
         <text class="stats-label">最近评估</text>
       </view>
     </view>
@@ -53,19 +71,34 @@
   <!-- 历史记录列表 -->
   <view wx:else class="history-list">
     <view wx:for="{{historyList}}" wx:key="id" class="history-item">
-      <view class="history-card" bindtap="viewDetail" data-id="{{item.id}}">
+      <view class="history-card {{compareMode ? 'compare-mode' : ''}} {{utils.includes(selectedIds, item.id) ? 'card-selected' : ''}}" bindtap="viewDetail" data-id="{{item.id}}">
+        <!-- 对比模式选择框 -->
+        <view 
+          wx:if="{{compareMode}}"
+          class="select-checkbox {{utils.includes(selectedIds, item.id) ? 'selected' : ''}}"
+          catchtap="toggleSelectRecord"
+          data-id="{{item.id}}"
+        >
+          <view class="checkbox-icon">
+            {{utils.includes(selectedIds, item.id) ? '✓' : ''}}
+          </view>
+        </view>
+
         <!-- 照片预览 -->
         <view class="history-image-container">
-          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image"></image>
-          <view class="image-overlay">
+          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image"></image>                                                                      
+          <view class="image-overlay" wx:if="{{!compareMode}}">
             <text class="overlay-text">点击查看详情</text>
+          </view>
+          <view class="image-overlay compare-overlay" wx:if="{{compareMode}}">
+            <text class="overlay-text">{{utils.includes(selectedIds, item.id) ? '已选中' : '点击选择'}}</text>
           </view>
         </view>
         
         <!-- 记录信息 -->
         <view class="history-content">
           <view class="history-header">
-            <text class="history-time">{{item.time}}</text>
+            <text class="history-time" user-select="true">{{item.time}}</text>
             <view class="history-score score-{{item.level}}">
               <text class="score-text">{{item.score}}分</text>
             </view>
@@ -74,11 +107,11 @@
           <view class="history-details">
             <view class="detail-row">
               <text class="detail-label">评估等级</text>
-              <text class="detail-value">{{item.levelText}}</text>
+              <text class="detail-value" user-select="true">{{item.levelText}}</text>
             </view>
             <view class="detail-row">
               <text class="detail-label">评估描述</text>
-              <text class="detail-value description">{{item.description}}</text>
+              <text class="detail-value description" user-select="true">{{item.description}}</text>
             </view>
           </view>
         </view>

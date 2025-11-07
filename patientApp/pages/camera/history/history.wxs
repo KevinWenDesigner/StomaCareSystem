@@ -1,0 +1,20 @@
+// 工具函数模块
+var utils = {
+  // 判断数组中是否包含某个值
+  includes: function(array, value) {
+    if (!array || array.length === 0) {
+      return false;
+    }
+    for (var i = 0; i < array.length; i++) {
+      // 使用 == 进行宽松比较，支持数字和字符串的比较
+      if (array[i] == value) {
+        return true;
+      }
+    }
+    return false;
+  }
+};
+
+module.exports = utils;
+
+

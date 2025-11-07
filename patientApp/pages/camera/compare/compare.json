@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "评估对比",
+  "navigationBarBackgroundColor": "#667eea",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#F7F8FA",
+  "enablePullDownRefresh": false,
+  "usingComponents": {}
+}
+

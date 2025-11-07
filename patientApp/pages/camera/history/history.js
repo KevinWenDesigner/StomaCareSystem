@@ -12,7 +12,11 @@ Page({
     pageSize: 10,
     averageScore: 0,
     latestRecord: '暂无',
-    useBackendData: true // 是否使用后端数据
+    useBackendData: true, // 是否使用后端数据
+    compareMode: false, // 是否处于对比模式
+    selectedRecords: [], // 已选中的记录
+    selectedIds: [], // 已选中的记录ID（用于模板判断）
+    maxCompareCount: 5 // 最多可以对比的记录数
   },
 
   onLoad() {
@@ -167,11 +171,106 @@ Page({
     return textMap[riskLevel] || '未知'
   },
 
+  // 切换对比模式
+  toggleCompareMode() {
+    const compareMode = !this.data.compareMode
+    this.setData({
+      compareMode,
+      selectedRecords: [], // 切换模式时清空选择
+      selectedIds: [] // 同时清空ID列表
+    })
+
+    if (compareMode) {
+      wx.showToast({
+        title: '请选择2-5条记录进行对比',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  },
+
+  // 选择/取消选择记录
+  toggleSelectRecord(e) {
+    const { id } = e.currentTarget.dataset
+    // 确保ID类型一致：将字符串转换为数字（如果后端返回的是数字）
+    const numId = Number(id)
+    console.log('toggleSelectRecord 被调用, id:', id, 'numId:', numId, 'type:', typeof id)
+    console.log('当前 selectedIds:', this.data.selectedIds)
+
+    const record = this.data.historyList.find(item => item.id == id)
+
+    if (!record) {
+      console.log('未找到记录, id:', id)
+      return
+    }
+
+    let selectedRecords = [...this.data.selectedRecords]
+    let selectedIds = [...this.data.selectedIds]
+    const index = selectedRecords.findIndex(item => item.id == id)
+
+    if (index > -1) {
+      // 已选中，取消选择
+      console.log('取消选择, index:', index)
+      selectedRecords.splice(index, 1)
+      selectedIds.splice(index, 1)
+    } else {
+      // 未选中，添加选择
+      if (selectedRecords.length >= this.data.maxCompareCount) {
+        wx.showToast({
+          title: `最多选择${this.data.maxCompareCount}条记录`,
+          icon: 'none'
+        })
+        return
+      }
+      console.log('添加选择')
+      selectedRecords.push(record)
+      // 使用record.id确保类型一致
+      selectedIds.push(record.id)
+    }
+
+    console.log('更新后 selectedIds:', selectedIds, '类型:', selectedIds.map(id => typeof id))
+    this.setData({
+      selectedRecords,
+      selectedIds
+    }, () => {
+      console.log('setData 完成, 当前 selectedIds:', this.data.selectedIds)
+      console.log('historyList ID类型:', this.data.historyList.map(item => ({id: item.id, type: typeof item.id})))
+    })
+  },
+
+  // 开始对比
+  startCompare() {
+    const { selectedRecords } = this.data
+
+    if (selectedRecords.length < 2) {
+      wx.showToast({
+        title: '请至少选择2条记录进行对比',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 将选中的记录保存到全局数据
+    getApp().globalData.selectedAssessments = selectedRecords
+
+    // 跳转到对比页面
+    wx.navigateTo({
+      url: '/pages/camera/compare/compare'
+    })
+  },
+
   // 查看评估详情
   viewDetail(e) {
     const { id } = e.currentTarget.dataset
-    const record = this.data.historyList.find(item => item.id === id)
     
+    // 如果处于对比模式，触发选择逻辑
+    if (this.data.compareMode) {
+      this.toggleSelectRecord(e)
+      return
+    }
+
+    const record = this.data.historyList.find(item => item.id === id)
+
     if (record) {
       // 跳转到详情页面或显示详情弹窗
       this.showDetailModal(record)

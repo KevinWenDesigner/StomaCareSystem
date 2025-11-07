@@ -1,0 +1,370 @@
+<!--patient-app/pages/camera/compare/compare.wxml-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="header">
+    <view class="header-title">
+      <text class="title">评估对比</text>
+      <text class="subtitle" wx:if="{{selectedRecords.length === 2}}">对比2条评估记录</text>
+      <text class="subtitle" wx:else>共{{selectedRecords.length}}条记录，对比首末变化</text>
+    </view>
+    <view class="header-actions">
+      <view class="action-btn" bindtap="generateReport">
+        <text class="icon">📄</text>
+        <text class="text">生成报告</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签切换 -->
+  <view class="tabs">
+    <view 
+      class="tab-item {{activeTab === 'detail' ? 'active' : ''}}"
+      data-tab="detail"
+      bindtap="switchTab"
+    >
+      <text class="tab-text">详细对比</text>
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'trend' ? 'active' : ''}}"
+      data-tab="trend"
+      bindtap="switchTab"
+    >
+      <text class="tab-text">趋势分析</text>
+    </view>
+  </view>
+
+  <!-- 详细对比内容 -->
+  <scroll-view 
+    wx:if="{{activeTab === 'detail' && comparisonData}}"
+    class="content"
+    scroll-y
+    enable-back-to-top
+  >
+    <!-- 整体评估 -->
+    <view class="overall-card">
+      <view class="overall-icon" style="background: {{comparisonData.overallAssessment.color}}20;">
+        <text class="icon-text">{{comparisonData.overallAssessment.icon}}</text>
+      </view>
+      <view class="overall-content">
+        <view class="overall-title" style="color: {{comparisonData.overallAssessment.color}};">
+          {{comparisonData.overallAssessment.text}}
+        </view>
+        <view class="overall-desc">{{comparisonData.overallAssessment.description}}</view>
+        <view class="overall-time">
+          <text class="label">对比时间跨度：</text>
+          <text class="value">{{comparisonData.timeDiff}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 图片对比 -->
+    <view class="comparison-section">
+      <view class="section-title">
+        <text class="icon">📸</text>
+        <text class="text">图片对比</text>
+      </view>
+      <view class="image-comparison">
+        <view class="image-item">
+          <view class="image-label">
+            <text class="label-text">初始状态</text>
+            <text class="label-date">{{comparisonData.record1.formattedDate}}</text>
+          </view>
+          <image 
+            class="comparison-image"
+            src="{{comparisonData.record1.photoPath}}"
+            mode="aspectFill"
+            bindtap="previewImage"
+            data-index="0"
+          />
+          <view class="image-score">
+            <text class="score-text">{{comparisonData.record1.score}}分</text>
+          </view>
+        </view>
+        
+        <view class="image-divider">
+          <view class="divider-line"></view>
+          <view class="divider-icon">→</view>
+          <view class="divider-line"></view>
+        </view>
+
+        <view class="image-item">
+          <view class="image-label">
+            <text class="label-text">当前状态</text>
+            <text class="label-date">{{comparisonData.record2.formattedDate}}</text>
+          </view>
+          <image 
+            class="comparison-image"
+            src="{{comparisonData.record2.photoPath}}"
+            mode="aspectFill"
+            bindtap="previewImage"
+            data-index="1"
+          />
+          <view class="image-score">
+            <text class="score-text">{{comparisonData.record2.score}}分</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 指标对比 -->
+    <view class="comparison-section">
+      <view class="section-title">
+        <text class="icon">📊</text>
+        <text class="text">健康指标对比</text>
+      </view>
+
+      <!-- 红肿程度 -->
+      <view class="metric-item">
+        <view class="metric-header">
+          <text class="metric-name">红肿程度</text>
+          <view class="metric-change {{comparisonData.metrics.redness.diff.isImproved ? 'improved' : comparisonData.metrics.redness.diff.isWorse ? 'worse' : 'stable'}}">
+            <text class="change-icon">
+              {{comparisonData.metrics.redness.diff.isImproved ? '↓' : comparisonData.metrics.redness.diff.isWorse ? '↑' : '−'}}
+            </text>
+            <text class="change-text">
+              {{comparisonData.metrics.redness.diff.noChange ? '无变化' : comparisonData.metrics.redness.diff.value + '%'}}
+            </text>
+          </view>
+        </view>
+        <view class="metric-bars">
+          <view class="bar-group">
+            <text class="bar-label">初始</text>
+            <view class="bar-container">
+              <view class="bar bar-before" style="width: {{comparisonData.metrics.redness.before}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.redness.before}}%</text>
+          </view>
+          <view class="bar-group">
+            <text class="bar-label">当前</text>
+            <view class="bar-container">
+              <view class="bar bar-after" style="width: {{comparisonData.metrics.redness.after}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.redness.after}}%</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 肿胀程度 -->
+      <view class="metric-item">
+        <view class="metric-header">
+          <text class="metric-name">肿胀程度</text>
+          <view class="metric-change {{comparisonData.metrics.swelling.diff.isImproved ? 'improved' : comparisonData.metrics.swelling.diff.isWorse ? 'worse' : 'stable'}}">
+            <text class="change-icon">
+              {{comparisonData.metrics.swelling.diff.isImproved ? '↓' : comparisonData.metrics.swelling.diff.isWorse ? '↑' : '−'}}
+            </text>
+            <text class="change-text">
+              {{comparisonData.metrics.swelling.diff.noChange ? '无变化' : comparisonData.metrics.swelling.diff.value + '%'}}
+            </text>
+          </view>
+        </view>
+        <view class="metric-bars">
+          <view class="bar-group">
+            <text class="bar-label">初始</text>
+            <view class="bar-container">
+              <view class="bar bar-before" style="width: {{comparisonData.metrics.swelling.before}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.swelling.before}}%</text>
+          </view>
+          <view class="bar-group">
+            <text class="bar-label">当前</text>
+            <view class="bar-container">
+              <view class="bar bar-after" style="width: {{comparisonData.metrics.swelling.after}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.swelling.after}}%</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 感染风险 -->
+      <view class="metric-item">
+        <view class="metric-header">
+          <text class="metric-name">感染风险</text>
+          <view class="metric-change {{comparisonData.metrics.infection.diff.isImproved ? 'improved' : comparisonData.metrics.infection.diff.isWorse ? 'worse' : 'stable'}}">
+            <text class="change-icon">
+              {{comparisonData.metrics.infection.diff.isImproved ? '↓' : comparisonData.metrics.infection.diff.isWorse ? '↑' : '−'}}
+            </text>
+            <text class="change-text">
+              {{comparisonData.metrics.infection.diff.noChange ? '无变化' : comparisonData.metrics.infection.diff.value + '%'}}
+            </text>
+          </view>
+        </view>
+        <view class="metric-bars">
+          <view class="bar-group">
+            <text class="bar-label">初始</text>
+            <view class="bar-container">
+              <view class="bar bar-before" style="width: {{comparisonData.metrics.infection.before}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.infection.before}}%</text>
+          </view>
+          <view class="bar-group">
+            <text class="bar-label">当前</text>
+            <view class="bar-container">
+              <view class="bar bar-after" style="width: {{comparisonData.metrics.infection.after}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.infection.after}}%</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 愈合程度 -->
+      <view class="metric-item">
+        <view class="metric-header">
+          <text class="metric-name">愈合程度</text>
+          <view class="metric-change {{comparisonData.metrics.healing.diff.isImproved ? 'improved' : comparisonData.metrics.healing.diff.isWorse ? 'worse' : 'stable'}}">
+            <text class="change-icon">
+              {{comparisonData.metrics.healing.diff.isImproved ? '↑' : comparisonData.metrics.healing.diff.isWorse ? '↓' : '−'}}
+            </text>
+            <text class="change-text">
+              {{comparisonData.metrics.healing.diff.noChange ? '无变化' : comparisonData.metrics.healing.diff.value + '%'}}
+            </text>
+          </view>
+        </view>
+        <view class="metric-bars">
+          <view class="bar-group">
+            <text class="bar-label">初始</text>
+            <view class="bar-container">
+              <view class="bar bar-before bar-healing" style="width: {{comparisonData.metrics.healing.before}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.healing.before}}%</text>
+          </view>
+          <view class="bar-group">
+            <text class="bar-label">当前</text>
+            <view class="bar-container">
+              <view class="bar bar-after bar-healing" style="width: {{comparisonData.metrics.healing.after}}%;"></view>
+            </view>
+            <text class="bar-value">{{comparisonData.metrics.healing.after}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 护理建议 -->
+    <view class="comparison-section">
+      <view class="section-title">
+        <text class="icon">💡</text>
+        <text class="text">护理建议</text>
+      </view>
+      <view class="suggestions">
+        <view class="suggestion-item" wx:if="{{comparisonData.metrics.redness.diff.isWorse}}">
+          <text class="suggestion-icon">🔴</text>
+          <text class="suggestion-text">红肿程度增加，建议保持造口清洁，避免摩擦</text>
+        </view>
+        <view class="suggestion-item" wx:if="{{comparisonData.metrics.infection.diff.isWorse}}">
+          <text class="suggestion-icon">⚠️</text>
+          <text class="suggestion-text">感染风险上升，请及时联系护士进行专业评估</text>
+        </view>
+        <view class="suggestion-item" wx:if="{{comparisonData.metrics.healing.diff.isImproved}}">
+          <text class="suggestion-icon">✅</text>
+          <text class="suggestion-text">愈合情况良好，请继续保持当前护理方案</text>
+        </view>
+        <view class="suggestion-item" wx:if="{{comparisonData.overallAssessment.level === 'great'}}">
+          <text class="suggestion-icon">🎉</text>
+          <text class="suggestion-text">恢复效果显著，继续保持积极的护理态度</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="bottom-safe-area"></view>
+  </scroll-view>
+
+  <!-- 趋势分析内容 -->
+  <scroll-view 
+    wx:if="{{activeTab === 'trend' && chartData}}"
+    class="content"
+    scroll-y
+    enable-back-to-top
+  >
+    <!-- 周期选择 -->
+    <view class="period-selector">
+      <view 
+        class="period-item {{trendPeriod === '7' ? 'active' : ''}}"
+        data-period="7"
+        bindtap="changeTrendPeriod"
+      >
+        <text>近7天</text>
+      </view>
+      <view 
+        class="period-item {{trendPeriod === '30' ? 'active' : ''}}"
+        data-period="30"
+        bindtap="changeTrendPeriod"
+      >
+        <text>近30天</text>
+      </view>
+      <view 
+        class="period-item {{trendPeriod === '90' ? 'active' : ''}}"
+        data-period="90"
+        bindtap="changeTrendPeriod"
+      >
+        <text>近90天</text>
+      </view>
+    </view>
+
+    <!-- 趋势图表 -->
+    <view class="chart-section">
+      <view class="chart-title">健康评分趋势</view>
+      <view class="chart-container">
+        <!-- 简化的趋势线图 -->
+        <view class="simple-chart">
+          <view class="chart-lines">
+            <view class="chart-line" wx:for="{{chartData.categories}}" wx:key="index">
+              <view class="line-point" style="height: {{chartData.series[0].data[index]}}%;"></view>
+              <text class="line-label">{{item}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 指标趋势 -->
+    <view class="trend-metrics">
+      <view class="trend-metric-item" wx:for="{{chartData.series}}" wx:key="name">
+        <view class="metric-legend">
+          <view class="legend-dot" style="background: {{item.color}};"></view>
+          <text class="legend-name">{{item.name}}</text>
+        </view>
+        <view class="metric-trend">
+          <view class="trend-bar" wx:for="{{item.data}}" wx:for-item="value" wx:key="*this">
+            <view class="trend-point" style="height: {{value}}%; background: {{item.color}};"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 统计摘要 -->
+    <view class="stats-summary">
+      <view class="stats-title">统计摘要</view>
+      <view class="stats-grid">
+        <view class="stat-card">
+          <text class="stat-label">评估次数</text>
+          <text class="stat-value">{{selectedRecords.length}}</text>
+          <text class="stat-unit">次</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-label">平均评分</text>
+          <text class="stat-value">{{comparisonData.record2.score}}</text>
+          <text class="stat-unit">分</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-label">改善幅度</text>
+          <text class="stat-value">
+            {{comparisonData.scoreDiff.isImproved ? '+' : comparisonData.scoreDiff.isWorse ? '-' : ''}}{{comparisonData.scoreDiff.value}}
+          </text>
+          <text class="stat-unit">%</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="bottom-safe-area"></view>
+  </scroll-view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!comparisonData && !chartData}}" class="empty-state">
+    <text class="empty-icon">📊</text>
+    <text class="empty-text">暂无对比数据</text>
+    <text class="empty-tip">请至少选择2条评估记录进行对比</text>
+    <view class="empty-action" bindtap="goBack">
+      <text>返回历史记录</text>
+    </view>
+  </view>
+</view>
+

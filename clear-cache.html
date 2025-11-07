@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除缓存 - 造口护理系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .details h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .details pre {
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 清除缓存工具</h1>
+        
+        <div id="status" class="status info">
+            准备清除缓存...
+        </div>
+        
+        <button onclick="clearAll()">一键清除所有缓存</button>
+        <button onclick="viewCache()">查看当前缓存</button>
+        
+        <div id="details" class="details" style="display: none;">
+            <h3>当前缓存状态</h3>
+            <pre id="cacheContent"></pre>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="goToLogin()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                前往登录页面
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        function clearAll() {
+            const status = document.getElementById('status');
+            
+            try {
+                // 清除 localStorage
+                const localStorageCount = localStorage.length;
+                localStorage.clear();
+                
+                // 清除 sessionStorage
+                const sessionStorageCount = sessionStorage.length;
+                sessionStorage.clear();
+                
+                // 显示成功信息
+                status.className = 'status success';
+                status.innerHTML = `
+                    ✅ 缓存已清除！<br>
+                    <small style="font-size: 14px; margin-top: 10px; display: inline-block;">
+                        - 清除了 ${localStorageCount} 条 localStorage 数据<br>
+                        - 清除了 ${sessionStorageCount} 条 sessionStorage 数据<br>
+                        - Token、用户信息、跳转标记全部清除
+                    </small>
+                `;
+                
+                // 3秒后自动跳转到登录页
+                setTimeout(() => {
+                    status.innerHTML += '<br><br>即将跳转到登录页面...';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1000);
+                }, 2000);
+                
+            } catch (error) {
+                status.className = 'status';
+                status.style.background = '#f8d7da';
+                status.style.color = '#721c24';
+                status.textContent = '❌ 清除失败: ' + error.message;
+            }
+        }
+        
+        function viewCache() {
+            const details = document.getElementById('details');
+            const cacheContent = document.getElementById('cacheContent');
+            
+            let content = '=== localStorage ===\n';
+            if (localStorage.length === 0) {
+                content += '(空)\n';
+            } else {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    let value = localStorage.getItem(key);
+                    if (key === 'token' && value) {
+                        value = value.substring(0, 30) + '...';
+                    }
+                    content += `${key}: ${value}\n`;
+                }
+            }
+            
+            content += '\n=== sessionStorage ===\n';
+            if (sessionStorage.length === 0) {
+                content += '(空)\n';
+            } else {
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    const value = sessionStorage.getItem(key);
+                    content += `${key}: ${value}\n`;
+                }
+            }
+            
+            cacheContent.textContent = content;
+            details.style.display = 'block';
+        }
+        
+        function goToLogin() {
+            window.location.href = 'login.html';
+        }
+        
+        // 页面加载时自动显示缓存状态
+        window.addEventListener('load', () => {
+            const status = document.getElementById('status');
+            const hasToken = !!localStorage.getItem('token');
+            const hasFromIndex = !!sessionStorage.getItem('fromIndex');
+            const hasToIndex = !!sessionStorage.getItem('toIndex');
+            
+            if (hasToken || hasFromIndex || hasToIndex) {
+                status.className = 'status info';
+                status.innerHTML = `
+                    检测到缓存数据：<br>
+                    <small style="font-size: 14px; margin-top: 10px; display: inline-block;">
+                        ${hasToken ? '✓ Token 已保存<br>' : ''}
+                        ${hasFromIndex ? '✓ fromIndex 标记存在<br>' : ''}
+                        ${hasToIndex ? '✓ toIndex 标记存在<br>' : ''}
+                    </small>
+                    <br>
+                    <strong>点击"一键清除所有缓存"解决跳转问题</strong>
+                `;
+            } else {
+                status.className = 'status success';
+                status.textContent = '✅ 当前没有缓存数据';
+            }
+        });
+    </script>
+</body>
+</html>
+
+
