@@ -8,7 +8,7 @@
 
 /* 页面头部 */
 .header {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   padding: 40rpx 30rpx 30rpx;
   color: white;
   display: flex;
@@ -76,9 +76,9 @@
 }
 
 .tab-item.active {
-  color: #1890ff;
+  color: var(--primary-color);
   font-weight: bold;
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.1) 0%, rgba(9, 109, 217, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.1) 0%, rgba(0, 102, 221, 0.1) 100%);
 }
 
 .tab-text {
@@ -93,7 +93,7 @@
   transform: translateX(-50%);
   width: 40rpx;
   height: 6rpx;
-  background: #1890ff;
+  background: var(--primary-color);
   border-radius: 3rpx;
 }
 
@@ -245,7 +245,7 @@
 }
 
 .divider-icon {
-  color: #1890ff;
+  color: var(--primary-color);
   font-size: 32rpx;
   font-weight: bold;
 }
@@ -337,7 +337,7 @@
 }
 
 .bar-after {
-  background: linear-gradient(90deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
 }
 
 .bar-healing {
@@ -366,7 +366,7 @@
   padding: 24rpx;
   background: #F7F8FA;
   border-radius: 12rpx;
-  border-left: 4rpx solid #1890ff;
+  border-left: 4rpx solid var(--primary-color);
 }
 
 .suggestion-icon {
@@ -401,10 +401,10 @@
 }
 
 .period-item.active {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
   font-weight: bold;
-  box-shadow: 0 4rpx 15rpx rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4rpx 15rpx rgba(0, 120, 255, 0.3);
 }
 
 /* 图表区域 */
@@ -449,7 +449,7 @@
 
 .line-point {
   width: 100%;
-  background: linear-gradient(180deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   border-radius: 8rpx 8rpx 0 0;
   transition: height 0.5s ease;
   min-height: 40rpx;
@@ -541,7 +541,7 @@
   flex: 1;
   text-align: center;
   padding: 30rpx 20rpx;
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.12) 0%, rgba(9, 109, 217, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.12) 0%, rgba(0, 102, 221, 0.12) 100%);
   border-radius: 16rpx;
 }
 
@@ -556,7 +556,7 @@
   display: block;
   font-size: 48rpx;
   font-weight: bold;
-  color: #1890ff;
+  color: var(--primary-color);
   line-height: 1;
   margin-bottom: 8rpx;
 }
@@ -598,7 +598,7 @@
 
 .empty-action {
   padding: 20rpx 60rpx;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
   border-radius: 50rpx;
   font-size: 28rpx;

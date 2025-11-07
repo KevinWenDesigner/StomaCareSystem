@@ -24,25 +24,33 @@ class AssessmentController {
       // 调用AI分析
       const aiResult = await AIService.analyzeImage(imagePath);
       
-      // 保存评估记录（包含完整的AI分析数据）
+      // 保存评估记录（DET评分系统）
       const assessmentData = {
         patientId,
         imageUrl,
         aiResult: aiResult.rawData,
+        
+        // 造口基本信息
         stomaColor: aiResult.stomaColor,
         stomaSize: aiResult.stomaSize,
+        stomaShape: aiResult.stomaShape,
         skinCondition: aiResult.skinCondition,
-        riskLevel: aiResult.riskLevel,
-        score: aiResult.score || 0,
-        pressureStage: aiResult.pressureStage || null,
+        
+        // DET评分
+        detScore: aiResult.detScore,
+        detLevel: aiResult.detLevel || 'excellent',
+        score: (aiResult.detScore && aiResult.detScore.total) || 0,  // score直接存储DET总分(0-15)
+        
+        // AI分析
         confidence: aiResult.confidence || 0.85,
         issues: aiResult.issues || [],
         detailedAnalysis: aiResult.detailedAnalysis || '',
-        isStoma: aiResult.isStoma !== false,
-        woundType: aiResult.woundType || 'stoma',
         suggestions: Array.isArray(aiResult.suggestions) 
           ? aiResult.suggestions.join('\n') 
-          : (aiResult.suggestions || '')
+          : (aiResult.suggestions || ''),
+        
+        // 健康指标
+        healthMetrics: aiResult.healthMetrics
       };
       
       const assessmentId = await Assessment.create(assessmentData);
@@ -53,18 +61,28 @@ class AssessmentController {
         aiAnalysis: {
           canAssess: aiResult.canAssess,
           woundType: aiResult.woundType,
-          isStoma: aiResult.isStoma,
           notAssessableReason: aiResult.notAssessableReason,
+          
+          // 造口信息
           stomaColor: aiResult.stomaColor,
           stomaSize: aiResult.stomaSize,
+          stomaShape: aiResult.stomaShape,
           skinCondition: aiResult.skinCondition,
-          pressureStage: aiResult.pressureStage,
-          riskLevel: aiResult.riskLevel,
+          
+          // DET评分
+          detScore: aiResult.detScore,
+          detLevel: aiResult.detLevel,
+          detLevelText: aiResult.detLevelText,
           score: aiResult.score,
+          
+          // AI分析
           issues: aiResult.issues,
           suggestions: aiResult.suggestions,
           confidence: aiResult.confidence,
-          detailedAnalysis: aiResult.detailedAnalysis
+          detailedAnalysis: aiResult.detailedAnalysis,
+          
+          // 健康指标
+          healthMetrics: aiResult.healthMetrics
         }
       });
     } catch (error) {
@@ -103,7 +121,7 @@ class AssessmentController {
       
       const filters = {
         patientId: patientId || req.user.patientId,
-        riskLevel,
+        detLevel: riskLevel,  // 兼容旧参数名riskLevel
         nurseReview: nurseReview !== undefined ? parseInt(nurseReview) : undefined,
         startDate,
         endDate,
@@ -114,7 +132,7 @@ class AssessmentController {
       const assessments = await Assessment.findAll(filters);
       const total = await Assessment.count({ 
         patientId: filters.patientId, 
-        riskLevel 
+        detLevel: riskLevel 
       });
       
       return response.paginated(res, assessments, {

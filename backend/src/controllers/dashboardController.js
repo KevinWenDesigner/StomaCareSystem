@@ -29,25 +29,35 @@ class DashboardController {
         FROM assessments
       `);
 
-      // 3. 风险等级分布
+      // 3. DET等级分布
       const riskDistribution = await db.query(`
         SELECT 
-          risk_level,
+          det_level as risk_level,
           COUNT(*) as count
         FROM assessments
         WHERE assessment_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-        GROUP BY risk_level
+        GROUP BY det_level
       `);
 
-      // 4. NPUAP分期统计
+      // 4. DET维度分析
       const stageDistribution = await db.query(`
         SELECT 
-          pressure_stage,
-          COUNT(*) as count
+          'D-变色' as pressure_stage,
+          ROUND(AVG(det_d_total), 1) as count
         FROM assessments
         WHERE assessment_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-          AND pressure_stage IS NOT NULL
-        GROUP BY pressure_stage
+        UNION ALL
+        SELECT 
+          'E-侵蚀' as pressure_stage,
+          ROUND(AVG(det_e_total), 1) as count
+        FROM assessments
+        WHERE assessment_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        UNION ALL
+        SELECT 
+          'T-组织增生' as pressure_stage,
+          ROUND(AVG(det_t_total), 1) as count
+        FROM assessments
+        WHERE assessment_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
       `);
 
       // 5. 症状日记统计
@@ -84,24 +94,25 @@ class DashboardController {
         GROUP BY stoma_type
       `);
 
-      // 8. 高风险患者列表
+      // 8. 重点关注患者列表（DET等级为moderate/poor/critical）
       const highRiskPatients = await db.query(`
         SELECT 
           p.id,
           p.name,
           p.gender,
           p.stoma_type,
-          a.risk_level,
+          a.det_level as risk_level,
           a.score,
+          a.det_total,
           a.assessment_date,
-          a.pressure_stage
+          a.det_level as pressure_stage
         FROM patients p
         INNER JOIN assessments a ON p.id = a.patient_id
         WHERE a.id IN (
           SELECT MAX(id) FROM assessments GROUP BY patient_id
         )
-        AND a.risk_level IN ('高风险', '中风险')
-        ORDER BY a.assessment_date DESC
+        AND a.det_level IN ('moderate', 'poor', 'critical')
+        ORDER BY a.det_total DESC, a.assessment_date DESC
         LIMIT 10
       `);
 
@@ -112,8 +123,10 @@ class DashboardController {
           a.patient_id,
           p.name as patient_name,
           a.assessment_date,
-          a.risk_level,
-          a.score
+          a.det_level as risk_level,
+          a.score,
+          a.det_total,
+          a.det_level as pressure_stage
         FROM assessments a
         INNER JOIN patients p ON a.patient_id = p.id
         WHERE a.nurse_review = 0
@@ -168,9 +181,10 @@ class DashboardController {
           a.id,
           p.name as patient_name,
           a.assessment_date,
-          a.risk_level,
+          a.det_level as risk_level,
           a.score,
-          a.pressure_stage
+          a.det_total,
+          a.det_level as pressure_stage
         FROM assessments a
         INNER JOIN patients p ON a.patient_id = p.id
         ORDER BY a.assessment_date DESC
@@ -204,16 +218,16 @@ class DashboardController {
         ORDER BY date
       `, [parseInt(days)]);
 
-      // 风险等级变化趋势
+      // DET等级变化趋势
       const riskTrend = await db.query(`
         SELECT 
           DATE(assessment_date) as date,
-          risk_level,
+          det_level as risk_level,
           COUNT(*) as count
         FROM assessments
         WHERE assessment_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-        GROUP BY DATE(assessment_date), risk_level
-        ORDER BY date, risk_level
+        GROUP BY DATE(assessment_date), det_level
+        ORDER BY date, det_level
       `, [parseInt(days)]);
 
       // 症状趋势

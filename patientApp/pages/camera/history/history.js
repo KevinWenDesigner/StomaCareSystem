@@ -44,17 +44,29 @@ Page({
   // 从后端加载评估历史
   async loadFromBackend() {
     try {
-      console.log('从后端加载评估历史...')
+      console.log('=== 从后端加载评估历史 ===')
+      console.log('请求参数:', { page: this.data.page, pageSize: this.data.pageSize })
+      
       const res = await api.getAssessments({
-        page: this.data.page,
-        pageSize: this.data.pageSize
+        page: 1,  // 强制使用第1页，确保获取最新数据
+        pageSize: 20  // 与 camera.js 保持一致，获取更多记录
       })
+      
+      console.log('后端响应:', res)
       
       if (res.success && res.data) {
         const backendData = Array.isArray(res.data) ? res.data : []
+        console.log('后端返回记录数:', backendData.length)
+        console.log('后端数据详情:', backendData.map(item => ({
+          id: item.id,
+          score: item.score,
+          riskLevel: item.riskLevel,
+          createdAt: item.createdAt
+        })))
+        
         const config = require('../../../config.js')
         
-        // 转换后端数据格式为前端需要的格式
+        // 转换后端数据格式为前端需要的格式（与 camera.js 保持一致）
         const historyList = backendData.map(item => {
           const imageUrl = item.imageUrl || item.image_url
           // 拼接完整的服务器URL
@@ -64,26 +76,39 @@ Page({
                 : `${config.apiBaseUrl.replace('/api', '')}${imageUrl}`)
             : ''
           
-          console.log('图片URL转换:', imageUrl, '→', fullImageUrl)
+          // 从后端获取健康指标，如果没有则基于风险等级计算
+          const pressureStage = item.pressureStage || item.riskLevel
+          const healthMetrics = this.calculateHealthMetricsFromStage(pressureStage)
           
           return {
             id: item.id,
             photoPath: fullImageUrl,  // 使用完整的服务器URL
             imageUrl: imageUrl,  // 保留原始相对路径
-            time: item.createdAt || item.created_at,
-            score: this.calculateScore(item.riskLevel || item.risk_level),
-            level: item.riskLevel || item.risk_level,
-            levelText: this.getRiskLevelText(item.riskLevel || item.risk_level),
-            description: item.suggestions || item.stomaColor || '暂无描述',
+            time: formatDateTime(item.createdAt),
+            timestamp: new Date(item.createdAt).getTime(),
+            score: item.score || 0,  // 直接使用assessments表中的score字段
+            level: this.getRiskLevelNumber(item.riskLevel),  // 转换为数字，与camera.js保持一致
+            levelText: this.getRiskLevelText(item.riskLevel),
+            description: item.stomaColor || item.suggestions || '评估完成',
             stomaColor: item.stomaColor || item.stoma_color,
             stomaSize: item.stomaSize || item.stoma_size,
             skinCondition: item.skinCondition || item.skin_condition,
+            analysis: healthMetrics,  // 使用基于NPUAP的健康指标
             rawData: item
           }
         })
         
         // 按时间倒序排列
         historyList.sort((a, b) => new Date(b.time) - new Date(a.time))
+        
+        console.log('转换后的记录数:', historyList.length)
+        console.log('转换后的数据:', historyList.map(item => ({
+          id: item.id,
+          score: item.score,
+          level: item.level,
+          levelText: item.levelText,
+          time: item.time
+        })))
         
         // 计算统计数据
         const averageScore = historyList.length > 0 
@@ -93,6 +118,8 @@ Page({
         const latestRecord = historyList.length > 0 
           ? getRelativeTime(historyList[0].time)
           : '暂无'
+        
+        console.log('统计数据:', { 总记录数: historyList.length, 平均分: averageScore, 最近记录: latestRecord })
         
         this.setData({ 
           historyList,
@@ -104,13 +131,13 @@ Page({
         // 同时保存到本地作为备份
         wx.setStorageSync('assessmentHistory', historyList)
         
-        console.log('从后端加载评估历史成功，共', historyList.length, '条记录')
+        console.log('✅ 从后端加载评估历史成功')
       } else {
-        console.log('后端返回数据为空，使用本地数据')
+        console.log('⚠️ 后端返回数据为空，使用本地数据')
         this.loadFromLocal()
       }
     } catch (error) {
-      console.error('从后端加载评估历史失败:', error)
+      console.error('❌ 从后端加载评估历史失败:', error)
       console.log('降级使用本地数据')
       this.loadFromLocal()
     }
@@ -160,15 +187,75 @@ Page({
     return scoreMap[riskLevel] || 75
   },
 
-  // 获取风险等级文本
+  // 获取风险等级数字（与 camera.js 保持一致）
+  getRiskLevelNumber(riskLevel) {
+    const levelMap = {
+      'low': 1,
+      'medium': 2,
+      'high': 3,
+      'critical': 4,
+      // NPUAP 标准
+      'normal': 1,
+      'stage_1': 2,
+      'stage-1': 2,
+      'stage_2': 3,
+      'stage-2': 3,
+      'stage_3': 4,
+      'stage-3': 4,
+      'stage_4': 4,
+      'stage-4': 4,
+      'dtpi': 3,
+      'unstageable': 4
+    }
+    return levelMap[riskLevel] || 2
+  },
+
+  // 获取风险等级文本（NPUAP 标准）
   getRiskLevelText(riskLevel) {
     const textMap = {
+      // 新标准（NPUAP）
+      'normal': '正常',
+      'stage_1': 'I期压疮',
+      'stage-1': 'I期压疮',
+      'stage_2': 'II期压疮',
+      'stage-2': 'II期压疮',
+      'stage_3': 'III期压疮',
+      'stage-3': 'III期压疮',
+      'stage_4': 'IV期压疮',
+      'stage-4': 'IV期压疮',
+      'dtpi': '深部组织压伤',
+      'unstageable': '不可分期',
+      // 旧标准（兼容）
       'low': '状态良好',
-      'medium': '需要注意',
+      'medium': '需要关注',
       'high': '需要处理',
       'critical': '紧急处理'
     }
-    return textMap[riskLevel] || '未知'
+    return textMap[riskLevel] || '未知状态'
+  },
+
+  // 基于NPUAP分期计算健康指标（与 camera.js 保持一致）
+  calculateHealthMetricsFromStage(pressureStage) {
+    const metricsMap = {
+      'normal': { redness: 0, swelling: 0, infection: 5, healing: 100 },
+      'stage_1': { redness: 40, swelling: 20, infection: 20, healing: 75 },
+      'stage-1': { redness: 40, swelling: 20, infection: 20, healing: 75 },
+      'stage_2': { redness: 60, swelling: 40, infection: 40, healing: 60 },
+      'stage-2': { redness: 60, swelling: 40, infection: 40, healing: 60 },
+      'stage_3': { redness: 80, swelling: 60, infection: 70, healing: 40 },
+      'stage-3': { redness: 80, swelling: 60, infection: 70, healing: 40 },
+      'stage_4': { redness: 95, swelling: 80, infection: 90, healing: 20 },
+      'stage-4': { redness: 95, swelling: 80, infection: 90, healing: 20 },
+      'dtpi': { redness: 70, swelling: 50, infection: 60, healing: 45 },
+      'unstageable': { redness: 50, swelling: 50, infection: 85, healing: 15 },
+      'invalid': { redness: 0, swelling: 0, infection: 0, healing: 0 },
+      // 兼容旧的风险等级
+      'low': { redness: 10, swelling: 5, infection: 10, healing: 90 },
+      'medium': { redness: 50, swelling: 30, infection: 50, healing: 60 },
+      'high': { redness: 80, swelling: 60, infection: 80, healing: 30 },
+      'critical': { redness: 95, swelling: 80, infection: 95, healing: 10 }
+    }
+    return metricsMap[pressureStage] || metricsMap['normal']
   },
 
   // 切换对比模式

@@ -857,16 +857,16 @@
                         </div>
                         <div class="stat-item">
                             <div class="stat-value" id="avgScore">0</div>
-                            <div class="stat-label">平均评分</div>
+                            <div class="stat-label">平均DET分</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 风险等级分布 -->
+                <!-- DET等级分布 -->
                 <div class="card" style="flex: 1;">
                     <div class="card-title">
                         <span class="icon">⚠️</span>
-                        <span>风险等级分布</span>
+                        <span>DET等级分布</span>
                     </div>
                     <div class="chart-container" id="riskChart"></div>
                 </div>
@@ -883,11 +883,11 @@
                     <div class="chart-container-large" id="trendChart"></div>
                 </div>
 
-                <!-- NPUAP分期统计 -->
+                <!-- DET维度分析 -->
                 <div class="card" style="flex: 1;">
                     <div class="card-title">
                         <span class="icon">📋</span>
-                        <span>NPUAP分期分布</span>
+                        <span>DET维度分析（平均分）</span>
                     </div>
                     <div class="chart-container" id="stageChart"></div>
                 </div>
@@ -904,11 +904,11 @@
                     <div class="chart-container" id="stomaTypeChart"></div>
                 </div>
 
-                <!-- 高风险患者 -->
+                <!-- 重点关注患者 -->
                 <div class="card" style="flex: 1;">
                     <div class="card-title">
                         <span class="icon">🚨</span>
-                        <span>高风险患者</span>
+                        <span>重点关注患者</span>
                     </div>
                     <div class="data-list" id="highRiskList"></div>
                 </div>
@@ -1092,6 +1092,7 @@
 
             animateNumber(document.getElementById('todayAssessments'), assessmentStats.today_assessments || 0);
             animateNumber(document.getElementById('weekAssessments'), assessmentStats.week_assessments || 0);
+            // 显示平均DET评分（0-15分）
             animateNumberDecimal(document.getElementById('avgScore'), Number(assessmentStats.avg_score) || 0, 1000, 1);
         }
 
@@ -1108,20 +1109,29 @@
             }
         }
 
-        // 更新风险分布图表
+        // 更新DET等级分布图表
         function updateRiskChart(riskDistribution) {
             if (!charts.risk) return;
             
+            // DET等级映射
             const riskMap = {
-                '低风险': { value: 0, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                'excellent': { value: 0, name: '优秀（无皮炎）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                     {offset: 0, color: '#10b981'},
                     {offset: 1, color: '#059669'}
                 ])},
-                '中风险': { value: 0, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                'good': { value: 0, name: '良好（轻度）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {offset: 0, color: '#52c41a'},
+                    {offset: 1, color: '#389e0d'}
+                ])},
+                'moderate': { value: 0, name: '中度（需注意）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                     {offset: 0, color: '#f59e0b'},
                     {offset: 1, color: '#d97706'}
                 ])},
-                '高风险': { value: 0, color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                'poor': { value: 0, name: '重度（需处理）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {offset: 0, color: '#f97316'},
+                    {offset: 1, color: '#ea580c'}
+                ])},
+                'critical': { value: 0, name: '极重度（紧急）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                     {offset: 0, color: '#ef4444'},
                     {offset: 1, color: '#dc2626'}
                 ])}
@@ -1149,7 +1159,7 @@
                     top: 'center',
                     textStyle: {
                         color: '#e0f2fe',
-                        fontSize: 12
+                        fontSize: 11
                     }
                 },
                 series: [{
@@ -1157,9 +1167,11 @@
                     radius: ['40%', '70%'],
                     center: ['40%', '50%'],
                     data: [
-                        { value: riskMap['低风险'].value, name: '低风险', itemStyle: { color: riskMap['低风险'].color } },
-                        { value: riskMap['中风险'].value, name: '中风险', itemStyle: { color: riskMap['中风险'].color } },
-                        { value: riskMap['高风险'].value, name: '高风险', itemStyle: { color: riskMap['高风险'].color } }
+                        { value: riskMap['excellent'].value, name: riskMap['excellent'].name, itemStyle: { color: riskMap['excellent'].color } },
+                        { value: riskMap['good'].value, name: riskMap['good'].name, itemStyle: { color: riskMap['good'].color } },
+                        { value: riskMap['moderate'].value, name: riskMap['moderate'].name, itemStyle: { color: riskMap['moderate'].color } },
+                        { value: riskMap['poor'].value, name: riskMap['poor'].name, itemStyle: { color: riskMap['poor'].color } },
+                        { value: riskMap['critical'].value, name: riskMap['critical'].name, itemStyle: { color: riskMap['critical'].color } }
                     ],
                     emphasis: {
                         itemStyle: {
@@ -1192,7 +1204,7 @@
             charts.risk.setOption(option, { notMerge: false, lazyUpdate: true });
         }
 
-        // 更新趋势图表
+        // 更新评估趋势图表
         function updateTrendChart(assessmentTrend) {
             if (!charts.trend) return;
             
@@ -1201,6 +1213,7 @@
                 return `${date.getMonth() + 1}/${date.getDate()}`;
             });
             const counts = assessmentTrend.map(item => item.count);
+            // DET评分范围0-15分
             const scores = assessmentTrend.map(item => (Number(item.avg_score) || 0).toFixed(1));
 
             const option = {
@@ -1222,7 +1235,7 @@
                     }
                 },
                 legend: {
-                    data: ['评估次数', '平均评分'],
+                    data: ['评估次数', 'DET平均分'],
                     textStyle: {
                         color: '#e0f2fe',
                         fontSize: 12
@@ -1284,9 +1297,9 @@
                     },
                     {
                         type: 'value',
-                        name: '平均评分',
+                        name: 'DET平均分',
                         position: 'right',
-                        max: 100,
+                        max: 15,  // DET评分范围0-15
                         nameTextStyle: {
                             color: '#60a5fa',
                             fontSize: 12
@@ -1344,7 +1357,7 @@
                         }
                     },
                     {
-                        name: '平均评分',
+                        name: 'DET平均分',
                         type: 'line',
                         smooth: true,
                         data: scores,
@@ -1379,38 +1392,13 @@
             charts.trend.setOption(option, { notMerge: false, lazyUpdate: true });
         }
 
-        // 更新NPUAP分期图表
+        // 更新DET维度分析图表
         function updateStageChart(stageDistribution) {
             if (!charts.stage) return;
             
-            // NPUAP分期中英文映射
-            const stageNameMap = {
-                'dtpi': 'DTPI(深部组织损伤)',
-                'invalid': '无法分期',
-                'normal': '正常',
-                'stage_1': '一期',
-                'stage_2': '二期',
-                'stage_3': '三期',
-                'stage_4': '四期',
-                'stage 1': '一期',
-                'stage 2': '二期',
-                'stage 3': '三期',
-                'stage 4': '四期',
-                'Stage 1': '一期',
-                'Stage 2': '二期',
-                'Stage 3': '三期',
-                'Stage 4': '四期',
-                'stage1': '一期',
-                'stage2': '二期',
-                'stage3': '三期',
-                'stage4': '四期'
-            };
-            
-            const stages = stageDistribution.map(item => {
-                const originalStage = item.pressure_stage || '未知';
-                return stageNameMap[originalStage] || originalStage;
-            });
-            const counts = stageDistribution.map(item => item.count);
+            // DET维度已经是中文，直接使用
+            const stages = stageDistribution.map(item => item.pressure_stage || '未知');
+            const counts = stageDistribution.map(item => Number(item.count) || 0);
 
             const option = {
                 tooltip: {
@@ -1420,6 +1408,10 @@
                         shadowStyle: {
                             color: 'rgba(59, 130, 246, 0.2)'
                         }
+                    },
+                    formatter: function(params) {
+                        const param = params[0];
+                        return `${param.name}<br/>平均分: ${param.value}/5`;
                     },
                     backgroundColor: 'rgba(30, 64, 175, 0.95)',
                     borderColor: 'rgba(96, 165, 250, 0.5)',
@@ -1446,21 +1438,8 @@
                     axisLabel: {
                         color: '#e0f2fe',
                         rotate: 0,
-                        fontSize: 11,
-                        interval: 0,
-                        formatter: function(value) {
-                            // 如果标签过长，进行换行处理
-                            if (value.length > 6) {
-                                // 优先在括号处换行
-                                if (value.includes('(')) {
-                                    return value.replace('(', '\n(');
-                                }
-                                // 否则在中间位置换行
-                                const mid = Math.ceil(value.length / 2);
-                                return value.substring(0, mid) + '\n' + value.substring(mid);
-                            }
-                            return value;
-                        }
+                        fontSize: 12,
+                        interval: 0
                     },
                     axisTick: {
                         lineStyle: {
@@ -1470,6 +1449,7 @@
                 },
                 yAxis: {
                     type: 'value',
+                    max: 5,  // DET各维度最高5分
                     axisLine: {
                         lineStyle: {
                             color: 'rgba(96, 165, 250, 0.5)',
@@ -1478,7 +1458,8 @@
                     },
                     axisLabel: {
                         color: '#e0f2fe',
-                        fontSize: 11
+                        fontSize: 11,
+                        formatter: '{value}分'
                     },
                     splitLine: {
                         lineStyle: {
@@ -1623,35 +1604,41 @@
             charts.stomaType.setOption(option, { notMerge: false, lazyUpdate: true });
         }
 
-        // 更新高风险患者列表
+        // 更新重点关注患者列表
         function updateHighRiskList(highRiskPatients) {
             const listContainer = document.getElementById('highRiskList');
             
             if (!highRiskPatients || highRiskPatients.length === 0) {
-                listContainer.innerHTML = '<div class="empty-data">暂无高风险患者</div>';
+                listContainer.innerHTML = '<div class="empty-data">暂无重点关注患者</div>';
                 listContainer.classList.remove('auto-scroll');
                 return;
             }
 
             const html = highRiskPatients.map(patient => {
-                const riskClass = patient.risk_level === '高风险' ? 'high-risk' : 
-                                patient.risk_level === '中风险' ? 'medium-risk' : 'low-risk';
-                const badgeClass = patient.risk_level === '高风险' ? 'badge-high' : 
-                                  patient.risk_level === '中风险' ? 'badge-medium' : 'badge-low';
+                // 根据DET等级确定样式
+                const detLevel = patient.risk_level;
+                const riskClass = detLevel === 'critical' || detLevel === 'poor' ? 'high-risk' : 
+                                detLevel === 'moderate' ? 'medium-risk' : 'low-risk';
+                const badgeClass = detLevel === 'critical' || detLevel === 'poor' ? 'badge-high' : 
+                                  detLevel === 'moderate' ? 'badge-medium' : 'badge-low';
+                
+                // DET等级中文显示
+                const detLevelText = getDetLevelTextChinese(detLevel);
+                
                 const date = new Date(patient.assessment_date);
                 const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
                 
-                // 将英文状态转换为中文
-                const stageText = getStageTextChinese(patient.pressure_stage);
+                // 显示DET总分
+                const detTotal = patient.det_total || patient.score || 0;
 
                 return `
                     <div class="list-item ${riskClass}">
                         <div class="list-item-header">
                             <span class="list-item-name">${patient.name}</span>
-                            <span class="list-item-badge ${badgeClass}">${patient.risk_level}</span>
+                            <span class="list-item-badge ${badgeClass}">${detLevelText}</span>
                         </div>
                         <div class="list-item-info">
-                            评分: ${patient.score} | ${stageText}<br>
+                            DET评分: ${detTotal}/15分<br>
                             ${patient.stoma_type || '未知类型'} | ${dateStr}
                         </div>
                     </div>
@@ -1669,26 +1656,21 @@
             }
         }
 
-        // NPUAP分期状态映射（英文转中文）
-        function getStageTextChinese(stage) {
-            const stageMap = {
-                'normal': '正常',
-                'stage_1': 'I期压疮',
-                'stage-1': 'I期压疮',
-                'stage_2': 'II期压疮',
-                'stage-2': 'II期压疮',
-                'stage_3': 'III期压疮',
-                'stage-3': 'III期压疮',
-                'stage_4': 'IV期压疮',
-                'stage-4': 'IV期压疮',
-                'dtpi': '深部组织压伤',
-                'unstageable': '不可分期',
-                'invalid': '无法评估',
-                'low': '状态良好',
-                'medium': '需要关注',
-                'high': '需要处理'
+        // DET等级映射（英文转中文）
+        function getDetLevelTextChinese(detLevel) {
+            const levelMap = {
+                'excellent': '优秀',
+                'good': '良好',
+                'moderate': '需注意',
+                'poor': '需处理',
+                'critical': '紧急'
             };
-            return stageMap[stage] || stage || '未分期';
+            return levelMap[detLevel] || detLevel || '未知';
+        }
+        
+        // 旧函数保留用于兼容
+        function getStageTextChinese(stage) {
+            return getDetLevelTextChinese(stage);
         }
 
         // 更新待审核列表
@@ -1702,24 +1684,30 @@
             }
 
             const html = pendingReviews.map(review => {
-                const riskClass = review.risk_level === '高风险' ? 'high-risk' : 
-                                review.risk_level === '中风险' ? 'medium-risk' : 'low-risk';
-                const badgeClass = review.risk_level === '高风险' ? 'badge-high' : 
-                                  review.risk_level === '中风险' ? 'badge-medium' : 'badge-low';
+                // 根据DET等级确定样式
+                const detLevel = review.risk_level;
+                const riskClass = detLevel === 'critical' || detLevel === 'poor' ? 'high-risk' : 
+                                detLevel === 'moderate' ? 'medium-risk' : 'low-risk';
+                const badgeClass = detLevel === 'critical' || detLevel === 'poor' ? 'badge-high' : 
+                                  detLevel === 'moderate' ? 'badge-medium' : 'badge-low';
+                
                 const date = new Date(review.assessment_date);
                 const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
                 
-                // 将英文状态转换为中文
-                const stageText = getStageTextChinese(review.pressure_stage);
+                // DET等级中文显示
+                const detLevelText = getDetLevelTextChinese(detLevel);
+                
+                // 显示DET总分
+                const detTotal = review.det_total || review.score || 0;
 
                 return `
                     <div class="list-item ${riskClass}">
                         <div class="list-item-header">
                             <span class="list-item-name">${review.patient_name}</span>
-                            <span class="list-item-badge ${badgeClass}">${stageText}</span>
+                            <span class="list-item-badge ${badgeClass}">${detLevelText}</span>
                         </div>
                         <div class="list-item-info">
-                            评分: ${review.score} | ${dateStr}
+                            DET评分: ${detTotal}/15分 | ${dateStr}
                         </div>
                     </div>
                 `;

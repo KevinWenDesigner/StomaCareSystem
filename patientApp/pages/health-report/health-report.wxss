@@ -481,18 +481,18 @@
 }
 
 .chart-bar.low {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, var(--success-color) 0%, var(--success-dark) 100%);
+  box-shadow: 0 2rpx 8rpx rgba(0, 200, 117, 0.3);
 }
 
 .chart-bar.medium {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, var(--warning-color) 0%, var(--warning-dark) 100%);
+  box-shadow: 0 2rpx 8rpx rgba(255, 171, 0, 0.3);
 }
 
 .chart-bar.high {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-  box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-dark) 100%);
+  box-shadow: 0 2rpx 8rpx rgba(255, 51, 102, 0.3);
 }
 
 .chart-bar:hover {
@@ -596,12 +596,12 @@
 }
 
 .trend-indicator.up {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--success-color) 0%, var(--success-dark) 100%);
   color: #FFFFFF;
 }
 
 .trend-indicator.down {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-dark) 100%);
   color: #FFFFFF;
 }
 
@@ -631,7 +631,7 @@
   left: 0;
   right: 0;
   height: 2rpx;
-  background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%);
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   opacity: 0.3;
   animation: lineDraw 1.5s ease-out;
 }
@@ -670,23 +670,23 @@
 .point-dot {
   width: 16rpx;
   height: 16rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   border-radius: 50%;
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2rpx 8rpx rgba(0, 120, 255, 0.3);
   border: 2rpx solid #FFFFFF;
   transition: all 0.3s ease;
 }
 
 .line-point:hover .point-dot {
   transform: scale(1.2);
-  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4rpx 12rpx rgba(0, 120, 255, 0.4);
 }
 
 .point-value {
   font-size: 20rpx;
-  color: #3B82F6;
+  color: var(--primary-color);
   font-weight: 600;
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(0, 120, 255, 0.1);
   padding: 4rpx 8rpx;
   border-radius: 6rpx;
   white-space: nowrap;
@@ -752,7 +752,7 @@
 
 .recommendation-item.info {
   background: #EFF6FF;
-  border-left-color: #3B82F6;
+  border-left-color: var(--primary-color);
 }
 
 .recommendation-item.warning {

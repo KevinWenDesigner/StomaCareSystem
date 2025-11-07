@@ -9,11 +9,11 @@
 
 /* 页面标题 */
 .page-header {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   padding: 40rpx 30rpx 60rpx;
   color: white;
   text-align: center;
-  box-shadow: 0 4rpx 20rpx rgba(24, 144, 255, 0.2);
+  box-shadow: 0 4rpx 20rpx rgba(0, 120, 255, 0.2);
 }
 
 .page-title {
@@ -48,7 +48,7 @@
   height: 72rpx;
   border-radius: 36rpx;
   border: none;
-  background: #1890ff;
+  background: var(--primary-color);
   color: white;
   font-size: 26rpx;
   display: flex;
@@ -109,7 +109,7 @@
   display: block;
   font-size: 36rpx;
   font-weight: bold;
-  color: #1890ff;
+  color: var(--primary-color);
   margin-bottom: 8rpx;
   line-height: 1;
 }
@@ -134,7 +134,7 @@
   width: 60rpx;
   height: 60rpx;
   border: 4rpx solid #f3f3f3;
-  border-top: 4rpx solid #1890ff;
+  border-top: 4rpx solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20rpx;
@@ -179,13 +179,13 @@
 }
 
 .empty-btn {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
   border: none;
   border-radius: 40rpx;
   padding: 20rpx 50rpx;
   font-size: 28rpx;
-  box-shadow: 0 4rpx 20rpx rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4rpx 20rpx rgba(0, 120, 255, 0.3);
 }
 
 .empty-btn::after {
@@ -309,9 +309,33 @@
   color: #f5222d;
 }
 
+.score-4 {
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+  color: #c62828;
+  font-weight: bold;
+  animation: scorePulse 2s infinite;
+}
+
+@keyframes scorePulse {
+  0%, 100% {
+    box-shadow: 0 0 8rpx rgba(198, 40, 40, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 16rpx rgba(198, 40, 40, 0.9);
+  }
+}
+
 .score-text {
   font-size: 24rpx;
   white-space: nowrap;
+}
+
+.score-subtitle {
+  font-size: 18rpx;
+  font-weight: 500;
+  margin-top: 2rpx;
+  opacity: 0.85;
+  display: block;
 }
 
 .history-details {
@@ -413,18 +437,18 @@
 
 /* 对比模式样式 */
 .action-btn.primary {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
   font-weight: bold;
-  box-shadow: 0 4rpx 15rpx rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4rpx 15rpx rgba(0, 120, 255, 0.3);
 }
 
 .compare-bar {
   margin: 0 20rpx 20rpx;
   padding: 24rpx;
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.1) 0%, rgba(9, 109, 217, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.1) 0%, rgba(0, 102, 221, 0.1) 100%);
   border-radius: 16rpx;
-  border: 2rpx solid rgba(24, 144, 255, 0.3);
+  border: 2rpx solid rgba(0, 120, 255, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -453,7 +477,7 @@
 .info-text {
   font-size: 26rpx;
   font-weight: bold;
-  color: #1890ff;
+  color: var(--primary-color);
   white-space: nowrap;
 }
 
@@ -485,15 +509,15 @@
 }
 
 .compare-btn.active {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
-  box-shadow: 0 6rpx 20rpx rgba(24, 144, 255, 0.5);
+  box-shadow: 0 6rpx 20rpx rgba(0, 120, 255, 0.5);
   transform: scale(1.05);
 }
 
 .compare-btn.active:active {
   transform: scale(0.98);
-  box-shadow: 0 4rpx 15rpx rgba(24, 144, 255, 0.4);
+  box-shadow: 0 4rpx 15rpx rgba(0, 120, 255, 0.4);
 }
 
 .compare-btn.disabled {
@@ -509,10 +533,10 @@
 
 /* 卡片选中状态 */
 .history-card.card-selected {
-  border-color: #1890ff !important;
+  border-color: var(--primary-color) !important;
   border-width: 4rpx !important;
-  background: linear-gradient(135deg, rgba(24, 144, 255, 0.15) 0%, rgba(9, 109, 217, 0.1) 50%, white 100%) !important;
-  box-shadow: 0 8rpx 40rpx rgba(24, 144, 255, 0.5) !important;
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.15) 0%, rgba(0, 102, 221, 0.1) 50%, white 100%) !important;
+  box-shadow: 0 8rpx 40rpx rgba(0, 120, 255, 0.5) !important;
   transform: scale(1.02) !important;
   position: relative;
 }
@@ -525,7 +549,7 @@
   left: -4rpx;
   right: -4rpx;
   bottom: -4rpx;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   border-radius: 18rpx;
   z-index: -1;
   opacity: 0.3;
@@ -560,9 +584,9 @@
 }
 
 .select-checkbox.selected {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  border-color: #1890ff;
-  box-shadow: 0 4rpx 16rpx rgba(24, 144, 255, 0.5);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-color: var(--primary-color);
+  box-shadow: 0 4rpx 16rpx rgba(0, 120, 255, 0.5);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -574,13 +598,13 @@
 }
 
 .compare-overlay {
-  background: linear-gradient(180deg, transparent 0%, rgba(24, 144, 255, 0.8) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 120, 255, 0.8) 100%);
   opacity: 1 !important;
 }
 
 /* 选中卡片的遮罩层 */
 .history-card.card-selected .compare-overlay {
-  background: linear-gradient(180deg, rgba(24, 144, 255, 0.3) 0%, rgba(9, 109, 217, 0.9) 100%);
+  background: linear-gradient(180deg, rgba(0, 120, 255, 0.3) 0%, rgba(0, 102, 221, 0.9) 100%);
 }
 
 /* 响应式设计 */

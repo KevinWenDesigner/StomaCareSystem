@@ -119,7 +119,7 @@ Page({
           return {
             id: item.id,
             photoPath: fullImageUrl,  // 使用完整的服务器URL
-            score: item.score || this.calculateScoreFromRisk(item.riskLevel),
+            score: item.score || 0,  // 直接使用assessments表中的score字段
             level: this.getRiskLevelNumber(item.riskLevel),
             levelText: this.getRiskLevelText(item.riskLevel),
             time: formatDateTime(item.createdAt),
@@ -488,8 +488,8 @@ Page({
         // 可以评估（造口或伤口）
         const typeText = woundType === 'stoma' ? '造口' : '伤口'
         console.log(`✅ 识别为${typeText}，开始评估`)
-        // 使用AI返回的评分，如果没有则根据风险等级计算
-        const aiScore = aiData.score || this.calculateScoreFromRisk(res.data.riskLevel)
+        // 直接使用AI返回的评分（已保存到assessments.score）
+        const aiScore = aiData.score || 0
         const scoreLevel = this.getLevelFromScore(aiScore)
         const pressureStage = aiData.pressureStage || res.data.pressureStage || res.data.riskLevel
         

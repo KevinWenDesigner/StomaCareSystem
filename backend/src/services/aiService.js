@@ -228,81 +228,110 @@ class AIService {
     return this.processAIResult(response.data);
   }
 
-  // 获取系统提示词（支持造口和伤口评估）
+  // 获取系统提示词（基于DET评分表的造口周围皮炎评估）
   static getSystemPrompt() {
-    return `你是一位专业的造口护理和伤口管理专家。请基于 NPUAP/EPUAP/PPPIA 2019 国际标准分析图片。
+    return `你是一位专业的造口护理专家。请基于 DET 评分表（造口周围皮肤分表）分析造口及周围皮肤状况。
 
 【第一步：识别图片类型】
 判断图片内容：
 - 造口（肠造口、尿路造口等医疗造口）→ wound_type: "stoma", can_assess: true
-- 伤口（切口、擦伤、烧伤、压疮、溃疡等）→ wound_type: "wound", can_assess: true
-- 其他（皮肤病变、正常皮肤、无关物体）→ wound_type: "other", can_assess: false
+- 其他（伤口、皮肤病变、正常皮肤、无关物体）→ wound_type: "other", can_assess: false
 
-【第二步：专业评估】（造口或伤口都可以评估）
+⚠️ 重要：本系统仅评估造口周围皮炎，不评估伤口。
 
-1. 伤口/造口本体评估：
+【第二步：DET评分评估】（仅针对造口）
+
+1. 造口本体评估：
    - 颜色：粉红色/红色为正常，紫色/苍白/黑色为异常
-   - 大小：记录尺寸，评估是否正常
-   - 形态：描述形状、边缘、深度等
+   - 大小：记录尺寸（如"约3cm"）
+   - 形态：描述形状、突出程度等
 
-2. 周围皮肤评估（基于 NPUAP/EPUAP/PPPIA 压疮分级标准）：
-   
-   Normal（正常）- 评分：90-100分
-   - 皮肤完整无损，无红斑、破损或其他异常
-   - pressure_stage: "normal"
-   
-   Stage I（I期）- 评分：75-89分
-   - 皮肤完整，局部非漂白性红斑（按压不褪色）
-   - 可能伴有疼痛、硬结或温度变化
-   - pressure_stage: "stage_1"
-   
-   Stage II（II期）- 评分：60-74分
-   - 皮肤部分层损伤（表皮及/或真皮浅层）
-   - 形成浅溃疡、水疱或破损表皮
-   - pressure_stage: "stage_2"
-   
-   Stage III（III期）- 评分：40-59分
-   - 皮肤全层损伤，皮下脂肪可见
-   - 未达筋膜，可伴有隧道或窦道
-   - pressure_stage: "stage_3"
-   
-   Stage IV（IV期）- 评分：20-39分
-   - 深部全层损伤，可见骨、肌腱或筋膜
-   - 常伴有焦痂或坏死组织
-   - pressure_stage: "stage_4"
-   
-   DTPI（深部组织压伤）- 评分：30-50分
-   - 皮下组织深层损伤，皮肤表面紫红或暗红
-   - 可能后期破溃
-   - pressure_stage: "dtpi"
-   
-   Unstageable（不可分期）- 评分：10-19分
-   - 被焦痂/坏死组织覆盖，无法判断深度
-   - pressure_stage: "unstageable"
+2. 造口周围皮肤DET评分（0-15分）：
 
-3. 智能评分（0-100分）：
-   综合考虑伤口/造口本体状况和周围皮肤NPUAP分期
-   评分必须与 pressure_stage 对应
+【症状1：D-变色 (Discoloration)】0-5分
+1a. 皮肤变色面积（0-3分）：
+   - 0分：没有变色
+   - 1分：变色面积 < 25%
+   - 2分：变色面积 25%-50%
+   - 3分：变色面积 > 50%
+
+1b. 变色严重程度（0-2分）：
+   - 0分：无变色
+   - 1分：轻度颜色改变
+   - 2分：颜色改变并伴有并发症（水肿、发红、瘙痒、疼痛、灼热等）
+
+症状1得分 = 1a + 1b（0-5分）
+
+【症状2：E-侵蚀 (Erosion)】0-5分
+2a. 侵蚀/溃疡面积（0-3分）：
+   - 0分：没有侵蚀
+   - 1分：底盘覆盖下侵蚀面积 < 25%
+   - 2分：底盘覆盖下侵蚀面积 25%-50%
+   - 3分：底盘覆盖下侵蚀面积 > 50%
+
+2b. 侵蚀严重程度（0-2分）：
+   - 0分：无侵蚀
+   - 1分：病损累及表层
+   - 2分：病损累及表皮层及伴有并发症（溃疡、深部或病灶）
+
+症状2得分 = 2a + 2b（0-5分）
+
+【症状3：T-组织增生 (Tissue overgrowth)】0-5分
+3a. 组织增生面积（0-3分）：
+   - 0分：没有组织增生
+   - 1分：底盘覆盖下组织增生面积 < 25%
+   - 2分：底盘覆盖下组织增生面积 25%-50%
+   - 3分：底盘覆盖下组织增生面积 > 50%
+
+3b. 组织增生严重程度（0-2分）：
+   - 0分：无组织增生
+   - 1分：皮肤表面略高于周围组织
+   - 2分：皮肤表面明显高于周围组织并伴有并发症（出血、瘙痒、溃疡）
+
+症状3得分 = 3a + 3b（0-5分）
+
+【DET总分 = 症状1 + 症状2 + 症状3（0-15分）】
 
 请以 JSON 格式返回结果：
 {
   "can_assess": true/false,
-  "wound_type": "stoma/wound/other",
-  "stoma_color": "颜色描述（造口用）或 伤口颜色描述（伤口用）",
-  "stoma_size": "大小评估",
-  "skin_condition": "基于NPUAP标准的皮肤状况描述",
-  "pressure_stage": "normal/stage_1/stage_2/stage_3/stage_4/dtpi/unstageable",
-  "score": 85,
-  "issues": ["问题列表"],
+  "wound_type": "stoma/other",
+  "stoma_color": "造口颜色描述（如'粉红色'、'红色'、'暗红色'等）",
+  "stoma_size": "造口大小描述（如'约3cm'、'正常大小'等）",
+  "stoma_shape": "造口形态描述",
+  
+  "det_score": {
+    "d_discoloration_area": 0-3,
+    "d_discoloration_severity": 0-2,
+    "d_total": 0-5,
+    "e_erosion_area": 0-3,
+    "e_erosion_severity": 0-2,
+    "e_total": 0-5,
+    "t_tissue_area": 0-3,
+    "t_tissue_severity": 0-2,
+    "t_total": 0-5,
+    "total": 0-15
+  },
+  
+  "skin_condition": "基于DET评分的皮肤状况综合描述",
+  "det_level": "excellent/good/moderate/poor/critical",
+  "issues": ["具体问题列表，如'轻度变色'、'轻度侵蚀'等"],
   "confidence": 0.85,
-  "detailed_analysis": "详细分析，包含NPUAP分期依据和类型判断",
-  "not_assessable_reason": "如果无法评估，说明原因"
+  "detailed_analysis": "详细分析，包含DET各项评分依据",
+  "not_assessable_reason": "如果无法评估（不是造口），说明原因"
 }
 
+【DET评分等级划分】：
+- 优秀 (excellent): 0分（无皮炎）
+- 良好 (good): 1-3分（轻度皮炎）
+- 中度 (moderate): 4-7分（中度皮炎）
+- 较差 (poor): 8-11分（重度皮炎）
+- 严重 (critical): 12-15分（极重度皮炎）
+
 注意：
-- 造口和伤口都可以评估（can_assess: true）
-- 只有非伤口/造口图片才无法评估（can_assess: false）
-- 评分必须与 pressure_stage 对应
+- 仅评估造口，不评估伤口（can_assess: true 仅当 wound_type: "stoma"）
+- 非造口图片一律 can_assess: false
+- 必须提供DET三个症状的详细评分
 - 使用专业医学术语`;
   }
 
@@ -354,337 +383,369 @@ class AIService {
     return data;
   }
 
-  // 处理AI返回结果
+  // 处理AI返回结果（基于DET评分）
   static processAIResult(aiData) {
     // 检查是否可以评估
     const canAssess = aiData.can_assess !== false;
-    const woundType = aiData.wound_type || 'wound';
+    const woundType = aiData.wound_type || 'other';
     
-    // 如果无法评估（既不是造口也不是伤口）
-    if (!canAssess || woundType === 'other') {
+    // 如果无法评估（不是造口）
+    if (!canAssess || woundType !== 'stoma') {
       return {
         canAssess: false,
         woundType: woundType,
-        notAssessableReason: aiData.not_assessable_reason || aiData.notAssessableReason || '图片中未识别到造口或伤口',
+        notAssessableReason: aiData.not_assessable_reason || aiData.notAssessableReason || '图片中未识别到造口。本系统仅评估造口周围皮炎，不评估伤口。',
         stomaColor: '无法评估',
         stomaSize: '无法评估',
+        stomaShape: '无法评估',
         skinCondition: '无法评估',
-        pressureStage: 'invalid',
+        detScore: null,
+        detLevel: 'invalid',
+        detLevelText: '无法评估',
         riskLevel: 'invalid',
         score: 0,
-        issues: ['图片不是造口或伤口，无法进行评估'],
-        suggestions: ['请上传造口或伤口图片'],
+        issues: ['图片不是造口，无法进行评估。本系统仅评估造口周围皮炎。'],
+        suggestions: ['请上传清晰的造口照片'],
         confidence: aiData.confidence || 0.9,
-        detailedAnalysis: aiData.detailed_analysis || '该图片不是造口或伤口，无法进行评估。',
+        detailedAnalysis: aiData.detailed_analysis || '该图片不是造口，无法进行评估。本系统专注于造口周围皮炎评估。',
         // 无法评估时，所有健康指标均为0
         healthMetrics: {
-          redness: 0,      // 发红程度: 0%
-          swelling: 0,     // 肿胀程度: 0%
-          infection: 0,    // 感染风险: 0%
-          healing: 0       // 愈合程度: 0%
+          discoloration: 0,    // 变色程度: 0%
+          erosion: 0,          // 侵蚀程度: 0%
+          tissueGrowth: 0,     // 组织增生: 0%
+          overall: 100         // 整体健康度: 100%（无数据）
         },
         rawData: aiData
       };
     }
     
-    // 可以评估（造口或伤口）
-    const pressureStage = aiData.pressure_stage || aiData.pressureStage || 'normal';
+    // 可以评估（造口）
+    const detScore = aiData.det_score || {
+      d_discoloration_area: 0,
+      d_discoloration_severity: 0,
+      d_total: 0,
+      e_erosion_area: 0,
+      e_erosion_severity: 0,
+      e_total: 0,
+      t_tissue_area: 0,
+      t_tissue_severity: 0,
+      t_total: 0,
+      total: 0
+    };
     
-    // 基于 NPUAP 分期计算健康指标
-    const healthMetrics = this.calculateHealthMetrics(pressureStage, aiData);
+    const detLevel = aiData.det_level || this.getDETLevelFromScore(detScore.total);
+    
+    // 基于 DET 评分计算健康指标
+    const healthMetrics = this.calculateHealthMetricsFromDET(detScore);
     
     return {
       canAssess: true,
-      woundType: woundType,  // stoma 或 wound
-      isStoma: woundType === 'stoma',  // 兼容旧字段
+      woundType: 'stoma',
+      isStoma: true,
       stomaColor: aiData.stoma_color || '粉红色',
       stomaSize: aiData.stoma_size || '正常',
+      stomaShape: aiData.stoma_shape || '正常',
       skinCondition: aiData.skin_condition || '良好',
-      pressureStage: pressureStage,
-      riskLevel: pressureStage,  // 兼容旧字段
-      score: aiData.score || this.calculateScoreFromStage(pressureStage),
+      
+      // DET评分相关
+      detScore: detScore,              // DET详细评分（0-15分）
+      detLevel: detLevel,              // DET等级（excellent/good/moderate/poor/critical）
+      detLevelText: this.getDETLevelText(detLevel),  // DET等级中文
+      
+      // score直接存储DET总分（0-15分）
+      riskLevel: detLevel,             // 风险等级（兼容）
+      score: detScore.total,           // DET总分（0-15分）
+      
       issues: aiData.issues || [],
-      suggestions: this.generateSuggestionsByStage(aiData, pressureStage, woundType),
+      suggestions: this.generateSuggestionsByDET(aiData, detScore, detLevel),
       confidence: aiData.confidence || 0.85,
       detailedAnalysis: aiData.detailed_analysis || aiData.detailedAnalysis || '',
-      healthMetrics: healthMetrics,  // 健康指标
+      healthMetrics: healthMetrics,    // 健康指标
       rawData: aiData
     };
   }
   
-  // 基于 NPUAP 分期标准计算健康指标
-  static calculateHealthMetrics(pressureStage, aiData) {
-    // NPUAP 分期与健康指标映射
-    const metricsMap = {
-      // 正常状态（90-100分）
-      'normal': {
-        redness: 0,       // 无发红
-        swelling: 0,      // 无肿胀
-        infection: 5,     // 极低感染风险
-        healing: 100      // 完全愈合/健康
-      },
-      // I期压疮（75-89分）- 非漂白性红斑
-      'stage_1': {
-        redness: 40,      // 轻度发红（非漂白性红斑）
-        swelling: 20,     // 轻度肿胀
-        infection: 20,    // 低感染风险
-        healing: 75       // 轻度影响愈合
-      },
-      'stage-1': {
-        redness: 40,
-        swelling: 20,
-        infection: 20,
-        healing: 75
-      },
-      // II期压疮（60-74分）- 部分层损伤
-      'stage_2': {
-        redness: 60,      // 中度发红（炎症反应）
-        swelling: 40,     // 中度肿胀
-        infection: 40,    // 中等感染风险
-        healing: 60       // 中度影响愈合
-      },
-      'stage-2': {
-        redness: 60,
-        swelling: 40,
-        infection: 40,
-        healing: 60
-      },
-      // III期压疮（40-59分）- 全层损伤
-      'stage_3': {
-        redness: 80,      // 重度发红（明显炎症）
-        swelling: 60,     // 重度肿胀
-        infection: 70,    // 高感染风险
-        healing: 40       // 严重影响愈合
-      },
-      'stage-3': {
-        redness: 80,
-        swelling: 60,
-        infection: 70,
-        healing: 40
-      },
-      // IV期压疮（20-39分）- 深部全层损伤
-      'stage_4': {
-        redness: 95,      // 极重度发红
-        swelling: 80,     // 极重度肿胀
-        infection: 90,    // 极高感染风险
-        healing: 20       // 极差愈合情况
-      },
-      'stage-4': {
-        redness: 95,
-        swelling: 80,
-        infection: 90,
-        healing: 20
-      },
-      // DTPI 深部组织压伤（30-50分）
-      'dtpi': {
-        redness: 70,      // 深部组织变色（紫红色）
-        swelling: 50,     // 明显肿胀
-        infection: 60,    // 较高感染风险
-        healing: 45       // 较差愈合情况
-      },
-      // 不可分期（10-19分）- 焦痂覆盖
-      'unstageable': {
-        redness: 50,      // 无法判断（被覆盖）
-        swelling: 50,     // 无法判断
-        infection: 85,    // 很高感染风险（坏死组织）
-        healing: 15       // 极差愈合（需清创）
-      },
-      // 无效状态
-      'invalid': {
-        redness: 0,
-        swelling: 0,
-        infection: 0,
-        healing: 0
-      }
-    };
-    
-    // 获取基础指标
-    const baseMetrics = metricsMap[pressureStage] || metricsMap['normal'];
-    
-    // 如果AI提供了更详细的分析，进行微调
-    const finalMetrics = { ...baseMetrics };
-    
-    // 如果AI分析中提到了特定问题，增加相应指标
-    const issues = aiData.issues || [];
-    const detailedAnalysis = (aiData.detailed_analysis || '').toLowerCase();
-    
-    issues.forEach(issue => {
-      const issueLower = issue.toLowerCase();
-      if (issueLower.includes('红') || issueLower.includes('红斑')) {
-        finalMetrics.redness = Math.min(100, finalMetrics.redness + 10);
-      }
-      if (issueLower.includes('肿') || issueLower.includes('水肿')) {
-        finalMetrics.swelling = Math.min(100, finalMetrics.swelling + 10);
-      }
-      if (issueLower.includes('感染') || issueLower.includes('脓') || issueLower.includes('渗液')) {
-        finalMetrics.infection = Math.min(100, finalMetrics.infection + 15);
-      }
-    });
-    
-    // 检查详细分析中的关键词
-    if (detailedAnalysis.includes('红斑') || detailedAnalysis.includes('发红')) {
-      finalMetrics.redness = Math.min(100, finalMetrics.redness + 5);
-    }
-    if (detailedAnalysis.includes('肿胀') || detailedAnalysis.includes('水肿')) {
-      finalMetrics.swelling = Math.min(100, finalMetrics.swelling + 5);
-    }
-    if (detailedAnalysis.includes('感染') || detailedAnalysis.includes('化脓')) {
-      finalMetrics.infection = Math.min(100, finalMetrics.infection + 10);
-    }
-    
-    // 愈合程度与感染风险成反比
-    finalMetrics.healing = Math.max(0, 100 - finalMetrics.infection);
-    
-    return finalMetrics;
+  // 从DET总分得到等级
+  static getDETLevelFromScore(detTotal) {
+    if (detTotal === 0) return 'excellent';      // 0分：优秀（无皮炎）
+    if (detTotal >= 1 && detTotal <= 3) return 'good';     // 1-3分：良好（轻度皮炎）
+    if (detTotal >= 4 && detTotal <= 7) return 'moderate'; // 4-7分：中度（中度皮炎）
+    if (detTotal >= 8 && detTotal <= 11) return 'poor';    // 8-11分：较差（重度皮炎）
+    if (detTotal >= 12 && detTotal <= 15) return 'critical'; // 12-15分：严重（极重度皮炎）
+    return 'excellent'; // 默认优秀
   }
   
-  // 根据 NPUAP 分期计算评分（备用）
-  static calculateScoreFromStage(stage) {
-    const scoreMap = {
-      'normal': 95,
-      'stage_1': 82,
-      'stage-1': 82,
-      'stage_2': 67,
-      'stage-2': 67,
-      'stage_3': 50,
-      'stage-3': 50,
-      'stage_4': 30,
-      'stage-4': 30,
-      'dtpi': 40,
-      'unstageable': 15,
-      'invalid': 0
+  // 获取DET等级中文文本
+  static getDETLevelText(detLevel) {
+    const levelMap = {
+      'excellent': '优秀（无皮炎）',
+      'good': '良好（轻度皮炎）',
+      'moderate': '中度（中度皮炎）',
+      'poor': '较差（重度皮炎）',
+      'critical': '严重（极重度皮炎）',
+      'invalid': '无法评估'
     };
-    return scoreMap[stage] || scoreMap[stage.replace('-', '_')] || 75;
+    return levelMap[detLevel] || '未知状态';
   }
+  
+  
+  // 基于DET评分计算健康指标
+  static calculateHealthMetricsFromDET(detScore) {
+    // DET评分：变色(0-5) + 侵蚀(0-5) + 组织增生(0-5) = 总分(0-15)
+    
+    const dTotal = detScore.d_total || 0;  // 变色评分
+    const eTotal = detScore.e_total || 0;  // 侵蚀评分
+    const tTotal = detScore.t_total || 0;  // 组织增生评分
+    const total = detScore.total || 0;     // 总评分
+    
+    // 将各项评分转换为百分比（0-5分 → 0-100%）
+    // 注意：评分越高表示问题越严重
+    const discoloration = Math.round((dTotal / 5) * 100);    // 变色程度（0-100%）
+    const erosion = Math.round((eTotal / 5) * 100);          // 侵蚀程度（0-100%）
+    const tissueGrowth = Math.round((tTotal / 5) * 100);     // 组织增生程度（0-100%）
+    
+    // 整体健康度：评分越低越好，0分=100%健康
+    const overall = Math.round(100 - (total / 15) * 100);
+    
+    return {
+      discoloration: discoloration,    // 变色程度: 0-100%
+      erosion: erosion,                // 侵蚀程度: 0-100%
+      tissueGrowth: tissueGrowth,      // 组织增生: 0-100%
+      overall: overall                 // 整体健康度: 0-100%（越高越好）
+    };
+  }
+  
 
-  // 根据 NPUAP 分期和类型生成护理建议
-  static generateSuggestionsByStage(aiData, stage, woundType = 'wound') {
+  // 根据DET评分生成护理建议
+  static generateSuggestionsByDET(aiData, detScore, detLevel) {
     const suggestions = [];
+    const total = detScore.total || 0;
+    const dTotal = detScore.d_total || 0;
+    const eTotal = detScore.e_total || 0;
+    const tTotal = detScore.t_total || 0;
     
     // 基础建议
-    if (woundType === 'stoma') {
-      suggestions.push('定期观察造口及周围皮肤状况');
-    } else {
-      suggestions.push('定期观察伤口及周围皮肤状况');
-    }
+    suggestions.push('定期观察造口及周围皮肤状况');
     
-    // 根据 NPUAP 分期给出专业建议
-    switch(stage) {
-      case 'normal':
-        if (woundType === 'stoma') {
-          suggestions.push('造口状况良好，继续保持现有护理方案');
-          suggestions.push('保持造口周围皮肤清洁干燥');
-          suggestions.push('定期更换造口袋，预防并发症');
-        } else {
-          suggestions.push('伤口状况良好，继续保持现有护理方案');
-          suggestions.push('保持伤口清洁干燥');
-          suggestions.push('按医嘱定期换药');
-        }
+    // 根据DET等级给出专业建议
+    switch(detLevel) {
+      case 'excellent':
+        // 0分：无皮炎
+        suggestions.push('✨ 造口周围皮肤状况优秀，无皮炎');
+        suggestions.push('继续保持现有护理方案');
+        suggestions.push('保持造口周围皮肤清洁干燥');
+        suggestions.push('定期更换造口袋，预防并发症');
+        suggestions.push('建议每周进行自我评估');
         break;
         
-      case 'stage_1':
-      case 'stage-1':
-        suggestions.push('⚠️ I期压疮：发现非漂白性红斑');
-        suggestions.push('减轻局部压力，避免摩擦和剪切力');
-        suggestions.push('使用皮肤保护膜或水胶体敷料');
-        if (woundType === 'stoma') {
-          suggestions.push('确保造口底盘贴合适当，不过紧');
+      case 'good':
+        // 1-3分：轻度皮炎
+        suggestions.push('⚠️ 检测到轻度皮炎（DET: ' + total + '分）');
+        
+        if (dTotal > 0) {
+          suggestions.push('• 变色(' + dTotal + '分)：使用皮肤保护膜，减少刺激');
         }
-        suggestions.push('建议3-5天内联系护理师评估');
+        if (eTotal > 0) {
+          suggestions.push('• 侵蚀(' + eTotal + '分)：使用皮肤保护粉，保持干燥');
+        }
+        if (tTotal > 0) {
+          suggestions.push('• 组织增生(' + tTotal + '分)：调整底盘尺寸，避免摩擦');
+        }
+        
+        suggestions.push('检查造口底盘是否贴合适当');
+        suggestions.push('避免使用刺激性清洁产品');
+        suggestions.push('建议3-5天内联系造口护理师评估');
         break;
         
-      case 'stage_2':
-      case 'stage-2':
-        suggestions.push('⚠️ II期压疮：部分层皮肤损伤');
-        suggestions.push('保持创面清洁，使用适当敷料');
-        if (woundType === 'stoma') {
-          suggestions.push('考虑更换低致敏性造口底盘');
-          suggestions.push('使用皮肤保护粉或造口护肤膏');
-        } else {
-          suggestions.push('使用适当的伤口敷料保护创面');
-          suggestions.push('避免创面受压和摩擦');
+      case 'moderate':
+        // 4-7分：中度皮炎
+        suggestions.push('⚠️ 检测到中度皮炎（DET: ' + total + '分）');
+        
+        if (dTotal >= 2) {
+          suggestions.push('• 变色(' + dTotal + '分)：皮肤变色明显，使用皮肤保护剂');
         }
-        suggestions.push('⚠️ 建议2-3天内联系护理师');
+        if (eTotal >= 2) {
+          suggestions.push('• 侵蚀(' + eTotal + '分)：皮肤有破损，使用造口护肤膏');
+        }
+        if (tTotal >= 2) {
+          suggestions.push('• 组织增生(' + tTotal + '分)：考虑更换凸面底盘');
+        }
+        
+        suggestions.push('考虑更换低致敏性造口底盘');
+        suggestions.push('增加底盘更换频率');
+        suggestions.push('保持造口周围皮肤清洁和干燥');
+        suggestions.push('⚠️ 建议2-3天内联系造口护理师');
         break;
         
-      case 'stage_3':
-      case 'stage-3':
-        suggestions.push('🚨 III期压疮：全层皮肤损伤');
-        suggestions.push('⚠️ 需要专业创面管理，请尽快就医');
+      case 'poor':
+        // 8-11分：重度皮炎
+        suggestions.push('🚨 检测到重度皮炎（DET: ' + total + '分）');
+        
+        if (dTotal >= 3) {
+          suggestions.push('• 变色(' + dTotal + '分)：大面积变色，需专业处理');
+        }
+        if (eTotal >= 3) {
+          suggestions.push('• 侵蚀(' + eTotal + '分)：严重侵蚀，可能需要药物治疗');
+        }
+        if (tTotal >= 3) {
+          suggestions.push('• 组织增生(' + tTotal + '分)：明显增生，需专业评估');
+        }
+        
         suggestions.push('停止使用可能引起刺激的产品');
-        suggestions.push('保持创面清洁，预防感染');
-        suggestions.push('🚨 建议当日联系医生或专业护理师');
+        suggestions.push('需要专业造口护理师介入');
+        suggestions.push('可能需要使用处方药膏');
+        suggestions.push('🚨 建议1-2天内就医或联系护理师');
         break;
         
-      case 'stage_4':
-      case 'stage-4':
-        suggestions.push('🚨 IV期压疮：深部组织损伤');
-        suggestions.push('🚨 立即就医！可能需要外科处理');
-        suggestions.push('停止所有自行护理，保持创面清洁');
-        suggestions.push('密切观察感染迹象');
-        suggestions.push('🚨 紧急！请立即联系医生');
-        break;
+      case 'critical':
+        // 12-15分：极重度皮炎
+        suggestions.push('🚨🚨 严重皮炎警告（DET: ' + total + '分）');
+        suggestions.push('🚨 立即联系医生或造口专科护理师！');
         
-      case 'unstageable':
-        suggestions.push('⚠️ 不可分期：存在焦痂或坏死组织');
-        suggestions.push('需要专业清创评估');
-        suggestions.push('🚨 请尽快就医，由专业人员处理');
-        suggestions.push('不要自行清除坏死组织');
-        break;
+        if (dTotal >= 4) {
+          suggestions.push('• 变色严重(' + dTotal + '分)：需紧急处理');
+        }
+        if (eTotal >= 4) {
+          suggestions.push('• 侵蚀严重(' + eTotal + '分)：可能需要清创和药物治疗');
+        }
+        if (tTotal >= 4) {
+          suggestions.push('• 组织增生严重(' + tTotal + '分)：可能需要外科干预');
+        }
         
-      case 'dtpi':
-        suggestions.push('⚠️ 深部组织压伤：皮下损伤');
-        suggestions.push('密切观察皮肤变化，可能会破溃');
-        suggestions.push('减轻局部压力');
-        suggestions.push('建议1-2天内联系专业护理师');
+        suggestions.push('停止所有自行护理措施');
+        suggestions.push('保持造口清洁，避免感染');
+        suggestions.push('密切观察感染迹象（发热、脓液、异味）');
+        suggestions.push('🚨 紧急！请当日就医');
         break;
         
       default:
-        if (woundType === 'stoma') {
-          suggestions.push('保持造口周围皮肤清洁干燥');
-          suggestions.push('定期更换造口袋');
-        } else {
-          suggestions.push('保持伤口清洁干燥');
-          suggestions.push('按医嘱定期换药');
-        }
+        suggestions.push('保持造口周围皮肤清洁干燥');
+        suggestions.push('定期更换造口袋');
     }
     
     // 通用护理建议
-    if (woundType === 'stoma') {
-      suggestions.push('按时更换造口袋，避免渗漏');
-      suggestions.push('注意饮食调理，避免产气食物');
-    } else {
-      suggestions.push('避免伤口受压和污染');
-      suggestions.push('保持营养均衡，促进伤口愈合');
-    }
+    suggestions.push('按时更换造口袋，避免渗漏');
+    suggestions.push('注意饮食调理，避免产气食物');
+    suggestions.push('保持良好的个人卫生习惯');
     
     return suggestions;
   }
 
-  // 获取模拟分析结果
+  // 获取模拟分析结果（基于DET评分）
   static getMockAnalysisResult() {
-    const stages = ['normal', 'stage_1', 'stage_2'];
-    const woundTypes = ['stoma', 'wound'];
     const colors = ['粉红色', '红色', '暗红色'];
     const sizes = ['正常', '约3cm', '约2cm'];
-    const skinConditions = ['皮肤完整无损', '轻微红斑', '皮肤完整'];
+    const shapes = ['规则圆形', '椭圆形', '略突出'];
     
-    const randomStage = stages[Math.floor(Math.random() * stages.length)];
-    const randomType = woundTypes[Math.floor(Math.random() * woundTypes.length)];
+    // 随机生成DET评分 (倾向于低分，因为大多数情况是良好的)
+    const dArea = Math.random() < 0.7 ? 0 : Math.floor(Math.random() * 3);
+    const dSeverity = dArea > 0 ? Math.floor(Math.random() * 2) : 0;
+    const dTotal = dArea + dSeverity;
+    
+    const eArea = Math.random() < 0.8 ? 0 : Math.floor(Math.random() * 3);
+    const eSeverity = eArea > 0 ? Math.floor(Math.random() * 2) : 0;
+    const eTotal = eArea + eSeverity;
+    
+    const tArea = Math.random() < 0.85 ? 0 : Math.floor(Math.random() * 3);
+    const tSeverity = tArea > 0 ? Math.floor(Math.random() * 2) : 0;
+    const tTotal = tArea + tSeverity;
+    
+    const totalScore = dTotal + eTotal + tTotal;
+    
+    // 根据评分生成对应的问题列表
+    const issues = [];
+    if (dTotal > 0) issues.push(`造口周围皮肤变色（${dTotal}分）`);
+    if (eTotal > 0) issues.push(`皮肤侵蚀（${eTotal}分）`);
+    if (tTotal > 0) issues.push(`组织增生（${tTotal}分）`);
     
     const mockData = {
       can_assess: true,
-      wound_type: randomType,
+      wound_type: 'stoma',
       stoma_color: colors[Math.floor(Math.random() * colors.length)],
       stoma_size: sizes[Math.floor(Math.random() * sizes.length)],
-      skin_condition: skinConditions[Math.floor(Math.random() * skinConditions.length)],
-      pressure_stage: randomStage,
-      score: this.calculateScoreFromStage(randomStage),
+      stoma_shape: shapes[Math.floor(Math.random() * shapes.length)],
+      det_score: {
+        d_discoloration_area: dArea,
+        d_discoloration_severity: dSeverity,
+        d_total: dTotal,
+        e_erosion_area: eArea,
+        e_erosion_severity: eSeverity,
+        e_total: eTotal,
+        t_tissue_area: tArea,
+        t_tissue_severity: tSeverity,
+        t_total: tTotal,
+        total: totalScore
+      },
+      skin_condition: this.generateSkinConditionText(dTotal, eTotal, tTotal),
+      det_level: this.getDETLevelFromScore(totalScore),
       confidence: 0.75 + Math.random() * 0.2,
-      issues: randomStage !== 'normal' ? ['周围皮肤轻微问题'] : []
+      issues: issues,
+      detailed_analysis: this.generateMockDetailedAnalysis(dTotal, eTotal, tTotal, totalScore)
     };
     
     return this.processAIResult(mockData);
+  }
+  
+  // 生成皮肤状况描述文本
+  static generateSkinConditionText(dTotal, eTotal, tTotal) {
+    if (dTotal === 0 && eTotal === 0 && tTotal === 0) {
+      return '造口周围皮肤完整无损，颜色正常，无侵蚀或组织增生';
+    }
+    
+    const parts = [];
+    if (dTotal > 0) {
+      parts.push(dTotal >= 3 ? '明显变色' : '轻微变色');
+    }
+    if (eTotal > 0) {
+      parts.push(eTotal >= 3 ? '明显侵蚀' : '轻微侵蚀');
+    }
+    if (tTotal > 0) {
+      parts.push(tTotal >= 3 ? '明显组织增生' : '轻微组织增生');
+    }
+    
+    return `造口周围皮肤存在${parts.join('、')}`;
+  }
+  
+  // 生成模拟的详细分析
+  static generateMockDetailedAnalysis(dTotal, eTotal, tTotal, total) {
+    let analysis = `【DET评分详细分析】\n\n`;
+    analysis += `总分：${total}/15分\n\n`;
+    
+    analysis += `1. D-变色（${dTotal}/5分）：`;
+    if (dTotal === 0) {
+      analysis += `造口周围皮肤颜色正常，无变色现象。\n`;
+    } else {
+      analysis += `检测到造口周围皮肤变色，${dTotal >= 3 ? '面积较大且' : ''}${dTotal % 2 === 0 ? '程度较重' : '程度较轻'}。\n`;
+    }
+    
+    analysis += `\n2. E-侵蚀（${eTotal}/5分）：`;
+    if (eTotal === 0) {
+      analysis += `造口周围皮肤完整，无侵蚀或溃疡。\n`;
+    } else {
+      analysis += `检测到皮肤侵蚀，${eTotal >= 3 ? '范围较大且' : ''}${eTotal % 2 === 0 ? '深度较深' : '浅表层损伤'}。\n`;
+    }
+    
+    analysis += `\n3. T-组织增生（${tTotal}/5分）：`;
+    if (tTotal === 0) {
+      analysis += `造口周围皮肤平整，无组织增生。\n`;
+    } else {
+      analysis += `检测到组织增生，${tTotal >= 3 ? '面积较大且' : ''}${tTotal % 2 === 0 ? '明显高于周围组织' : '略高于周围组织'}。\n`;
+    }
+    
+    analysis += `\n【结论】：`;
+    if (total === 0) {
+      analysis += `造口周围皮肤状况优秀，无皮炎迹象，建议继续保持现有护理方案。`;
+    } else if (total <= 3) {
+      analysis += `检测到轻度皮炎，建议加强护理，3-5天内复查。`;
+    } else if (total <= 7) {
+      analysis += `检测到中度皮炎，建议调整护理方案，2-3天内联系护理师。`;
+    } else if (total <= 11) {
+      analysis += `检测到重度皮炎，建议尽快就医，1-2天内联系专业护理师。`;
+    } else {
+      analysis += `检测到极重度皮炎，建议立即就医处理！`;
+    }
+    
+    return analysis;
   }
 
   // 批量分析（对比多张图片）
@@ -720,19 +781,20 @@ class AIService {
       };
     }
 
-    // 使用评分计算趋势
-    const recentScore = assessments[0].score || 75;
-    const previousScore = assessments[1].score || 75;
+    // 使用DET评分计算趋势（0-15分，分数越高越严重）
+    const recentScore = assessments[0].score || 0;
+    const previousScore = assessments[1].score || 0;
 
     let trend = 'stable';
     let message = '状况稳定';
 
-    if (recentScore > previousScore + 5) {
+    // 注意：DET评分越高表示越严重，所以分数下降是改善，分数上升是恶化
+    if (recentScore < previousScore - 1) {
       trend = 'improving';
-      message = '状况持续改善，请继续保持';
-    } else if (recentScore < previousScore - 5) {
+      message = '造口周围皮肤状况改善，DET评分下降，请继续保持良好护理';
+    } else if (recentScore > previousScore + 1) {
       trend = 'worsening';
-      message = '状况有恶化趋势，建议加强护理';
+      message = '造口周围皮肤状况恶化，DET评分上升，建议加强护理并咨询护理师';
     }
 
     return {

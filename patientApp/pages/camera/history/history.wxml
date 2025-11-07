@@ -100,7 +100,9 @@
           <view class="history-header">
             <text class="history-time" user-select="true">{{item.time}}</text>
             <view class="history-score score-{{item.level}}">
-              <text class="score-text">{{item.score}}分</text>
+              <text class="score-text" wx:if="{{item.rawData && item.rawData.detScore}}">{{item.rawData.detScore.total}}分</text>
+              <text class="score-text" wx:else>{{item.score}}分</text>
+              <text class="score-subtitle" wx:if="{{item.rawData && item.rawData.detScore}}">DET</text>
             </view>
           </view>
           
