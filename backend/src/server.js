@@ -20,6 +20,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 app.use(cors({
     origin: [
         'https://kevinwendesigner.github.io',  // ⚠️ GitHub Pages 部署后，替换为实际地址
+		    'https://stoma.ht-healthcare.com',
         'http://localhost:3000',            // 本地开发
         'http://localhost:8080',            // 本地开发备用端口
         'http://127.0.0.1:3000',
@@ -42,11 +43,19 @@ if (NODE_ENV === 'development') {
 // 静态文件服务（上传的文件）
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// 静态文件服务（前端页面）
+app.use(express.static(path.join(__dirname, '../../')));
+
 // API路由
 app.use('/api', routes);
 
-// 根路径
+// 根路径 - 重定向到数据大屏
 app.get('/', (req, res) => {
+  res.redirect('/index.html');
+});
+
+// API信息
+app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: '造口护理系统API服务',
@@ -62,7 +71,8 @@ app.get('/', (req, res) => {
       reports: '/api/reports',
       carePlans: '/api/care-plans',
       reminders: '/api/reminders',
-      families: '/api/families'
+      families: '/api/families',
+      dashboard: '/api/dashboard'
     }
   });
 });
