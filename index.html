@@ -935,8 +935,8 @@
             token: localStorage.getItem('token') || '',
             // 自动登录配置（如果没有token，使用此账号自动登录）
             autoLogin: (window.DASHBOARD_CONFIG && window.DASHBOARD_CONFIG.autoLogin) || {
-                username: 'N001',  // 默认用户名，可在配置文件中修改
-                password: '123456',  // 默认密码，可在配置文件中修改
+                username: 'N001',  // 默认用户名（工号或手机号），可在配置文件中修改
+                password: '123456',  // 默认密码（测试模式下任意密码均可），可在配置文件中修改
                 userType: 'nurse'   // 用户类型：nurse 或 patient
             }
         };
@@ -1815,6 +1815,7 @@
         function showError(message) {
             const dashboardBody = document.getElementById('dashboardBody');
             const apiUrl = CONFIG.apiBaseUrl;
+            const autoLoginConfig = CONFIG.autoLogin;
             
             dashboardBody.innerHTML = `
                 <div class="error-message">
@@ -1823,14 +1824,21 @@
                     <div style="font-size: 0.9em; opacity: 0.8; margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
                         <strong>诊断信息：</strong><br>
                         • API地址: ${apiUrl}<br>
-                        • 浏览器: ${navigator.userAgent.split(' ').pop()}<br><br>
+                        • 浏览器: ${navigator.userAgent.split(' ').pop()}<br>
+                        • 自动登录用户名: ${autoLoginConfig.username || '未配置'}<br>
+                        • 用户类型: ${autoLoginConfig.userType || 'nurse'}<br><br>
                         <strong>可能的原因：</strong><br>
                         1. 后端服务未启动（请检查 npm start）<br>
                         2. API地址配置错误（检查 config.dev.js 或 config.prod.js）<br>
                         3. 自动登录账号配置错误（检查配置文件中的 autoLogin 设置）<br>
-                        4. 数据库未初始化或无数据<br>
-                        5. 跨域问题（检查后端CORS配置）<br>
-                        6. 网络连接问题<br>
+                        4. 用户名或密码错误（用户名应为工号如 N001 或手机号如 13800138000）<br>
+                        5. 数据库未初始化或无数据<br>
+                        6. 跨域问题（检查后端CORS配置）<br>
+                        7. 网络连接问题<br><br>
+                        <strong>解决建议：</strong><br>
+                        • 如果用户名是 'admin'，请改为 'N001' 或 '13800138000'<br>
+                        • 检查后端服务是否正常运行<br>
+                        • 检查数据库中是否存在对应的护士账号<br>
                     </div>
                     <div style="margin-top: 30px;">
                         <button onclick="testConnection()" style="padding: 10px 20px; margin: 0 10px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">测试连接</button>
@@ -1845,38 +1853,82 @@
             const resultDiv = document.querySelector('.error-message');
             resultDiv.innerHTML += '<div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.2); border-radius: 8px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;"><strong>正在测试连接...</strong><br><br></div>';
             
-            const tests = [
-                { name: '1. 健康检查', url: `${CONFIG.apiBaseUrl}/health`, auth: false },
-                { name: '2. Dashboard API', url: `${CONFIG.apiBaseUrl}/dashboard/stats`, auth: false }
-            ];
-            
             const testDiv = resultDiv.querySelector('div:last-child');
             
-            for (const test of tests) {
-                testDiv.innerHTML += `<div style="margin: 10px 0;">测试 ${test.name}...</div>`;
+            // 测试1: 健康检查（不需要认证）
+            testDiv.innerHTML += '<div style="margin: 10px 0;">测试 1. 健康检查...</div>';
+            try {
+                const healthResponse = await fetch(`${CONFIG.apiBaseUrl}/health`, {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const healthData = await healthResponse.json();
+                
+                if (healthResponse.ok) {
+                    testDiv.innerHTML += `<div style="color: #4ade80;">✓ 1. 健康检查: 成功 (${healthResponse.status})</div>`;
+                    testDiv.innerHTML += `<div style="color: #93c5fd; font-size: 0.85em; margin-left: 20px;">服务器响应: ${healthData.message || '服务运行正常'}</div>`;
+                } else {
+                    testDiv.innerHTML += `<div style="color: #f87171;">✗ 1. 健康检查: 失败 (${healthResponse.status})</div>`;
+                    testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${healthData.message || '未知错误'}</div>`;
+                }
+            } catch (error) {
+                testDiv.innerHTML += `<div style="color: #f87171;">✗ 1. 健康检查: 网络错误</div>`;
+                testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${error.message}</div>`;
+            }
+            
+            // 测试2: 尝试自动登录
+            testDiv.innerHTML += '<div style="margin: 10px 0;">测试 2. 自动登录...</div>';
+            let testToken = CONFIG.token;
+            try {
+                // 如果token不存在或无效，尝试自动登录
+                if (!testToken) {
+                    testDiv.innerHTML += '<div style="color: #93c5fd; font-size: 0.85em; margin-left: 20px;">未找到有效token，尝试自动登录...</div>';
+                    await autoLogin();
+                    testToken = CONFIG.token;
+                }
+                
+                if (testToken) {
+                    testDiv.innerHTML += `<div style="color: #4ade80;">✓ 2. 自动登录: 成功</div>`;
+                    testDiv.innerHTML += `<div style="color: #93c5fd; font-size: 0.85em; margin-left: 20px;">Token已获取（${testToken.substring(0, 20)}...）</div>`;
+                } else {
+                    testDiv.innerHTML += `<div style="color: #f87171;">✗ 2. 自动登录: 失败</div>`;
+                    testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: 无法获取token，请检查自动登录配置</div>`;
+                }
+            } catch (error) {
+                testDiv.innerHTML += `<div style="color: #f87171;">✗ 2. 自动登录: 失败</div>`;
+                testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${error.message}</div>`;
+                testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">提示: 请检查配置文件中的用户名和密码（用户名应为工号如 N001 或手机号如 13800138000）</div>`;
+            }
+            
+            // 测试3: Dashboard API（需要认证）
+            testDiv.innerHTML += '<div style="margin: 10px 0;">测试 3. Dashboard API...</div>';
+            if (testToken) {
                 try {
-                    const headers = { 'Content-Type': 'application/json' };
-                    // 自动登录模式：如果有 token 就添加，没有也可以请求（取决于后端配置）
-                    if (CONFIG.token) {
-                        headers['Authorization'] = `Bearer ${CONFIG.token}`;
-                    }
-                    
-                    const response = await fetch(test.url, { headers });
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        testDiv.innerHTML += `<div style="color: #4ade80;">✓ ${test.name}: 成功 (${response.status})</div>`;
-                        if (test.name.includes('健康检查')) {
-                            testDiv.innerHTML += `<div style="color: #93c5fd; font-size: 0.85em; margin-left: 20px;">服务器响应: ${data.message}</div>`;
+                    const dashboardResponse = await fetch(`${CONFIG.apiBaseUrl}/dashboard/stats`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${testToken}`
                         }
+                    });
+                    const dashboardData = await dashboardResponse.json();
+                    
+                    if (dashboardResponse.ok) {
+                        testDiv.innerHTML += `<div style="color: #4ade80;">✓ 3. Dashboard API: 成功 (${dashboardResponse.status})</div>`;
+                        testDiv.innerHTML += `<div style="color: #93c5fd; font-size: 0.85em; margin-left: 20px;">数据已成功加载</div>`;
+                        // 如果所有测试都通过，建议刷新页面
+                        testDiv.innerHTML += '<br><div style="color: #4ade80; font-weight: bold;">所有测试通过！建议刷新页面以加载数据。</div>';
                     } else {
-                        testDiv.innerHTML += `<div style="color: #f87171;">✗ ${test.name}: 失败 (${response.status})</div>`;
-                        testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${data.message || '未知错误'}</div>`;
+                        testDiv.innerHTML += `<div style="color: #f87171;">✗ 3. Dashboard API: 失败 (${dashboardResponse.status})</div>`;
+                        testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${dashboardData.message || '未知错误'}</div>`;
+                        if (dashboardResponse.status === 401) {
+                            testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">提示: Token可能已过期，请刷新页面重新登录</div>`;
+                        }
                     }
                 } catch (error) {
-                    testDiv.innerHTML += `<div style="color: #f87171;">✗ ${test.name}: 网络错误</div>`;
+                    testDiv.innerHTML += `<div style="color: #f87171;">✗ 3. Dashboard API: 网络错误</div>`;
                     testDiv.innerHTML += `<div style="color: #fca5a5; font-size: 0.85em; margin-left: 20px;">错误: ${error.message}</div>`;
                 }
+            } else {
+                testDiv.innerHTML += `<div style="color: #f59e0b;">⚠ 3. Dashboard API: 跳过（需要先登录）</div>`;
             }
             
             testDiv.innerHTML += '<br><strong>测试完成</strong>';
@@ -1905,7 +1957,12 @@
                 }
 
                 // 如果没有token或token无效，执行自动登录
-                console.log('开始自动登录...');
+                console.log('开始自动登录...', {
+                    username: CONFIG.autoLogin.username,
+                    userType: CONFIG.autoLogin.userType,
+                    apiUrl: `${CONFIG.apiBaseUrl}/auth/login`
+                });
+                
                 const response = await fetch(`${CONFIG.apiBaseUrl}/auth/login`, {
                     method: 'POST',
                     headers: {
@@ -1919,8 +1976,20 @@
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `登录失败: HTTP ${response.status}`);
+                    let errorMessage = `登录失败: HTTP ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                        
+                        // 如果是用户名或密码错误，提供更详细的提示
+                        if (errorData.message && errorData.message.includes('用户名或密码')) {
+                            errorMessage = `用户名或密码错误。请检查配置文件中的自动登录账号设置（用户名应为工号如 N001 或手机号如 13800138000）。`;
+                        }
+                    } catch (e) {
+                        // 如果无法解析错误响应，使用默认错误信息
+                        errorMessage = `登录失败: HTTP ${response.status} ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 const result = await response.json();
@@ -1931,13 +2000,20 @@
                     if (result.data.user) {
                         localStorage.setItem('userInfo', JSON.stringify(result.data.user));
                     }
-                    console.log('自动登录成功');
+                    console.log('自动登录成功', {
+                        username: CONFIG.autoLogin.username,
+                        userId: result.data.user?.id
+                    });
                     return true;
                 } else {
                     throw new Error(result.message || '登录失败：未返回token');
                 }
             } catch (error) {
                 console.error('自动登录失败:', error);
+                // 如果是网络错误，提供更友好的错误信息
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    throw new Error('无法连接到服务器，请检查后端服务是否启动');
+                }
                 throw error;
             }
         }
