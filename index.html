@@ -863,7 +863,7 @@
                 </div>
 
                 <!-- DET等级分布 -->
-                <div class="card" style="flex: 1;">
+                <div class="card" style="flex: 1.2;">
                     <div class="card-title">
                         <span class="icon">⚠️</span>
                         <span>DET等级分布</span>
@@ -1113,28 +1113,62 @@
         function updateRiskChart(riskDistribution) {
             if (!charts.risk) return;
             
-            // DET等级映射
+            // DET等级映射（简化标签）
             const riskMap = {
-                'excellent': { value: 0, name: '优秀（无皮炎）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    {offset: 0, color: '#10b981'},
-                    {offset: 1, color: '#059669'}
-                ])},
-                'good': { value: 0, name: '良好（轻度）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    {offset: 0, color: '#52c41a'},
-                    {offset: 1, color: '#389e0d'}
-                ])},
-                'moderate': { value: 0, name: '中度（需注意）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    {offset: 0, color: '#f59e0b'},
-                    {offset: 1, color: '#d97706'}
-                ])},
-                'poor': { value: 0, name: '重度（需处理）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    {offset: 0, color: '#f97316'},
-                    {offset: 1, color: '#ea580c'}
-                ])},
-                'critical': { value: 0, name: '极重度（紧急）', color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    {offset: 0, color: '#ef4444'},
-                    {offset: 1, color: '#dc2626'}
-                ])}
+                'excellent': { 
+                    value: 0, 
+                    name: '优秀', 
+                    fullName: '优秀-无皮炎',
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: '#10b981'},
+                        {offset: 1, color: '#059669'}
+                    ])
+                },
+                'good': { 
+                    value: 0, 
+                    name: '良好', 
+                    fullName: '良好-轻度皮炎',
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: '#52c41a'},
+                        {offset: 1, color: '#389e0d'}
+                    ])
+                },
+                'moderate': { 
+                    value: 0, 
+                    name: '需注意', 
+                    fullName: '中度-需注意',
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: '#f59e0b'},
+                        {offset: 1, color: '#d97706'}
+                    ])
+                },
+                'poor': { 
+                    value: 0, 
+                    name: '需处理', 
+                    fullName: '重度-需处理',
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: '#f97316'},
+                        {offset: 1, color: '#ea580c'}
+                    ])
+                },
+                'critical': { 
+                    value: 0, 
+                    name: '紧急', 
+                    fullName: '极重度-紧急',
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: '#ef4444'},
+                        {offset: 1, color: '#dc2626'}
+                    ])
+                },
+                'invalid': {
+                    value: 0,
+                    name: '无法评估',
+                    fullName: '无法评估',
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: '#6b7280'},
+                        {offset: 1, color: '#4b5563'}
+                    ])
+                }
             };
 
             riskDistribution.forEach(item => {
@@ -1146,36 +1180,45 @@
             const option = {
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{b}: {c} ({d}%)',
+                    formatter: function(params) {
+                        const level = Object.keys(riskMap).find(k => riskMap[k].name === params.name);
+                        const fullName = level ? riskMap[level].fullName : params.name;
+                        return `${fullName}<br/>数量: ${params.value} (${params.percent}%)`;
+                    },
                     backgroundColor: 'rgba(30, 64, 175, 0.95)',
                     borderColor: 'rgba(96, 165, 250, 0.5)',
                     textStyle: {
-                        color: '#fff'
+                        color: '#fff',
+                        fontSize: 13
                     }
                 },
                 legend: {
                     orient: 'horizontal',
-                    bottom: 5,
+                    bottom: 8,
                     left: 'center',
-                    itemGap: 12,
-                    itemWidth: 12,
-                    itemHeight: 12,
+                    itemGap: 15,
+                    itemWidth: 14,
+                    itemHeight: 14,
                     textStyle: {
                         color: '#e0f2fe',
-                        fontSize: 9
+                        fontSize: 11
+                    },
+                    formatter: function(name) {
+                        return name;
                     }
                 },
                 series: [{
                     type: 'pie',
-                    radius: ['35%', '60%'],
-                    center: ['50%', '42%'],
+                    radius: ['40%', '70%'],
+                    center: ['50%', '40%'],
                     data: [
                         { value: riskMap['excellent'].value, name: riskMap['excellent'].name, itemStyle: { color: riskMap['excellent'].color } },
                         { value: riskMap['good'].value, name: riskMap['good'].name, itemStyle: { color: riskMap['good'].color } },
                         { value: riskMap['moderate'].value, name: riskMap['moderate'].name, itemStyle: { color: riskMap['moderate'].color } },
                         { value: riskMap['poor'].value, name: riskMap['poor'].name, itemStyle: { color: riskMap['poor'].color } },
-                        { value: riskMap['critical'].value, name: riskMap['critical'].name, itemStyle: { color: riskMap['critical'].color } }
-                    ],
+                        { value: riskMap['critical'].value, name: riskMap['critical'].name, itemStyle: { color: riskMap['critical'].color } },
+                        { value: riskMap['invalid'].value, name: riskMap['invalid'].name, itemStyle: { color: riskMap['invalid'].color } }
+                    ].filter(item => item.value > 0),  // 只显示有数据的项
                     emphasis: {
                         itemStyle: {
                             shadowBlur: 20,
@@ -1186,14 +1229,10 @@
                         scaleSize: 10
                     },
                     label: {
-                        color: '#fff',
-                        fontSize: 12,
-                        formatter: '{b}\n{d}%'
+                        show: false  // 隐藏饼图上的标签，避免重叠
                     },
                     labelLine: {
-                        lineStyle: {
-                            color: 'rgba(255, 255, 255, 0.5)'
-                        }
+                        show: false  // 隐藏标签线
                     },
                     animationType: 'scale',
                     animationEasing: 'elasticOut',
