@@ -737,17 +737,95 @@
         }
 
         /* 平板横屏适配 (768px - 1024px) */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .dashboard-body {
-                grid-template-columns: 1fr 1fr;
+        @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+            .dashboard-container {
+                padding: 1.2vh 1.5vw;
             }
             
-            .middle-column {
-                grid-column: 1 / -1;
+            .dashboard-header {
+                padding: 1.2vh 2vw;
+                margin-bottom: 1.2vh;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 1.6rem;
+            }
+            
+            .dashboard-header .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .dashboard-header .update-time {
+                font-size: 0.8rem;
+            }
+            
+            .dashboard-body {
+                grid-template-columns: 1fr 2fr 1fr;
+                gap: 1.2vw;
+            }
+            
+            .left-column,
+            .middle-column,
+            .right-column {
+                gap: 1.2vh;
+            }
+            
+            .card {
+                padding: 1.2vh 1vw;
             }
             
             .card-title {
-                font-size: 1.1rem;
+                font-size: 1.15rem;
+                margin-bottom: 1vh;
+            }
+            
+            .card-title .icon {
+                font-size: 1.3rem;
+            }
+            
+            .stats-grid {
+                gap: 1vw;
+            }
+            
+            .stat-item {
+                padding: 1vh 0.8vw;
+            }
+            
+            .stat-value {
+                font-size: 2.2rem;
+            }
+            
+            .stat-label {
+                font-size: 0.85rem;
+            }
+            
+            .chart-container {
+                min-height: 200px;
+                max-height: 220px;
+            }
+            
+            .chart-container-large {
+                min-height: 280px;
+                max-height: 320px;
+            }
+            
+            .list-item {
+                padding: 0.9vh 0.8vw;
+                margin-bottom: 0.9vh;
+            }
+            
+            .list-item-name {
+                font-size: 0.9rem;
+            }
+            
+            .list-item-badge {
+                font-size: 0.75rem;
+                padding: 3px 8px;
+            }
+            
+            .list-item-info {
+                font-size: 0.8rem;
+                line-height: 1.5;
             }
         }
 
@@ -1530,6 +1608,40 @@
             stomaType: null
         };
 
+        // 根据屏幕尺寸获取字体大小
+        function getResponsiveFontSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const isTablet = width >= 768 && width <= 1024;
+            const isLandscape = width > height;
+            
+            if (isTablet && isLandscape) {
+                // 平板横屏：增大字体
+                return {
+                    tooltip: 14,
+                    legend: 13,
+                    axisLabel: 13,
+                    axisName: 14
+                };
+            } else if (width <= 768) {
+                // 手机：小字体
+                return {
+                    tooltip: 11,
+                    legend: 10,
+                    axisLabel: 10,
+                    axisName: 11
+                };
+            } else {
+                // 桌面：标准字体
+                return {
+                    tooltip: 13,
+                    legend: 12,
+                    axisLabel: 11,
+                    axisName: 12
+                };
+            }
+        }
+
         // 初始化所有图表
         function initCharts() {
             charts.risk = echarts.init(document.getElementById('riskChart'));
@@ -1575,6 +1687,8 @@
         // 更新DET等级分布图表
         function updateRiskChart(riskDistribution) {
             if (!charts.risk) return;
+            
+            const fontSize = getResponsiveFontSize();
             
             // DET等级映射（简化标签）
             const riskMap = {
@@ -1652,7 +1766,7 @@
                     borderColor: 'rgba(96, 165, 250, 0.5)',
                     textStyle: {
                         color: '#fff',
-                        fontSize: 13
+                        fontSize: fontSize.tooltip
                     }
                 },
                 legend: {
@@ -1660,11 +1774,11 @@
                     right: '5%',
                     top: 'center',
                     itemGap: 10,
-                    itemWidth: 16,
-                    itemHeight: 16,
+                    itemWidth: 18,
+                    itemHeight: 18,
                     textStyle: {
                         color: '#e0f2fe',
-                        fontSize: 11,
+                        fontSize: fontSize.legend,
                         padding: [0, 0, 0, 5]
                     }
                 },
@@ -1711,6 +1825,8 @@
         function updateTrendChart(assessmentTrend) {
             if (!charts.trend) return;
             
+            const fontSize = getResponsiveFontSize();
+            
             const dates = assessmentTrend.map(item => {
                 const date = new Date(item.date);
                 return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -1741,7 +1857,7 @@
                     data: ['评估次数', 'DET平均分'],
                     textStyle: {
                         color: '#e0f2fe',
-                        fontSize: 12
+                        fontSize: fontSize.legend
                     },
                     top: 0
                 },
@@ -1764,7 +1880,7 @@
                     },
                     axisLabel: {
                         color: '#e0f2fe',
-                        fontSize: 11
+                        fontSize: fontSize.axisLabel
                     },
                     axisTick: {
                         lineStyle: {
@@ -1779,7 +1895,7 @@
                         position: 'left',
                         nameTextStyle: {
                             color: '#4ade80',
-                            fontSize: 12
+                            fontSize: fontSize.axisName
                         },
                         axisLine: {
                             lineStyle: {
@@ -1789,7 +1905,7 @@
                         },
                         axisLabel: {
                             color: '#e0f2fe',
-                            fontSize: 11
+                            fontSize: fontSize.axisLabel
                         },
                         splitLine: {
                             lineStyle: {
@@ -1805,7 +1921,7 @@
                         max: 15,  // DET评分范围0-15
                         nameTextStyle: {
                             color: '#60a5fa',
-                            fontSize: 12
+                            fontSize: fontSize.axisName
                         },
                         axisLine: {
                             lineStyle: {
@@ -1815,7 +1931,7 @@
                         },
                         axisLabel: {
                             color: '#e0f2fe',
-                            fontSize: 11
+                            fontSize: fontSize.axisLabel
                         },
                         splitLine: {
                             show: false
@@ -1899,6 +2015,8 @@
         function updateStageChart(stageDistribution) {
             if (!charts.stage) return;
             
+            const fontSize = getResponsiveFontSize();
+            
             // DET维度已经是中文，直接使用
             const stages = stageDistribution.map(item => item.pressure_stage || '未知');
             const counts = stageDistribution.map(item => Number(item.count) || 0);
@@ -1941,7 +2059,7 @@
                     axisLabel: {
                         color: '#e0f2fe',
                         rotate: 0,
-                        fontSize: 12,
+                        fontSize: fontSize.axisLabel,
                         interval: 0
                     },
                     axisTick: {
@@ -2009,6 +2127,8 @@
         function updateStomaTypeChart(stomaTypeDistribution) {
             if (!charts.stomaType) return;
             
+            const fontSize = getResponsiveFontSize();
+            
             // 造口类型中英文映射
             const stomaTypeMap = {
                 'colostomy': '结肠造口',
@@ -2061,7 +2181,7 @@
                     top: 'center',
                     textStyle: {
                         color: '#e0f2fe',
-                        fontSize: 11
+                        fontSize: fontSize.legend
                     }
                 },
                 series: [{
@@ -2088,7 +2208,7 @@
                     },
                     label: {
                         color: '#fff',
-                        fontSize: 11,
+                        fontSize: fontSize.legend,
                         formatter: '{b}\n{d}%'
                     },
                     labelLine: {
