@@ -6,6 +6,7 @@
     <title>患者管理数据大屏 - 造口护理智能管理系统</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 配置文件：开发环境用config.dev.js，生产环境用config.prod.js -->
+    <!-- ⚠️ 重要：请确保加载正确的配置文件！ -->
     <script src="config.prod.js"></script>
     <style>
         * {
@@ -940,6 +941,32 @@
                 userType: 'nurse'   // 用户类型：nurse 或 patient
             }
         };
+        
+        // 配置验证和警告
+        (function validateConfig() {
+            console.log('%c=== Dashboard 配置信息 ===', 'color: #3b82f6; font-size: 14px; font-weight: bold;');
+            console.log('API地址:', CONFIG.apiBaseUrl);
+            console.log('自动登录用户:', CONFIG.autoLogin.username);
+            console.log('配置来源:', window.DASHBOARD_CONFIG ? '外部配置文件' : '内置默认配置');
+            
+            // 检查配置是否匹配环境
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isLocalAPI = CONFIG.apiBaseUrl.includes('localhost') || CONFIG.apiBaseUrl.includes('127.0.0.1');
+            
+            if (isLocalhost && !isLocalAPI) {
+                console.warn('%c⚠️ 警告: 您在本地环境运行，但 API 地址指向生产环境！', 'color: #f59e0b; font-size: 13px;');
+                console.log('建议: 修改 index.html 中的配置文件为 config.dev.js');
+            } else if (!isLocalhost && isLocalAPI) {
+                console.warn('%c⚠️ 警告: 您在生产环境运行，但 API 地址指向本地环境！', 'color: #f59e0b; font-size: 13px;');
+                console.log('建议: 修改 index.html 中的配置文件为 config.prod.js');
+            }
+            
+            if (!window.DASHBOARD_CONFIG) {
+                console.warn('%c⚠️ 警告: 配置文件可能未加载，正在使用内置默认配置', 'color: #f59e0b; font-size: 13px;');
+            }
+            
+            console.log('');
+        })();
 
         // 创建粒子背景
         function createParticles() {
@@ -1817,32 +1844,54 @@
             const apiUrl = CONFIG.apiBaseUrl;
             const autoLoginConfig = CONFIG.autoLogin;
             
+            // 格式化消息（保留换行）
+            const formattedMessage = message.replace(/\n/g, '<br>');
+            
             dashboardBody.innerHTML = `
                 <div class="error-message">
-                    ❌ ${message}
+                    ❌ ${formattedMessage}
                     <br><br>
-                    <div style="font-size: 0.9em; opacity: 0.8; margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <div style="font-size: 0.9em; opacity: 0.8; margin-top: 20px; text-align: left; max-width: 700px; margin-left: auto; margin-right: auto;">
                         <strong>诊断信息：</strong><br>
                         • API地址: ${apiUrl}<br>
                         • 浏览器: ${navigator.userAgent.split(' ').pop()}<br>
                         • 自动登录用户名: ${autoLoginConfig.username || '未配置'}<br>
                         • 用户类型: ${autoLoginConfig.userType || 'nurse'}<br><br>
-                        <strong>可能的原因：</strong><br>
-                        1. 后端服务未启动（请检查 npm start）<br>
-                        2. API地址配置错误（检查 config.dev.js 或 config.prod.js）<br>
-                        3. 自动登录账号配置错误（检查配置文件中的 autoLogin 设置）<br>
-                        4. 用户名或密码错误（用户名应为工号如 N001 或手机号如 13800138000）<br>
-                        5. 数据库未初始化或无数据<br>
-                        6. 跨域问题（检查后端CORS配置）<br>
-                        7. 网络连接问题<br><br>
-                        <strong>解决建议：</strong><br>
-                        • 如果用户名是 'admin'，请改为 'N001' 或 '13800138000'<br>
-                        • 检查后端服务是否正常运行<br>
-                        • 检查数据库中是否存在对应的护士账号<br>
+                        <strong>快速诊断步骤：</strong><br>
+                        <div style="background: rgba(59, 130, 246, 0.15); padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #3b82f6;">
+                            <div style="margin-bottom: 8px;">1️⃣ 检查后端服务是否启动</div>
+                            <div style="margin-left: 20px; font-size: 0.9em; color: #93c5fd;">
+                                • 打开命令行/终端<br>
+                                • 进入项目的 backend 目录<br>
+                                • 运行命令: <code style="background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px;">npm start</code><br>
+                                • 看到 "🚀 造口护理系统后端服务已启动" 即为成功
+                            </div>
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.15); padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #10b981;">
+                            <div style="margin-bottom: 8px;">2️⃣ 检查 API 地址配置</div>
+                            <div style="margin-left: 20px; font-size: 0.9em; color: #93c5fd;">
+                                • 当前 API 地址: <strong>${apiUrl}</strong><br>
+                                • 本地开发应为: http://localhost:3000/api<br>
+                                • 检查 config.dev.js 或 config.prod.js 文件
+                            </div>
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.15); padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #f59e0b;">
+                            <div style="margin-bottom: 8px;">3️⃣ 检查自动登录配置</div>
+                            <div style="margin-left: 20px; font-size: 0.9em; color: #93c5fd;">
+                                • 用户名应为工号（如 N001）或手机号（如 13800138000）<br>
+                                • 当前用户名: <strong>${autoLoginConfig.username}</strong><br>
+                                • 如果是 'admin'，请改为 'N001'
+                            </div>
+                        </div>
+                        <br>
+                        <strong>其他可能的原因：</strong><br>
+                        • 数据库未初始化或无数据<br>
+                        • 跨域问题（检查后端CORS配置）<br>
+                        • 网络连接问题<br>
                     </div>
                     <div style="margin-top: 30px;">
-                        <button onclick="testConnection()" style="padding: 10px 20px; margin: 0 10px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">测试连接</button>
-                        <button onclick="location.reload()" style="padding: 10px 20px; margin: 0 10px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">刷新页面</button>
+                        <button onclick="testConnection()" style="padding: 12px 24px; margin: 0 10px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);">🔍 测试连接</button>
+                        <button onclick="location.reload()" style="padding: 12px 24px; margin: 0 10px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);">🔄 刷新页面</button>
                     </div>
                 </div>
             `;
@@ -2021,8 +2070,28 @@
         // 初始化
         async function init() {
             try {
+                // 先检查服务是否可用
+                console.log('检查后端服务连接...');
+                try {
+                    const healthCheck = await fetch(`${CONFIG.apiBaseUrl}/health`, {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (!healthCheck.ok) {
+                        throw new Error(`健康检查失败: HTTP ${healthCheck.status}`);
+                    }
+                    
+                    console.log('✓ 后端服务连接正常');
+                } catch (error) {
+                    console.error('❌ 后端服务连接失败:', error);
+                    showError(`无法连接到后端服务 (${CONFIG.apiBaseUrl})。\n\n请确保已启动后端服务：\n1. 打开终端/命令行\n2. 进入 backend 目录\n3. 运行: npm start`);
+                    return;
+                }
+
                 // 自动登录
+                console.log('开始自动登录...');
                 await autoLogin();
+                console.log('✓ 自动登录成功');
 
                 // 创建粒子背景
                 createParticles();
@@ -2037,7 +2106,7 @@
                 setInterval(loadDashboardData, CONFIG.refreshInterval);
             } catch (error) {
                 console.error('初始化失败:', error);
-                showError(`自动登录失败: ${error.message}。请检查配置文件中的自动登录账号设置。`);
+                showError(`初始化失败: ${error.message}`);
             }
         }
 
@@ -2053,6 +2122,105 @@
         });
 
         // 注意：自动登录模式，无需退出登录功能
+        
+        // 开发者调试工具：手动诊断（在浏览器控制台运行）
+        window.diagnoseDashboard = async function() {
+            console.log('%c=== Dashboard 诊断工具 ===', 'color: #3b82f6; font-size: 16px; font-weight: bold;');
+            console.log('');
+            
+            // 1. 显示配置
+            console.log('%c1. 当前配置:', 'color: #10b981; font-weight: bold;');
+            console.log('API地址:', CONFIG.apiBaseUrl);
+            console.log('自动登录用户名:', CONFIG.autoLogin.username);
+            console.log('用户类型:', CONFIG.autoLogin.userType);
+            console.log('刷新间隔:', CONFIG.refreshInterval, 'ms');
+            console.log('');
+            
+            // 2. 测试健康检查
+            console.log('%c2. 测试健康检查 API...', 'color: #10b981; font-weight: bold;');
+            try {
+                const healthResponse = await fetch(`${CONFIG.apiBaseUrl}/health`);
+                const healthData = await healthResponse.json();
+                console.log('✓ 健康检查成功:', healthData);
+            } catch (error) {
+                console.error('✗ 健康检查失败:', error.message);
+                console.log('提示: 请检查后端服务是否启动');
+                return;
+            }
+            console.log('');
+            
+            // 3. 测试登录
+            console.log('%c3. 测试登录 API...', 'color: #10b981; font-weight: bold;');
+            try {
+                const loginResponse = await fetch(`${CONFIG.apiBaseUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: CONFIG.autoLogin.username,
+                        password: CONFIG.autoLogin.password,
+                        userType: CONFIG.autoLogin.userType
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok && loginData.success) {
+                    console.log('✓ 登录成功!');
+                    console.log('Token:', loginData.data.token.substring(0, 50) + '...');
+                    console.log('用户信息:', loginData.data.user);
+                    
+                    // 保存token
+                    localStorage.setItem('token', loginData.data.token);
+                    CONFIG.token = loginData.data.token;
+                } else {
+                    console.error('✗ 登录失败:', loginData.message || '未知错误');
+                    console.log('响应状态:', loginResponse.status);
+                    console.log('完整响应:', loginData);
+                    return;
+                }
+            } catch (error) {
+                console.error('✗ 登录请求失败:', error.message);
+                return;
+            }
+            console.log('');
+            
+            // 4. 测试Dashboard API
+            console.log('%c4. 测试 Dashboard API...', 'color: #10b981; font-weight: bold;');
+            try {
+                const dashboardResponse = await fetch(`${CONFIG.apiBaseUrl}/dashboard/stats`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${CONFIG.token}`
+                    }
+                });
+                
+                const dashboardData = await dashboardResponse.json();
+                
+                if (dashboardResponse.ok && dashboardData.success) {
+                    console.log('✓ Dashboard API 成功!');
+                    console.log('数据概览:', {
+                        总患者数: dashboardData.data.patientStats?.total_patients,
+                        活跃患者: dashboardData.data.patientStats?.active_patients,
+                        总评估: dashboardData.data.assessmentStats?.total_assessments,
+                        今日评估: dashboardData.data.assessmentStats?.today_assessments
+                    });
+                } else {
+                    console.error('✗ Dashboard API 失败:', dashboardData.message || '未知错误');
+                    console.log('响应状态:', dashboardResponse.status);
+                    return;
+                }
+            } catch (error) {
+                console.error('✗ Dashboard 请求失败:', error.message);
+                return;
+            }
+            console.log('');
+            
+            console.log('%c=== 所有测试通过！ ===', 'color: #10b981; font-size: 16px; font-weight: bold;');
+            console.log('建议: 刷新页面以加载数据');
+        };
+        
+        // 在控制台提示用户
+        console.log('%c💡 提示: 如果页面无法加载，请在控制台运行 diagnoseDashboard() 进行诊断', 'color: #f59e0b; font-size: 14px;');
     </script>
 </body>
 </html>
