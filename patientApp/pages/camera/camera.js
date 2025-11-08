@@ -815,6 +815,26 @@ Page({
     })
   },
 
+  // 图片加载错误处理
+  onImageError(e) {
+    const itemId = e.currentTarget.dataset.id
+    console.warn('图片加载失败，评估ID:', itemId)
+    
+    // 可以在这里更新列表，移除或标记失败的图片
+    const historyList = this.data.historyList.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          imageError: true,
+          photoPath: '/images/camera.png' // 使用相机图标作为占位图
+        }
+      }
+      return item
+    })
+    
+    this.setData({ historyList })
+  },
+
   // 分享
   onShareAppMessage() {
     return {

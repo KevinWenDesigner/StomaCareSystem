@@ -7,10 +7,11 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "init-db": "node src/scripts/initDatabase.js",
+    "add-chapters": "node src/scripts/addCourseChapters.js",
     "upgrade-db": "node src/scripts/upgradeAssessmentsTable.js",
     "test-db": "node test-connection.js",
     "insert-care-plan": "node src/scripts/insertCarePlanTestData.js",
-    "test-education": "node test-education-api.js",
+    "test-education": "node src/scripts/testEducationAPI.js",
     "insert-test-data": "node src/scripts/insertTestData.js",
     "check-health": "node check-health.js"
   },

@@ -20,11 +20,55 @@ Page({
   },
 
   // 加载课程数据
-  loadCourseData(courseId) {
+  async loadCourseData(courseId) {
     try {
       const globalData = getApp().globalData
-      if (globalData && globalData.currentCourse) {
-        const course = globalData.currentCourse
+      let course = globalData && globalData.currentCourse
+      
+      // 如果全局数据中的课程没有chapters或章节内容为空，从后端加载
+      if (course && (!course.chapters || course.chapters.length === 0 || !course.chapters[0].content)) {
+        console.log('课程缺少详细内容，从后端加载...')
+        try {
+          wx.showLoading({ title: '加载内容...' })
+          const res = await api.getCourseDetail(course.rawData?.id || course.id)
+          if (res.success && res.data) {
+            course = res.data
+            // 更新全局数据
+            getApp().globalData.currentCourse = course
+            console.log('从后端加载课程详情成功，章节数:', course.chapters?.length)
+          }
+          wx.hideLoading()
+        } catch (error) {
+          console.error('从后端加载课程详情失败:', error)
+          wx.hideLoading()
+        }
+      }
+      
+      if (course) {
+        // 处理章节数据格式
+        if (course.chapters && course.chapters.length > 0) {
+          course.chapters = course.chapters.map((chapter, index) => {
+            // 解析learning_points（可能是JSON字符串）
+            let learningPoints = chapter.learning_points || chapter.learningPoints
+            if (typeof learningPoints === 'string') {
+              try {
+                learningPoints = JSON.parse(learningPoints)
+              } catch (e) {
+                console.error('解析学习要点失败:', e)
+                learningPoints = []
+              }
+            }
+            
+            return {
+              id: chapter.id || (index + 1),
+              title: chapter.title,
+              content: chapter.content,
+              duration: chapter.duration || 300,
+              completed: chapter.completed || false,
+              learning_points: learningPoints
+            }
+          })
+        }
         
         this.setData({
           course: course,
@@ -35,6 +79,7 @@ Page({
         this.loadStudyProgress(course.id)
         
         console.log('加载课程学习数据:', course.title)
+        console.log('章节数量:', course.chapters?.length)
       } else {
         app.showToast('课程数据不存在', 'error')
         setTimeout(() => {

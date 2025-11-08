@@ -86,7 +86,7 @@
 
         <!-- 照片预览 -->
         <view class="history-image-container">
-          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image"></image>                                                                      
+          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image" binderror="onImageError" data-id="{{item.id}}"></image>                                                                      
           <view class="image-overlay" wx:if="{{!compareMode}}">
             <text class="overlay-text">点击查看详情</text>
           </view>

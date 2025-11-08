@@ -3,7 +3,7 @@
 // 环境配置：修改此处即可切换环境
 // =====================
 // ======================
-const ENV = 'production'; // 可选值: 'production' | 'development' | 'test'
+const ENV = 'development'; // 可选值: 'production' | 'development' | 'test'
 
 // ===========================================
 // 环境配置定义

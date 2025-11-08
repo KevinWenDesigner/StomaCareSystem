@@ -18,6 +18,12 @@ router.get('/', CourseController.getList);
 // 获取课程详情
 router.get('/:id', CourseController.getById);
 
+// 获取课程章节列表
+router.get('/:id/chapters', CourseController.getChapters);
+
+// 获取单个章节详情
+router.get('/:id/chapters/:chapterId', CourseController.getChapterById);
+
 // 记录学习进度
 router.post('/:id/progress', CourseController.recordProgress);
 

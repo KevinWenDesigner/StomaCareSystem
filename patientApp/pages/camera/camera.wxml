@@ -191,7 +191,7 @@
     <view wx:else class="history-list">
       <view wx:for="{{historyList}}" wx:key="id" class="history-item">
         <view class="history-card">
-          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image"></image>
+          <image src="{{item.photoPath}}" mode="aspectFill" class="history-image" binderror="onImageError" data-id="{{item.id}}"></image>
           <view class="history-content">
             <text class="history-time">{{item.time}}</text>
             <text class="history-score">评分: {{item.score}}分</text>

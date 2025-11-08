@@ -1,4 +1,5 @@
 const Course = require('../models/Course');
+const CourseChapter = require('../models/CourseChapter');
 const LearningRecord = require('../models/LearningRecord');
 const response = require('../utils/response');
 
@@ -53,6 +54,10 @@ class CourseController {
       // 增加浏览次数
       await Course.incrementViewCount(id);
       
+      // 获取课程章节
+      const chapters = await CourseChapter.findByCourseId(id);
+      course.chapters = chapters;
+      
       // 如果是患者，获取学习记录
       if (req.user && req.user.patientId) {
         const record = await LearningRecord.findByPatientAndCourse(
@@ -63,6 +68,33 @@ class CourseController {
       }
       
       return response.success(res, course);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 获取课程章节列表
+  static async getChapters(req, res, next) {
+    try {
+      const { id } = req.params;
+      const chapters = await CourseChapter.findByCourseId(id);
+      return response.success(res, chapters);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 获取单个章节详情
+  static async getChapterById(req, res, next) {
+    try {
+      const { id, chapterId } = req.params;
+      const chapter = await CourseChapter.findById(chapterId);
+      
+      if (!chapter || chapter.course_id != id) {
+        return response.notFound(res, '章节不存在');
+      }
+      
+      return response.success(res, chapter);
     } catch (error) {
       next(error);
     }

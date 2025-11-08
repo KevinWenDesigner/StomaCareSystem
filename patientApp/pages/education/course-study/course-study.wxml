@@ -40,25 +40,29 @@
       <view class="chapter-content">
         <view class="content-card">
           <text class="content-title">章节内容</text>
-          <text class="content-text">
-            这里是第{{currentChapter + 1}}章的学习内容。通过本章的学习，您将掌握相关的护理知识和技能。
-            请仔细阅读以下内容，完成后点击"完成学习"按钮。
-          </text>
           
-          <!-- 模拟学习内容 -->
-          <view class="learning-points">
-            <view class="point-item">
-              <text class="point-icon">📝</text>
-              <text class="point-text">学习要点1：了解基本概念</text>
+          <!-- 真实的章节内容（HTML富文本） -->
+          <view wx:if="{{course.chapters[currentChapter].content}}" class="rich-content">
+            <rich-text nodes="{{course.chapters[currentChapter].content}}"></rich-text>
+          </view>
+          
+          <!-- 学习要点 -->
+          <view wx:if="{{course.chapters[currentChapter].learning_points}}" class="learning-points">
+            <view class="points-header">
+              <text class="points-title">📚 本章学习要点</text>
             </view>
-            <view class="point-item">
-              <text class="point-icon">🎯</text>
-              <text class="point-text">学习要点2：掌握操作技巧</text>
+            <view wx:for="{{course.chapters[currentChapter].learning_points}}" 
+                  wx:key="*this" 
+                  class="point-item">
+              <text class="point-bullet">•</text>
+              <text class="point-text">{{item}}</text>
             </view>
-            <view class="point-item">
-              <text class="point-icon">⚠️</text>
-              <text class="point-text">学习要点3：注意事项</text>
-            </view>
+          </view>
+          
+          <!-- 章节时长提示 -->
+          <view class="chapter-meta">
+            <text class="meta-label">预计学习时间：</text>
+            <text class="meta-value">{{course.chapters[currentChapter].duration ? Math.ceil(course.chapters[currentChapter].duration / 60) : 5}}分钟</text>
           </view>
         </view>
       </view>
