@@ -932,7 +932,13 @@
                         localStorage.getItem('apiBaseUrl') || 
                         'http://localhost:3000/api',
             refreshInterval: (window.DASHBOARD_CONFIG && window.DASHBOARD_CONFIG.refreshInterval) || 30000,
-            token: localStorage.getItem('token') || ''
+            token: localStorage.getItem('token') || '',
+            // 自动登录配置（如果没有token，使用此账号自动登录）
+            autoLogin: (window.DASHBOARD_CONFIG && window.DASHBOARD_CONFIG.autoLogin) || {
+                username: 'n001',  // 默认用户名，可在配置文件中修改
+                password: '123456',  // 默认密码，可在配置文件中修改
+                userType: 'nurse'   // 用户类型：nurse 或 patient
+            }
         };
 
         // 创建粒子背景
@@ -1023,14 +1029,14 @@
             }, 16);
         }
 
-        // API请求封装
-        async function fetchAPI(endpoint) {
+        // API请求封装（带自动重试登录）
+        async function fetchAPI(endpoint, retryLogin = true) {
             try {
                 const headers = {
                     'Content-Type': 'application/json'
                 };
                 
-                // 如果有 token，则添加 Authorization header（自动登录模式，token 可选）
+                // 如果有 token，则添加 Authorization header
                 if (CONFIG.token) {
                     headers['Authorization'] = `Bearer ${CONFIG.token}`;
                 }
@@ -1039,8 +1045,21 @@
                     headers
                 });
 
+                // 如果是 401 错误且允许重试，尝试重新登录
+                if (response.status === 401 && retryLogin) {
+                    console.log('Token已过期，尝试自动重新登录...');
+                    try {
+                        await autoLogin();
+                        // 重新发送请求（只重试一次）
+                        return await fetchAPI(endpoint, false);
+                    } catch (loginError) {
+                        throw new Error(`自动登录失败: ${loginError.message}`);
+                    }
+                }
+
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const data = await response.json();
@@ -1808,9 +1827,10 @@
                         <strong>可能的原因：</strong><br>
                         1. 后端服务未启动（请检查 npm start）<br>
                         2. API地址配置错误（检查 config.dev.js 或 config.prod.js）<br>
-                        3. 数据库未初始化或无数据<br>
-                        4. 跨域问题（检查后端CORS配置）<br>
-                        5. 网络连接问题<br>
+                        3. 自动登录账号配置错误（检查配置文件中的 autoLogin 设置）<br>
+                        4. 数据库未初始化或无数据<br>
+                        5. 跨域问题（检查后端CORS配置）<br>
+                        6. 网络连接问题<br>
                     </div>
                     <div style="margin-top: 30px;">
                         <button onclick="testConnection()" style="padding: 10px 20px; margin: 0 10px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">测试连接</button>
@@ -1862,19 +1882,87 @@
             testDiv.innerHTML += '<br><strong>测试完成</strong>';
         }
 
+        // 自动登录
+        async function autoLogin() {
+            try {
+                // 如果已经有token，先验证一下是否有效
+                if (CONFIG.token) {
+                    try {
+                        const response = await fetch(`${CONFIG.apiBaseUrl}/auth/me`, {
+                            headers: {
+                                'Authorization': `Bearer ${CONFIG.token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (response.ok) {
+                            // token有效，直接返回
+                            console.log('Token有效，无需重新登录');
+                            return true;
+                        }
+                    } catch (error) {
+                        console.log('Token验证失败，将自动登录');
+                    }
+                }
+
+                // 如果没有token或token无效，执行自动登录
+                console.log('开始自动登录...');
+                const response = await fetch(`${CONFIG.apiBaseUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: CONFIG.autoLogin.username,
+                        password: CONFIG.autoLogin.password,
+                        userType: CONFIG.autoLogin.userType
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `登录失败: HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.success && result.data && result.data.token) {
+                    // 保存token
+                    CONFIG.token = result.data.token;
+                    localStorage.setItem('token', result.data.token);
+                    if (result.data.user) {
+                        localStorage.setItem('userInfo', JSON.stringify(result.data.user));
+                    }
+                    console.log('自动登录成功');
+                    return true;
+                } else {
+                    throw new Error(result.message || '登录失败：未返回token');
+                }
+            } catch (error) {
+                console.error('自动登录失败:', error);
+                throw error;
+            }
+        }
+
         // 初始化
         async function init() {
-            // 创建粒子背景
-            createParticles();
+            try {
+                // 自动登录
+                await autoLogin();
 
-            // 初始化图表
-            initCharts();
+                // 创建粒子背景
+                createParticles();
 
-            // 加载数据
-            await loadDashboardData();
+                // 初始化图表
+                initCharts();
 
-            // 定时刷新
-            setInterval(loadDashboardData, CONFIG.refreshInterval);
+                // 加载数据
+                await loadDashboardData();
+
+                // 定时刷新
+                setInterval(loadDashboardData, CONFIG.refreshInterval);
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showError(`自动登录失败: ${error.message}。请检查配置文件中的自动登录账号设置。`);
+            }
         }
 
         // 页面加载完成后初始化
