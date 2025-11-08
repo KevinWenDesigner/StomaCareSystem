@@ -1154,18 +1154,21 @@
                     }
                 },
                 legend: {
-                    orient: 'vertical',
-                    right: 10,
-                    top: 'center',
+                    orient: 'horizontal',
+                    bottom: 5,
+                    left: 'center',
+                    itemGap: 12,
+                    itemWidth: 12,
+                    itemHeight: 12,
                     textStyle: {
                         color: '#e0f2fe',
-                        fontSize: 11
+                        fontSize: 9
                     }
                 },
                 series: [{
                     type: 'pie',
-                    radius: ['40%', '70%'],
-                    center: ['40%', '50%'],
+                    radius: ['35%', '60%'],
+                    center: ['50%', '42%'],
                     data: [
                         { value: riskMap['excellent'].value, name: riskMap['excellent'].name, itemStyle: { color: riskMap['excellent'].color } },
                         { value: riskMap['good'].value, name: riskMap['good'].name, itemStyle: { color: riskMap['good'].color } },
