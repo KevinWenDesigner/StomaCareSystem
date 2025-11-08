@@ -1,7 +1,15 @@
 // patient-app/pages/index/index.js
 const app = getApp()
 const api = require('../../utils/api.js')
-import { getCurrentDate, formatDateISO } from '../../utils/dateFormat.js'
+import { getCurrentDate, formatDateISO, formatDateTime } from '../../utils/dateFormat.js'
+
+// 风险等级映射
+const RISK_LEVEL_MAP = {
+  'low': '低风险',
+  'moderate': '中风险',
+  'high': '高风险',
+  'critical': '危急'
+}
 
 Page({
   data: {
@@ -409,12 +417,17 @@ Page({
         if (assessRes.success && assessRes.data) {
           const assessments = Array.isArray(assessRes.data) ? assessRes.data : []
           assessments.forEach(record => {
+            // 转换风险等级为中文
+            const riskLevelCN = RISK_LEVEL_MAP[record.riskLevel] || '未知'
+            // 格式化日期时间
+            const formattedTime = formatDateTime(record.createdAt)
+            
             allRecords.push({
               ...record,
               type: 'assessment',
               title: 'AI评估',
-              description: `风险等级: ${record.riskLevel || '未知'}`,
-              time: record.createdAt,
+              description: `风险等级: ${riskLevelCN}`,
+              time: formattedTime,
               timestamp: new Date(record.createdAt).getTime()
             })
           })
@@ -429,12 +442,15 @@ Page({
         if (diaryRes.success && diaryRes.data) {
           const diaries = Array.isArray(diaryRes.data) ? diaryRes.data : []
           diaries.forEach(record => {
+            // 格式化日期时间
+            const formattedTime = formatDateTime(record.diaryDate)
+            
             allRecords.push({
               ...record,
               type: 'diary',
               title: '症状日记',
               description: `疼痛等级: ${record.painLevel || 0}/5`,
-              time: record.diaryDate,
+              time: formattedTime,
               timestamp: new Date(record.diaryDate).getTime()
             })
           })

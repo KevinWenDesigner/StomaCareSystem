@@ -1026,26 +1026,18 @@
         // API请求封装
         async function fetchAPI(endpoint) {
             try {
-                const response = await fetch(`${CONFIG.apiBaseUrl}${endpoint}`, {
-                    headers: {
-                        'Authorization': `Bearer ${CONFIG.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                // 如果是 401/403，说明 token 无效
-                if (response.status === 401 || response.status === 403) {
-                    console.error('Token 无效或已过期，请重新登录');
-                    // 清除 token
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('userInfo');
-                    // 设置标记，表示是从 index 跳转到 login
-                    sessionStorage.setItem('fromIndex', 'true');
-                    // 跳转到登录页
-                    alert('登录已过期，请重新登录');
-                    window.location.href = 'login.html';
-                    return;
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // 如果有 token，则添加 Authorization header（自动登录模式，token 可选）
+                if (CONFIG.token) {
+                    headers['Authorization'] = `Bearer ${CONFIG.token}`;
                 }
+
+                const response = await fetch(`${CONFIG.apiBaseUrl}${endpoint}`, {
+                    headers
+                });
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1804,7 +1796,6 @@
         function showError(message) {
             const dashboardBody = document.getElementById('dashboardBody');
             const apiUrl = CONFIG.apiBaseUrl;
-            const hasToken = !!CONFIG.token;
             
             dashboardBody.innerHTML = `
                 <div class="error-message">
@@ -1813,18 +1804,17 @@
                     <div style="font-size: 0.9em; opacity: 0.8; margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
                         <strong>诊断信息：</strong><br>
                         • API地址: ${apiUrl}<br>
-                        • Token状态: ${hasToken ? '已配置 ✓' : '未配置 ✗'}<br>
                         • 浏览器: ${navigator.userAgent.split(' ').pop()}<br><br>
                         <strong>可能的原因：</strong><br>
                         1. 后端服务未启动（请检查 npm start）<br>
-                        2. API地址配置错误（检查 config.dev.js）<br>
+                        2. API地址配置错误（检查 config.dev.js 或 config.prod.js）<br>
                         3. 数据库未初始化或无数据<br>
-                        4. Token已过期（请重新登录）<br>
-                        5. 跨域问题（检查后端CORS配置）<br>
+                        4. 跨域问题（检查后端CORS配置）<br>
+                        5. 网络连接问题<br>
                     </div>
                     <div style="margin-top: 30px;">
                         <button onclick="testConnection()" style="padding: 10px 20px; margin: 0 10px; background: #3b82f6; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">测试连接</button>
-                        <a href="login.html" style="display: inline-block; padding: 10px 20px; margin: 0 10px; background: #ef4444; border-radius: 8px; color: #fff; text-decoration: none; font-size: 14px;">返回登录</a>
+                        <button onclick="location.reload()" style="padding: 10px 20px; margin: 0 10px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">刷新页面</button>
                     </div>
                 </div>
             `;
@@ -1837,7 +1827,7 @@
             
             const tests = [
                 { name: '1. 健康检查', url: `${CONFIG.apiBaseUrl}/health`, auth: false },
-                { name: '2. Dashboard API', url: `${CONFIG.apiBaseUrl}/dashboard/stats`, auth: true }
+                { name: '2. Dashboard API', url: `${CONFIG.apiBaseUrl}/dashboard/stats`, auth: false }
             ];
             
             const testDiv = resultDiv.querySelector('div:last-child');
@@ -1846,7 +1836,8 @@
                 testDiv.innerHTML += `<div style="margin: 10px 0;">测试 ${test.name}...</div>`;
                 try {
                     const headers = { 'Content-Type': 'application/json' };
-                    if (test.auth && CONFIG.token) {
+                    // 自动登录模式：如果有 token 就添加，没有也可以请求（取决于后端配置）
+                    if (CONFIG.token) {
                         headers['Authorization'] = `Bearer ${CONFIG.token}`;
                     }
                     
@@ -1873,18 +1864,6 @@
 
         // 初始化
         async function init() {
-            // 清除来自 login 的标记
-            sessionStorage.removeItem('toIndex');
-            
-            // 检查token
-            if (!CONFIG.token) {
-                console.log('未检测到登录token，跳转到登录页面...');
-                // 设置标记，表示是从 index 跳转到 login
-                sessionStorage.setItem('fromIndex', 'true');
-                window.location.href = 'login.html';
-                return;
-            }
-
             // 创建粒子背景
             createParticles();
 
@@ -1909,19 +1888,7 @@
             }
         });
 
-        // 退出登录
-        function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                // 清除token和用户信息
-                localStorage.removeItem('token');
-                localStorage.removeItem('userInfo');
-                // 设置标记，表示是从 index 主动退出
-                sessionStorage.setItem('fromIndex', 'true');
-                console.log('已退出登录，跳转到登录页面...');
-                // 跳转到登录页面
-                window.location.href = 'login.html';
-            }
-        }
+        // 注意：自动登录模式，无需退出登录功能
     </script>
 </body>
 </html>
