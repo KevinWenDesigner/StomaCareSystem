@@ -1391,7 +1391,7 @@
                 <div class="card" style="flex: 1;">
                     <div class="card-title">
                         <span class="icon">📋</span>
-                        <span>DET维度分析（平均分）</span>
+                        <span>DET维度分析（等级分布 + 均分）</span>
                     </div>
                     <div class="chart-container" id="stageChart"></div>
                 </div>
@@ -2480,7 +2480,6 @@
                     updateCoreStats(data);
                     updateRiskChart(data.riskDistribution || []);
                     updateTrendChart(data.assessmentTrend || []);
-                    updateStageChart(data.stageDistribution || []);
                     updateStomaTypeChart(data.stomaTypeDistribution || []);
                     updateHighRiskList(data.highRiskPatients || []);
                     updatePendingList(data.pendingReviews || []);
