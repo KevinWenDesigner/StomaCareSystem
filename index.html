@@ -423,6 +423,44 @@
             max-height: 48vh;
         }
 
+        /* 炫酷边框：DET维度分析（红框处） */
+        #stageChart {
+            position: relative;
+            border-radius: 14px;
+            box-shadow:
+                inset 0 0 0 1px rgba(96, 165, 250, 0.15),
+                0 0 28px rgba(59, 130, 246, 0.18);
+            overflow: hidden;
+        }
+        #stageChart::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: radial-gradient(60% 60% at 50% 50%, rgba(96,165,250,0.25), transparent 60%),
+                        conic-gradient(from 0deg, rgba(59,130,246,0.25), rgba(16,185,129,0.2), rgba(59,130,246,0.25));
+            filter: blur(14px);
+            animation: neonRotate 8s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        #stageChart::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15) inset;
+            animation: neonPulse 3.2s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes neonRotate {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(59,130,246,0.15) inset, 0 0 24px rgba(59,130,246,0.15); }
+            50%      { box-shadow: 0 0 0 2px rgba(147,197,253,0.3) inset, 0 0 36px rgba(59,130,246,0.35); }
+        }
+
         /* 列表样式 */
         .data-list {
             flex: 1;
@@ -2132,6 +2170,11 @@
                 }
             } catch (e) {
                 console.error('DET维度统计加载失败', e);
+                // 兼容：如果生产后端未升级，使用旧接口的平均分图表作为兜底
+                if (window.__STAGE_DISTRIBUTION__ && window.__STAGE_DISTRIBUTION__.length) {
+                    console.warn('使用旧接口 stageDistribution 做兜底展示（平均分柱状）');
+                    updateStageChart(window.__STAGE_DISTRIBUTION__);
+                }
             }
         }
 
@@ -2164,7 +2207,9 @@
                 },
                 legend: {
                     data: ['优秀', '需注意', '紧急', '平均分'],
-                    textStyle: { color: '#e0f2fe', fontSize: fontSize.legend }
+                    textStyle: { color: '#e0f2fe', fontSize: fontSize.legend },
+                    itemWidth: 18,
+                    itemHeight: 12
                 },
                 grid: {
                     left: '5%',
@@ -2185,7 +2230,7 @@
                         name: '人数',
                         axisLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.5)', width: 2 } },
                         axisLabel: { color: '#e0f2fe', fontSize: fontSize.axisLabel },
-                        splitLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.1)', type: 'dashed' } }
+                        splitLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.08)', type: 'dashed' } }
                     },
                     {
                         type: 'value',
@@ -2203,35 +2248,96 @@
                         type: 'bar',
                         stack: 'risk',
                         data: excellent,
-                        barWidth: '40%',
-                        itemStyle: { color: '#10b981' }
+                        barWidth: '42%',
+                        showBackground: true,
+                        backgroundStyle: { color: 'rgba(255,255,255,0.02)' },
+                        itemStyle: { 
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#34d399' },
+                                { offset: 1, color: '#059669' }
+                            ]),
+                            borderRadius: [10, 10, 0, 0],
+                            shadowBlur: 12,
+                            shadowColor: 'rgba(16,185,129,0.35)'
+                        },
+                        emphasis: { focus: 'series' },
+                        animationDelay: function (idx) { return idx * 60; }
                     },
                     {
                         name: '需注意',
                         type: 'bar',
                         stack: 'risk',
                         data: moderate,
-                        itemStyle: { color: '#f59e0b' }
+                        itemStyle: { 
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#fbbf24' },
+                                { offset: 1, color: '#d97706' }
+                            ]),
+                            borderRadius: [10, 10, 0, 0],
+                            shadowBlur: 12,
+                            shadowColor: 'rgba(245,158,11,0.35)'
+                        },
+                        emphasis: { focus: 'series' },
+                        animationDelay: function (idx) { return idx * 60 + 120; }
                     },
                     {
                         name: '紧急',
                         type: 'bar',
                         stack: 'risk',
                         data: critical,
-                        itemStyle: { color: '#ef4444' }
+                        itemStyle: { 
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#f87171' },
+                                { offset: 1, color: '#dc2626' }
+                            ]),
+                            borderRadius: [10, 10, 0, 0],
+                            shadowBlur: 14,
+                            shadowColor: 'rgba(239,68,68,0.4)'
+                        },
+                        emphasis: { focus: 'series' },
+                        animationDelay: function (idx) { return idx * 60 + 240; }
                     },
                     {
                         name: '平均分',
                         type: 'line',
                         yAxisIndex: 1,
                         data: avgScores,
+                        smooth: true,
+                        symbol: 'circle',
                         symbolSize: 10,
+                        itemStyle: { color: '#93c5fd', shadowBlur: 18, shadowColor: 'rgba(147,197,253,0.9)' },
+                        lineStyle: { width: 3, color: '#60a5fa', shadowBlur: 12, shadowColor: 'rgba(96,165,250,0.6)' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(96,165,250,0.25)' },
+                                { offset: 1, color: 'rgba(96,165,250,0.02)' }
+                            ])
+                        },
+                        markPoint: {
+                            data: [
+                                { type: 'max', name: '最高', itemStyle: { color: '#10b981' } },
+                                { type: 'min', name: '最低', itemStyle: { color: '#ef4444' } }
+                            ],
+                            symbolSize: 48,
+                            label: { color: '#0b1220', fontWeight: 700 }
+                        },
+                        z: 3,
+                        animationDelay: function (idx) { return idx * 60 + 120; }
+                    },
+                    {
+                        // 涟漪点，让均分折线更有活力
+                        name: '平均分-涟漪',
+                        type: 'effectScatter',
+                        yAxisIndex: 1,
+                        data: avgScores,
+                        symbolSize: 12,
                         itemStyle: { color: '#60a5fa' },
-                        lineStyle: { width: 3 }
+                        rippleEffect: { brushType: 'stroke', color: '#93c5fd', scale: 2.5 },
+                        z: 4
                     }
                 ],
                 animationEasing: 'elasticOut',
-                animationDuration: 800
+                animationDuration: 900
             };
 
             charts.stage.setOption(option, { notMerge: false, lazyUpdate: true });
@@ -2483,6 +2589,8 @@
                     updateStomaTypeChart(data.stomaTypeDistribution || []);
                     updateHighRiskList(data.highRiskPatients || []);
                     updatePendingList(data.pendingReviews || []);
+                    // 存储旧接口的维度平均分，便于在生产环境后端未升级时兜底展示
+                    window.__STAGE_DISTRIBUTION__ = data.stageDistribution || [];
 
                     // 更新今日数据
                     await updateTodayData();

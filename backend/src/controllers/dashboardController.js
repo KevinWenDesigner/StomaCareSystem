@@ -188,34 +188,64 @@ class DashboardController {
         FROM assessments
       `);
 
+      // Helper function to safely convert to number and format
+      const safeToFixed = (value, decimals = 2) => {
+        if (value == null || value === undefined) {
+          return 0;
+        }
+        const num = Number(value);
+        if (isNaN(num)) {
+          return 0;
+        }
+        return Number(num.toFixed(decimals));
+      };
+
+      // Helper function to safely convert to integer
+      const safeInt = (value) => {
+        if (value == null || value === undefined) {
+          return 0;
+        }
+        const num = Number(value);
+        return isNaN(num) ? 0 : Math.floor(num);
+      };
+
+      // Helper function to safely convert to number
+      const safeNum = (value) => {
+        if (value == null || value === undefined) {
+          return 0;
+        }
+        const num = Number(value);
+        return isNaN(num) ? 0 : num;
+      };
+
       const row = rows[0] || {};
       const data = [
         {
           dimension: 'D-变色',
-          avg_score: Number((row.d_avg ?? 0).toFixed(2)),
-          excellent: row.d_excellent ?? 0,
-          moderate: row.d_moderate ?? 0,
-          critical: row.d_critical ?? 0,
-          max_score: row.d_max ?? 0,
-          min_score: row.d_min ?? 0
+          avg_score: safeToFixed(row.d_avg, 2),
+          excellent: safeInt(row.d_excellent),
+          moderate: safeInt(row.d_moderate),
+          critical: safeInt(row.d_critical),
+          max_score: safeNum(row.d_max),
+          min_score: safeNum(row.d_min)
         },
         {
           dimension: 'E-侵蚀',
-          avg_score: Number((row.e_avg ?? 0).toFixed(2)),
-          excellent: row.e_excellent ?? 0,
-          moderate: row.e_moderate ?? 0,
-          critical: row.e_critical ?? 0,
-          max_score: row.e_max ?? 0,
-          min_score: row.e_min ?? 0
+          avg_score: safeToFixed(row.e_avg, 2),
+          excellent: safeInt(row.e_excellent),
+          moderate: safeInt(row.e_moderate),
+          critical: safeInt(row.e_critical),
+          max_score: safeNum(row.e_max),
+          min_score: safeNum(row.e_min)
         },
         {
           dimension: 'T-组织增生',
-          avg_score: Number((row.t_avg ?? 0).toFixed(2)),
-          excellent: row.t_excellent ?? 0,
-          moderate: row.t_moderate ?? 0,
-          critical: row.t_critical ?? 0,
-          max_score: row.t_max ?? 0,
-          min_score: row.t_min ?? 0
+          avg_score: safeToFixed(row.t_avg, 2),
+          excellent: safeInt(row.t_excellent),
+          moderate: safeInt(row.t_moderate),
+          critical: safeInt(row.t_critical),
+          max_score: safeNum(row.t_max),
+          min_score: safeNum(row.t_min)
         }
       ];
 
