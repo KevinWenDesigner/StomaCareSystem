@@ -163,6 +163,68 @@ class DashboardController {
     }
   }
 
+  // 获取DET维度丰富统计（各维度的风险等级人数 + 平均分 + 极值）
+  static async getDETStageStats(req, res, next) {
+    try {
+      const rows = await db.query(`
+        SELECT 
+          AVG(det_d_total) AS d_avg,
+          SUM(CASE WHEN det_d_total>=4.5 THEN 1 ELSE 0 END) AS d_excellent,
+          SUM(CASE WHEN det_d_total>=3 AND det_d_total<4.5 THEN 1 ELSE 0 END) AS d_moderate,
+          SUM(CASE WHEN det_d_total<3 THEN 1 ELSE 0 END) AS d_critical,
+          MAX(det_d_total) AS d_max, MIN(det_d_total) AS d_min,
+
+          AVG(det_e_total) AS e_avg,
+          SUM(CASE WHEN det_e_total>=4.5 THEN 1 ELSE 0 END) AS e_excellent,
+          SUM(CASE WHEN det_e_total>=3 AND det_e_total<4.5 THEN 1 ELSE 0 END) AS e_moderate,
+          SUM(CASE WHEN det_e_total<3 THEN 1 ELSE 0 END) AS e_critical,
+          MAX(det_e_total) AS e_max, MIN(det_e_total) AS e_min,
+
+          AVG(det_t_total) AS t_avg,
+          SUM(CASE WHEN det_t_total>=4.5 THEN 1 ELSE 0 END) AS t_excellent,
+          SUM(CASE WHEN det_t_total>=3 AND det_t_total<4.5 THEN 1 ELSE 0 END) AS t_moderate,
+          SUM(CASE WHEN det_t_total<3 THEN 1 ELSE 0 END) AS t_critical,
+          MAX(det_t_total) AS t_max, MIN(det_t_total) AS t_min
+        FROM assessments
+      `);
+
+      const row = rows[0] || {};
+      const data = [
+        {
+          dimension: 'D-变色',
+          avg_score: Number((row.d_avg ?? 0).toFixed(2)),
+          excellent: row.d_excellent ?? 0,
+          moderate: row.d_moderate ?? 0,
+          critical: row.d_critical ?? 0,
+          max_score: row.d_max ?? 0,
+          min_score: row.d_min ?? 0
+        },
+        {
+          dimension: 'E-侵蚀',
+          avg_score: Number((row.e_avg ?? 0).toFixed(2)),
+          excellent: row.e_excellent ?? 0,
+          moderate: row.e_moderate ?? 0,
+          critical: row.e_critical ?? 0,
+          max_score: row.e_max ?? 0,
+          min_score: row.e_min ?? 0
+        },
+        {
+          dimension: 'T-组织增生',
+          avg_score: Number((row.t_avg ?? 0).toFixed(2)),
+          excellent: row.t_excellent ?? 0,
+          moderate: row.t_moderate ?? 0,
+          critical: row.t_critical ?? 0,
+          max_score: row.t_max ?? 0,
+          min_score: row.t_min ?? 0
+        }
+      ];
+
+      return response.success(res, data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // 获取实时数据（用于大屏轮询）
   static async getRealTimeData(req, res, next) {
     try {

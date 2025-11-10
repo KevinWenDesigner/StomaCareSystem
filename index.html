@@ -2123,6 +2123,120 @@
             charts.stage.setOption(option, { notMerge: false, lazyUpdate: true });
         }
 
+        // 新增：DET维度丰富展示（堆叠柱 + 平均分折线）
+        async function loadDETStageStats() {
+            try {
+                const result = await fetchAPI('/dashboard/stage-stats');
+                if (result.success && result.data) {
+                    updateStageChartRich(result.data);
+                }
+            } catch (e) {
+                console.error('DET维度统计加载失败', e);
+            }
+        }
+
+        function updateStageChartRich(stageDetail) {
+            if (!charts.stage) return;
+            const fontSize = getResponsiveFontSize();
+            const stages = stageDetail.map(item => item.dimension);
+            const excellent = stageDetail.map(item => item.excellent || 0);
+            const moderate = stageDetail.map(item => item.moderate || 0);
+            const critical = stageDetail.map(item => item.critical || 0);
+            const avgScores = stageDetail.map(item => item.avg_score || 0);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    backgroundColor: 'rgba(30, 64, 175, 0.95)',
+                    borderColor: 'rgba(96, 165, 250, 0.5)',
+                    textStyle: { color: '#fff', fontSize: fontSize.tooltip },
+                    formatter: function(params) {
+                        const idx = params[0].dataIndex;
+                        const item = stageDetail[idx];
+                        return `${item.dimension}<br/>
+                                平均分: <b>${item.avg_score}</b>/5<br/>
+                                <span style="color:#10b981;">优秀</span>: ${item.excellent}，
+                                <span style="color:#f59e0b;">需注意</span>: ${item.moderate}，
+                                <span style="color:#ef4444;">紧急</span>: ${item.critical}<br/>
+                                最高分: ${item.max_score}，最低分: ${item.min_score}`;
+                    }
+                },
+                legend: {
+                    data: ['优秀', '需注意', '紧急', '平均分'],
+                    textStyle: { color: '#e0f2fe', fontSize: fontSize.legend }
+                },
+                grid: {
+                    left: '5%',
+                    right: '5%',
+                    bottom: '12%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: stages,
+                    axisLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.5)', width: 2 } },
+                    axisLabel: { color: '#e0f2fe', fontSize: fontSize.axisLabel }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '人数',
+                        axisLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.5)', width: 2 } },
+                        axisLabel: { color: '#e0f2fe', fontSize: fontSize.axisLabel },
+                        splitLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.1)', type: 'dashed' } }
+                    },
+                    {
+                        type: 'value',
+                        name: '平均分',
+                        min: 0,
+                        max: 5,
+                        axisLine: { lineStyle: { color: 'rgba(96, 165, 250, 0.5)', width: 2 } },
+                        axisLabel: { color: '#e0f2fe', fontSize: fontSize.axisLabel },
+                        splitLine: { show: false }
+                    }
+                ],
+                series: [
+                    {
+                        name: '优秀',
+                        type: 'bar',
+                        stack: 'risk',
+                        data: excellent,
+                        barWidth: '40%',
+                        itemStyle: { color: '#10b981' }
+                    },
+                    {
+                        name: '需注意',
+                        type: 'bar',
+                        stack: 'risk',
+                        data: moderate,
+                        itemStyle: { color: '#f59e0b' }
+                    },
+                    {
+                        name: '紧急',
+                        type: 'bar',
+                        stack: 'risk',
+                        data: critical,
+                        itemStyle: { color: '#ef4444' }
+                    },
+                    {
+                        name: '平均分',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: avgScores,
+                        symbolSize: 10,
+                        itemStyle: { color: '#60a5fa' },
+                        lineStyle: { width: 3 }
+                    }
+                ],
+                animationEasing: 'elasticOut',
+                animationDuration: 800
+            };
+
+            charts.stage.setOption(option, { notMerge: false, lazyUpdate: true });
+        }
+
         // 更新造口类型图表
         function updateStomaTypeChart(stomaTypeDistribution) {
             if (!charts.stomaType) return;
@@ -2646,9 +2760,13 @@
 
                 // 加载数据
                 await loadDashboardData();
+                await loadDETStageStats();
 
                 // 定时刷新
-                setInterval(loadDashboardData, CONFIG.refreshInterval);
+                setInterval(() => {
+                    loadDashboardData();
+                    loadDETStageStats();
+                }, CONFIG.refreshInterval);
             } catch (error) {
                 console.error('初始化失败:', error);
                 showError(`初始化失败: ${error.message}`);
@@ -2663,6 +2781,7 @@
             if (e.key === 'F5') {
                 e.preventDefault();
                 loadDashboardData();
+                loadDETStageStats();
             }
         });
 
