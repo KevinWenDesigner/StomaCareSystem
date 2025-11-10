@@ -52,6 +52,47 @@
     </view>
   </view>
 
+  <!-- 趋势图表 -->
+  <view wx:if="{{historyList.length > 0}}" class="chart-section">
+    <view class="chart-card">
+      <view class="chart-header">
+        <text class="chart-title">DET 评分趋势</text>
+        <text class="chart-subtitle">查看您的评估历史趋势</text>
+      </view>
+      
+      <!-- 图例 -->
+      <view class="chart-legend">
+        <view class="legend-item">
+          <view class="legend-color" style="background: #ff6b6b;"></view>
+          <text class="legend-text">D (变色)</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background: #4ecdc4;"></view>
+          <text class="legend-text">E (侵蚀)</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background: #ffe66d;"></view>
+          <text class="legend-text">T (组织增生)</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background: #667eea;"></view>
+          <text class="legend-text">总分</text>
+        </view>
+      </view>
+
+      <!-- Canvas 图表 -->
+      <view class="chart-container">
+        <canvas 
+          type="2d"
+          id="trendChart"
+          class="chart-canvas"
+          style="width: 710rpx; height: 400rpx;"
+          disable-scroll="true"
+        ></canvas>
+      </view>
+    </view>
+  </view>
+
   <!-- 加载状态 -->
   <view wx:if="{{loading}}" class="loading-section">
     <view class="loading-spinner"></view>
@@ -59,7 +100,7 @@
   </view>
 
   <!-- 空状态 -->
-  <view wx:elif="{{historyList.length === 0}}" class="empty-state">
+  <view wx:elif="{{!loading && historyList.length === 0}}" class="empty-state">
     <text class="empty-icon">📊</text>
     <text class="empty-text">暂无评估记录</text>
     <text class="empty-subtext">开始拍照评估，记录您的造口状态</text>
@@ -69,7 +110,7 @@
   </view>
 
   <!-- 历史记录列表 -->
-  <view wx:else class="history-list">
+  <view wx:elif="{{!loading && historyList.length > 0}}" class="history-list">
     <view wx:for="{{historyList}}" wx:key="id" class="history-item">
       <view class="history-card {{compareMode ? 'compare-mode' : ''}} {{utils.includes(selectedIds, item.id) ? 'card-selected' : ''}}" bindtap="viewDetail" data-id="{{item.id}}">
         <!-- 对比模式选择框 -->
@@ -120,10 +161,10 @@
         
         <!-- 操作按钮 -->
         <view class="history-actions">
-          <button class="action-icon-btn" bindtap="shareRecord" data-id="{{item.id}}">
+          <button class="action-icon-btn" catchtap="shareRecord" data-id="{{item.id}}">
             <text class="icon-text">📤</text>
           </button>
-          <button class="action-icon-btn danger" bindtap="deleteRecord" data-id="{{item.id}}">
+          <button class="action-icon-btn danger" catchtap="deleteRecord" data-id="{{item.id}}">
             <text class="icon-text">🗑️</text>
           </button>
         </view>

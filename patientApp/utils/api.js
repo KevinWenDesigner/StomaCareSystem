@@ -338,6 +338,17 @@ function getAssessmentHistory(patientId) {
   })
 }
 
+/**
+ * 删除评估记录
+ * @param {Number} assessmentId 评估ID
+ */
+function deleteAssessment(assessmentId) {
+  return request({
+    url: `/assessments/${assessmentId}`,
+    method: 'DELETE'
+  })
+}
+
 // ==================== 症状日记 API ====================
 
 /**
@@ -687,6 +698,7 @@ module.exports = {
   getAssessments,
   getLatestAssessment,
   getAssessmentHistory,
+  deleteAssessment,
   
   // 症状日记
   createDiary,

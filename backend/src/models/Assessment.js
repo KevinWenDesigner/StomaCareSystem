@@ -231,6 +231,16 @@ class Assessment {
       params.push(filters.detLevel);
     }
     
+    if (filters.startDate) {
+      sql += ' AND DATE(assessment_date) >= ?';
+      params.push(filters.startDate);
+    }
+    
+    if (filters.endDate) {
+      sql += ' AND DATE(assessment_date) <= ?';
+      params.push(filters.endDate);
+    }
+    
     const results = await db.query(sql, params);
     return results[0].total;
   }

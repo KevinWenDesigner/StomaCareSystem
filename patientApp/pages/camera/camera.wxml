@@ -161,10 +161,6 @@
           <text class="detail-label">评估等级</text>
           <text class="detail-value">{{assessmentResult.levelText}}</text>
         </view>
-        <view class="detail-item" wx:if="{{assessmentResult.pressureStageText}}">
-          <text class="detail-label">NPUAP 分期</text>
-          <text class="detail-value pressure-stage-{{assessmentResult.pressureStage}}">{{assessmentResult.pressureStageText}}</text>
-        </view>
         <view class="detail-item detail-item-full">
           <text class="detail-label">🤖 AI详细分析</text>
           <text class="detail-value detail-analysis">{{assessmentResult.attention}}</text>

@@ -112,23 +112,46 @@ Page({
           
           console.log('📷 图片URL:', imageUrl, '→', fullImageUrl)
           
-          // 从后端获取健康指标，如果没有则基于风险等级计算
-          const pressureStage = item.pressureStage || item.riskLevel
-          const healthMetrics = this.calculateHealthMetricsFromStage(pressureStage)
+          // 从后端获取健康指标，优先使用后端返回的 healthMetrics
+          let healthMetrics = item.healthMetrics
+          
+          // 如果后端返回了 healthMetrics，需要转换字段名
+          if (healthMetrics) {
+            // 将后端 DET 评分指标映射到前端显示的指标
+            healthMetrics = {
+              // discoloration (变色程度) -> redness (发红程度)
+              redness: healthMetrics.discoloration !== undefined ? healthMetrics.discoloration : (healthMetrics.redness || 0),
+              // tissueGrowth (组织增生程度) -> swelling (肿胀程度)
+              swelling: healthMetrics.tissueGrowth !== undefined ? healthMetrics.tissueGrowth : (healthMetrics.swelling || 0),
+              // erosion (侵蚀程度) -> infection (感染风险)
+              infection: healthMetrics.erosion !== undefined ? healthMetrics.erosion : (healthMetrics.infection || 0),
+              // overall (整体健康度) -> healing (愈合程度)
+              healing: healthMetrics.overall !== undefined ? healthMetrics.overall : (healthMetrics.healing || 0)
+            }
+          } else {
+            // 如果没有 healthMetrics，基于风险等级计算
+            const riskLevel = item.detLevel || item.riskLevel || 'moderate'
+            healthMetrics = this.calculateHealthMetricsFromStage(riskLevel)
+          }
           
           return {
             id: item.id,
             photoPath: fullImageUrl,  // 使用完整的服务器URL
             score: item.score || 0,  // 直接使用assessments表中的score字段
-            level: this.getRiskLevelNumber(item.riskLevel),
-            levelText: this.getRiskLevelText(item.riskLevel),
+            level: this.getRiskLevelNumber(item.riskLevel || item.detLevel),
+            levelText: this.getRiskLevelText(item.riskLevel || item.detLevel),
             time: formatDateTime(item.createdAt),
             timestamp: new Date(item.createdAt).getTime(),
             description: item.stomaColor || item.suggestions || '评估完成',
             stomaColor: item.stomaColor,
             stomaSize: item.stomaSize,
             skinCondition: item.skinCondition,
-            analysis: healthMetrics,  // 使用基于NPUAP的健康指标
+            analysis: {
+              redness: Math.round(healthMetrics.redness || 0),
+              swelling: Math.round(healthMetrics.swelling || 0),
+              infection: Math.round(healthMetrics.infection || 0),
+              healing: Math.round(healthMetrics.healing || 0)
+            },  // 使用转换后的健康指标
             rawData: item // 保存原始后端数据
           }
         })
@@ -180,33 +203,36 @@ Page({
   // 获取风险等级数字
   getRiskLevelNumber(riskLevel) {
     const levelMap = {
+      // DET 评分标准
+      'excellent': 1,  // 优秀
+      'good': 2,       // 良好
+      'moderate': 3,   // 中度
+      'poor': 4,       // 较差
+      'critical': 4,   // 严重（等同于需处理）
+      'invalid': 0,    // 无法评估
+      // 旧标准（兼容）
       'low': 1,
       'medium': 2,
-      'high': 3
+      'high': 3,
+      'normal': 1
     }
     return levelMap[riskLevel] || 2
   },
 
-  // 获取风险等级文本（NPUAP 标准）
+  // 获取风险等级文本（DET 评分标准）
   getRiskLevelText(riskLevel) {
     const textMap = {
-      // 新标准（NPUAP）
-      'normal': '正常',
-      'stage_1': 'I期压疮',
-      'stage-1': 'I期压疮',
-      'stage_2': 'II期压疮',
-      'stage-2': 'II期压疮',
-      'stage_3': 'III期压疮',
-      'stage-3': 'III期压疮',
-      'stage_4': 'IV期压疮',
-      'stage-4': 'IV期压疮',
-      'dtpi': '深部组织压伤',
-      'unstageable': '不可分期',
+      // DET 评分标准（造口周围皮炎）
+      'excellent': '优秀（无皮炎）',
+      'good': '良好（轻度皮炎）',
+      'moderate': '中度（中度皮炎）',
+      'poor': '较差（重度皮炎）',
+      'critical': '严重（极重度皮炎）',
+      'invalid': '无法评估',
       // 旧标准（兼容）
       'low': '状态良好',
       'medium': '需要关注',
-      'high': '需要处理',
-      'critical': '紧急处理'
+      'high': '需要处理'
     }
     return textMap[riskLevel] || '未知状态'
   },
@@ -214,34 +240,39 @@ Page({
   // 获取风险百分比
   getRiskPercent(riskLevel) {
     const percentMap = {
+      // DET 评分标准
+      'excellent': 0,    // 优秀（无皮炎）
+      'good': 20,        // 良好（轻度皮炎）
+      'moderate': 50,    // 中度（中度皮炎）
+      'poor': 75,        // 较差（重度皮炎）
+      'critical': 95,    // 严重（极重度皮炎）
+      'invalid': 0,      // 无法评估
+      // 旧标准（兼容）
       'low': 20,
       'medium': 50,
-      'high': 80
+      'high': 80,
+      'normal': 0
     }
     return percentMap[riskLevel] || 40
   },
   
-  // 基于NPUAP分期计算健康指标（与后端保持一致）
-  calculateHealthMetricsFromStage(pressureStage) {
+  // 基于DET评分计算健康指标（与后端保持一致）
+  calculateHealthMetricsFromStage(riskLevel) {
     const metricsMap = {
-      'normal': { redness: 0, swelling: 0, infection: 5, healing: 100 },
-      'stage_1': { redness: 40, swelling: 20, infection: 20, healing: 75 },
-      'stage-1': { redness: 40, swelling: 20, infection: 20, healing: 75 },
-      'stage_2': { redness: 60, swelling: 40, infection: 40, healing: 60 },
-      'stage-2': { redness: 60, swelling: 40, infection: 40, healing: 60 },
-      'stage_3': { redness: 80, swelling: 60, infection: 70, healing: 40 },
-      'stage-3': { redness: 80, swelling: 60, infection: 70, healing: 40 },
-      'stage_4': { redness: 95, swelling: 80, infection: 90, healing: 20 },
-      'stage-4': { redness: 95, swelling: 80, infection: 90, healing: 20 },
-      'dtpi': { redness: 70, swelling: 50, infection: 60, healing: 45 },
-      'unstageable': { redness: 50, swelling: 50, infection: 85, healing: 15 },
+      // DET 评分标准（造口周围皮炎）
+      'excellent': { redness: 0, swelling: 0, infection: 0, healing: 100 },      // 0分：优秀（无皮炎）
+      'good': { redness: 20, swelling: 10, infection: 15, healing: 85 },         // 1-3分：良好（轻度皮炎）
+      'moderate': { redness: 50, swelling: 35, infection: 40, healing: 60 },     // 4-7分：中度（中度皮炎）
+      'poor': { redness: 75, swelling: 60, infection: 70, healing: 35 },         // 8-11分：较差（重度皮炎）
+      'critical': { redness: 95, swelling: 80, infection: 90, healing: 10 },     // 12-15分：严重（极重度皮炎）
       'invalid': { redness: 0, swelling: 0, infection: 0, healing: 0 },
       // 兼容旧的风险等级
       'low': { redness: 10, swelling: 5, infection: 10, healing: 90 },
       'medium': { redness: 50, swelling: 30, infection: 50, healing: 60 },
-      'high': { redness: 80, swelling: 60, infection: 80, healing: 30 }
+      'high': { redness: 80, swelling: 60, infection: 80, healing: 30 },
+      'normal': { redness: 0, swelling: 0, infection: 5, healing: 100 }  // 默认正常状态
     }
-    return metricsMap[pressureStage] || metricsMap['normal']
+    return metricsMap[riskLevel] || metricsMap['normal']
   },
 
   // 拍照
@@ -491,14 +522,44 @@ Page({
         // 直接使用AI返回的评分（已保存到assessments.score）
         const aiScore = aiData.score || 0
         const scoreLevel = this.getLevelFromScore(aiScore)
-        const pressureStage = aiData.pressureStage || res.data.pressureStage || res.data.riskLevel
+        // 优先使用 DET 等级（detLevel），如果没有则使用其他等级
+        const detLevel = aiData.detLevel || res.data.detLevel || aiData.riskLevel || res.data.riskLevel
         
-        // 使用AI返回的健康指标（基于NPUAP分期和AI分析）
-        const healthMetrics = aiData.healthMetrics || {
-          redness: this.getRiskPercent(res.data.riskLevel),
-          swelling: this.getRiskPercent(res.data.riskLevel) * 0.6,  // 备用计算
-          infection: this.getRiskPercent(res.data.riskLevel),
-          healing: 100 - this.getRiskPercent(res.data.riskLevel)
+        // 使用AI返回的健康指标（基于DET评分）
+        // 后端返回的 healthMetrics 包含：discoloration, erosion, tissueGrowth, overall
+        // 前端需要：redness, swelling, infection, healing
+        // 优先从 aiAnalysis 中获取，如果没有则从 res.data 中获取
+        let healthMetrics = aiData.healthMetrics || res.data.healthMetrics
+        
+        // 如果后端返回了 healthMetrics，需要转换字段名
+        if (healthMetrics && typeof healthMetrics === 'object') {
+          // 将后端 DET 评分指标映射到前端显示的指标
+          healthMetrics = {
+            // discoloration (变色程度) -> redness (发红程度)
+            redness: (healthMetrics.discoloration !== undefined && healthMetrics.discoloration !== null) 
+              ? healthMetrics.discoloration 
+              : (healthMetrics.redness !== undefined && healthMetrics.redness !== null ? healthMetrics.redness : 0),
+            // tissueGrowth (组织增生程度) -> swelling (肿胀程度)
+            swelling: (healthMetrics.tissueGrowth !== undefined && healthMetrics.tissueGrowth !== null) 
+              ? healthMetrics.tissueGrowth 
+              : (healthMetrics.swelling !== undefined && healthMetrics.swelling !== null ? healthMetrics.swelling : 0),
+            // erosion (侵蚀程度) -> infection (感染风险)
+            infection: (healthMetrics.erosion !== undefined && healthMetrics.erosion !== null) 
+              ? healthMetrics.erosion 
+              : (healthMetrics.infection !== undefined && healthMetrics.infection !== null ? healthMetrics.infection : 0),
+            // overall (整体健康度) -> healing (愈合程度)
+            healing: (healthMetrics.overall !== undefined && healthMetrics.overall !== null) 
+              ? healthMetrics.overall 
+              : (healthMetrics.healing !== undefined && healthMetrics.healing !== null ? healthMetrics.healing : 100)
+          }
+          
+          console.log('✅ 使用后端返回的健康指标:', healthMetrics)
+        } else {
+          // 如果没有 healthMetrics，使用备用计算（基于 DET 等级）
+          const riskLevel = aiData.detLevel || res.data.detLevel || aiData.riskLevel || res.data.riskLevel || 'moderate'
+          console.log('⚠️ 未找到 healthMetrics，使用备用计算，等级:', riskLevel)
+          healthMetrics = this.calculateHealthMetricsFromStage(riskLevel)
+          console.log('📊 备用计算的健康指标:', healthMetrics)
         }
         
         // 问题列表处理
@@ -509,8 +570,8 @@ Page({
           score: aiScore,
           level: scoreLevel,
           levelText: this.getLevelText(scoreLevel),
-          pressureStage: pressureStage,
-          pressureStageText: this.getRiskLevelText(pressureStage),
+          detLevel: detLevel,  // DET 等级（excellent/good/moderate/poor/critical）
+          detLevelText: this.getRiskLevelText(detLevel),  // DET 等级文本
           woundType: woundType,
           woundTypeText: typeText,
           
@@ -534,15 +595,21 @@ Page({
           // AI置信度
           confidence: aiData.confidence || res.data.confidence || 0.85,
           
-          // 健康指标（基于NPUAP分期标准和AI分析结果）
+          // 健康指标（基于DET评分和AI分析结果）
           analysis: {
-            redness: Math.round(healthMetrics.redness),      // 发红程度（基于NPUAP分期）
-            swelling: Math.round(healthMetrics.swelling),    // 肿胀程度（基于NPUAP分期）
-            infection: Math.round(healthMetrics.infection),  // 感染风险（基于NPUAP分期）
-            healing: Math.round(healthMetrics.healing)       // 愈合程度（基于NPUAP分期）
+            redness: Math.round(healthMetrics.redness || 0),      // 发红程度（基于DET变色评分）
+            swelling: Math.round(healthMetrics.swelling || 0),    // 肿胀程度（基于DET组织增生评分）
+            infection: Math.round(healthMetrics.infection || 0),  // 感染风险（基于DET侵蚀评分）
+            healing: Math.round(healthMetrics.healing || 0)       // 愈合程度（基于DET整体健康度）
           },
           rawData: res.data // 保存原始后端数据
         }
+        
+        // 调试日志：输出健康指标转换结果
+        console.log('📊 健康指标转换:')
+        console.log('后端返回:', aiData.healthMetrics)
+        console.log('转换后:', healthMetrics)
+        console.log('最终显示:', assessmentResult.analysis)
         
         // 记录通义千问的详细分析到控制台
         console.log('🤖 通义千问AI分析结果:')

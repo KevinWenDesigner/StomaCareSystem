@@ -24,7 +24,40 @@ class AssessmentController {
       // 调用AI分析
       const aiResult = await AIService.analyzeImage(imagePath);
       
-      // 保存评估记录（DET评分系统）
+      // 如果无法评估（can_assess: false），不写入数据库，直接返回AI分析结果
+      if (aiResult.canAssess === false) {
+        return response.success(res, {
+          imageUrl,
+          aiAnalysis: {
+            canAssess: aiResult.canAssess,
+            woundType: aiResult.woundType,
+            notAssessableReason: aiResult.notAssessableReason,
+            
+            // 造口信息
+            stomaColor: aiResult.stomaColor,
+            stomaSize: aiResult.stomaSize,
+            stomaShape: aiResult.stomaShape,
+            skinCondition: aiResult.skinCondition,
+            
+            // DET评分
+            detScore: aiResult.detScore,
+            detLevel: aiResult.detLevel,
+            detLevelText: aiResult.detLevelText,
+            score: aiResult.score,
+            
+            // AI分析
+            issues: aiResult.issues,
+            suggestions: aiResult.suggestions,
+            confidence: aiResult.confidence,
+            detailedAnalysis: aiResult.detailedAnalysis,
+            
+            // 健康指标
+            healthMetrics: aiResult.healthMetrics
+          }
+        }, '图片分析完成（未保存到数据库）');
+      }
+      
+      // 可以评估（can_assess: true），保存评估记录到数据库
       const assessmentData = {
         patientId,
         imageUrl,
@@ -132,7 +165,9 @@ class AssessmentController {
       const assessments = await Assessment.findAll(filters);
       const total = await Assessment.count({ 
         patientId: filters.patientId, 
-        detLevel: riskLevel 
+        detLevel: riskLevel,
+        startDate: filters.startDate,
+        endDate: filters.endDate
       });
       
       return response.paginated(res, assessments, {
@@ -229,12 +264,21 @@ class AssessmentController {
   static async delete(req, res, next) {
     try {
       const { id } = req.params;
+      const patientId = req.user.patientId;
+      const userType = req.user.userType;
       
+      // 查找评估记录
       const assessment = await Assessment.findById(id);
       if (!assessment) {
         return response.notFound(res, '评估记录不存在');
       }
       
+      // 验证权限：患者只能删除自己的评估记录，护士和管理员可以删除任何记录
+      if (userType === 'patient' && assessment.patientId !== patientId) {
+        return response.forbidden(res, '无权删除此评估记录');
+      }
+      
+      // 执行删除
       const success = await Assessment.delete(id);
       
       if (success) {

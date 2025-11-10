@@ -607,6 +607,81 @@
   background: linear-gradient(180deg, rgba(0, 120, 255, 0.3) 0%, rgba(0, 102, 221, 0.9) 100%);
 }
 
+/* 趋势图表区域 */
+.chart-section {
+  padding: 0 20rpx 20rpx;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  margin-bottom: 20rpx;
+}
+
+.chart-header {
+  margin-bottom: 24rpx;
+  text-align: center;
+}
+
+.chart-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.chart-subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-bottom: 20rpx;
+  padding: 0 10rpx;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 8rpx 12rpx;
+  flex-shrink: 0;
+}
+
+.legend-color {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 4rpx;
+  margin-right: 8rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.legend-text {
+  font-size: 22rpx;
+  color: #666;
+  white-space: nowrap;
+}
+
+.chart-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20rpx;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: 400rpx;
+  display: block;
+}
+
 /* 响应式设计 */
 @media (max-width: 750rpx) {
   .stats-card {
@@ -633,5 +708,21 @@
 
   .info-text {
     font-size: 24rpx;
+  }
+
+  .chart-title {
+    font-size: 26rpx;
+  }
+
+  .chart-subtitle {
+    font-size: 22rpx;
+  }
+
+  .legend-text {
+    font-size: 20rpx;
+  }
+
+  .chart-canvas {
+    height: 350rpx;
   }
 }

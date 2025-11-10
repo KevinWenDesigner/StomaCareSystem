@@ -1,13 +1,26 @@
 // 工具函数模块
 var utils = {
+  // 将值转换为字符串（WXS 兼容方式）
+  toString: function(value) {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    // 使用字符串拼接方式转换为字符串，避免使用 String() 构造函数
+    return value + '';
+  },
+  
   // 判断数组中是否包含某个值
   includes: function(array, value) {
     if (!array || array.length === 0) {
       return false;
     }
+    // 统一转换为字符串进行比较，确保类型一致
+    // 使用字符串拼接方式，而不是 String() 构造函数
+    var valueStr = value + '';
     for (var i = 0; i < array.length; i++) {
-      // 使用 == 进行宽松比较，支持数字和字符串的比较
-      if (array[i] == value) {
+      // 同时支持严格比较和宽松比较
+      var itemStr = array[i] + '';
+      if (itemStr === valueStr || array[i] == value) {
         return true;
       }
     }

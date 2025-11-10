@@ -74,8 +74,12 @@ Page({
   prepareComparisonData() {
     const records = this.data.selectedRecords
     
-    // 按时间排序
-    records.sort((a, b) => new Date(a.time) - new Date(b.time))
+    // 按时间排序（使用时间戳或原始时间，而不是格式化后的字符串）
+    records.sort((a, b) => {
+      const timeA = this.getRecordTimestamp(a)
+      const timeB = this.getRecordTimestamp(b)
+      return timeA - timeB
+    })
     
     // 对比记录：当有2条或更多记录时，对比第一条和最后一条
     if (records.length >= 2) {
@@ -111,18 +115,22 @@ Page({
     const analysis1 = getAnalysis(record1)
     const analysis2 = getAnalysis(record2)
 
+    // 获取原始时间戳用于格式化
+    const timestamp1 = this.getRecordTimestamp(record1)
+    const timestamp2 = this.getRecordTimestamp(record2)
+    
     return {
       record1: {
         ...record1,
-        formattedTime: formatDateTime(record1.time),
-        formattedDate: formatDate(record1.time)
+        formattedTime: formatDateTime(new Date(timestamp1)),
+        formattedDate: formatDate(new Date(timestamp1))
       },
       record2: {
         ...record2,
-        formattedTime: formatDateTime(record2.time),
-        formattedDate: formatDate(record2.time)
+        formattedTime: formatDateTime(new Date(timestamp2)),
+        formattedDate: formatDate(new Date(timestamp2))
       },
-      timeDiff: this.calculateTimeDiff(record1.time, record2.time),
+      timeDiff: this.calculateTimeDiff(record1, record2),
       scoreDiff: getDifference(record1.score, 100 - record2.score),
       metrics: {
         redness: {
@@ -155,18 +163,75 @@ Page({
     }
   },
 
+  // 获取记录的时间戳（优先使用timestamp，其次使用rawData.createdAt，最后解析time字符串）
+  getRecordTimestamp(record) {
+    // 优先使用 timestamp 字段
+    if (record.timestamp && typeof record.timestamp === 'number') {
+      return record.timestamp
+    }
+    
+    // 其次使用 rawData.createdAt
+    if (record.rawData && record.rawData.createdAt) {
+      const date = new Date(record.rawData.createdAt)
+      if (!isNaN(date.getTime())) {
+        return date.getTime()
+      }
+    }
+    
+    // 再次尝试 rawData.assessmentDate
+    if (record.rawData && record.rawData.assessmentDate) {
+      const date = new Date(record.rawData.assessmentDate)
+      if (!isNaN(date.getTime())) {
+        return date.getTime()
+      }
+    }
+    
+    // 最后尝试解析格式化后的 time 字符串（如 "2025年11月10日 12:18:36"）
+    if (record.time && typeof record.time === 'string') {
+      // 尝试解析 "xxxx年xx月xx日 xx:xx:xx" 格式
+      const match = record.time.match(/(\d+)年(\d+)月(\d+)日\s+(\d+):(\d+):(\d+)/)
+      if (match) {
+        const year = parseInt(match[1])
+        const month = parseInt(match[2]) - 1
+        const day = parseInt(match[3])
+        const hours = parseInt(match[4])
+        const minutes = parseInt(match[5])
+        const seconds = parseInt(match[6])
+        const date = new Date(year, month, day, hours, minutes, seconds)
+        if (!isNaN(date.getTime())) {
+          return date.getTime()
+        }
+      }
+      
+      // 如果解析失败，尝试直接使用 new Date（可能已经是标准格式）
+      const date = new Date(record.time)
+      if (!isNaN(date.getTime())) {
+        return date.getTime()
+      }
+    }
+    
+    // 如果都失败了，返回当前时间戳（作为降级方案）
+    console.warn('无法获取记录时间戳，使用当前时间:', record)
+    return Date.now()
+  },
+
   // 计算时间差
-  calculateTimeDiff(time1, time2) {
-    const date1 = new Date(time1)
-    const date2 = new Date(time2)
-    const diffMs = Math.abs(date2 - date1)
+  calculateTimeDiff(record1, record2) {
+    // 获取两个记录的时间戳
+    const timestamp1 = this.getRecordTimestamp(record1)
+    const timestamp2 = this.getRecordTimestamp(record2)
+    
+    const diffMs = Math.abs(timestamp2 - timestamp1)
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
     const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
     
     if (diffDays > 0) {
       return `${diffDays}天${diffHours > 0 ? diffHours + '小时' : ''}`
+    } else if (diffHours > 0) {
+      return `${diffHours}小时${diffMinutes > 0 ? diffMinutes + '分钟' : ''}`
     } else {
-      return `${diffHours}小时`
+      return `${diffMinutes}分钟`
     }
   },
 
@@ -226,14 +291,19 @@ Page({
   prepareTrendData() {
     const records = this.data.selectedRecords
     
-    // 按时间排序
-    const sortedRecords = [...records].sort((a, b) => 
-      new Date(a.time) - new Date(b.time)
-    )
+    // 按时间排序（使用时间戳）
+    const sortedRecords = [...records].sort((a, b) => {
+      const timeA = this.getRecordTimestamp(a)
+      const timeB = this.getRecordTimestamp(b)
+      return timeA - timeB
+    })
     
     // 准备图表数据
     const chartData = {
-      categories: sortedRecords.map(r => formatDate(r.time)),
+      categories: sortedRecords.map(r => {
+        const timestamp = this.getRecordTimestamp(r)
+        return formatDate(new Date(timestamp))
+      }),
       series: [
         {
           name: '健康评分',
@@ -326,7 +396,9 @@ Page({
       const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000)
       
       const trendRecords = allRecords.filter(record => {
-        const recordDate = new Date(record.time)
+        // 使用时间戳进行比较
+        const recordTimestamp = this.getRecordTimestamp(record)
+        const recordDate = new Date(recordTimestamp)
         return recordDate >= startDate && recordDate <= now
       })
       
