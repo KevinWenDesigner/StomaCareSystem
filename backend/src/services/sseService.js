@@ -15,19 +15,15 @@ class SSEService {
     }
 
     /**
-     * 初始化 SSE 服务（注册 Express 路由）
-     * @param {Object} app - Express 应用实例
+     * 初始化 SSE 服务
+     * 注意：SSE 路由现在在 routes/index.js 中注册，这个方法保留用于兼容性
+     * @param {Object} app - Express 应用实例（可选，已不再使用）
      */
     initialize(app) {
-        // SSE 端点
-        // 注意：需要在路由注册之前调用，或者使用 app.use('/api/sse', ...) 在路由之后注册
-        app.get('/api/sse', (req, res) => {
-            this.handleConnection(req, res);
-        });
-
-        console.log('✅ SSE 服务已启动 (路径: /api/sse)');
-        console.log('   SSE 端点: GET /api/sse');
-        console.log('   支持参数: ?token=xxx (可选)');
+        // SSE 路由现在在 routes/index.js 中注册
+        // 这个方法保留用于兼容性，但不再需要注册路由
+        // 路由注册在 backend/src/routes/index.js 中：
+        // router.get('/sse', (req, res) => { sseService.handleConnection(req, res); });
     }
 
     /**

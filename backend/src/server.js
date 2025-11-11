@@ -57,23 +57,12 @@ if (NODE_ENV === 'development') {
 // 静态文件服务（上传的文件）
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// 静态文件服务（前端页面）
-app.use(express.static(path.join(__dirname, '../../')));
-
-// 初始化 SSE 服务（Server-Sent Events 实时推送）
-// 在路由之前注册，确保路由优先级
-sseService.initialize(app);
-console.log('✅ 使用 SSE (Server-Sent Events) 进行实时推送');
-
-// API路由
-app.use('/api', routes);
-
-// 根路径 - 重定向到数据大屏
+// 根路径 - 重定向到数据大屏（必须在静态文件服务之前）
 app.get('/', (req, res) => {
   res.redirect('/index.html');
 });
 
-// API信息
+// API信息（必须在 API 路由之前）
 app.get('/api', (req, res) => {
   res.json({
     success: true,
@@ -91,13 +80,70 @@ app.get('/api', (req, res) => {
       carePlans: '/api/care-plans',
       reminders: '/api/reminders',
       families: '/api/families',
-      dashboard: '/api/dashboard'
+      dashboard: '/api/dashboard',
+      sse: '/api/sse'
     }
   });
 });
 
-// 404错误处理
-app.use(notFoundHandler);
+// API路由（包含 SSE 路由）
+app.use('/api', routes);
+
+// 初始化 SSE 服务（Server-Sent Events 实时推送）
+// 注意：SSE 路由已在 routes/index.js 中注册
+console.log('✅ 使用 SSE (Server-Sent Events) 进行实时推送');
+console.log('✅ SSE 端点: GET /api/sse');
+
+// 静态文件服务（前端页面）
+// 放在 API 路由之后，但要在 404 处理之前
+// 注意：在生产环境中，推荐使用 Nginx 直接提供静态文件，而不是通过 Node.js
+const staticPath = path.join(__dirname, '../../');
+const fs = require('fs');
+
+// 检查静态文件目录是否存在
+if (fs.existsSync(staticPath)) {
+  console.log(`📁 静态文件目录: ${staticPath}`);
+  
+  // 检查 index.html 是否存在
+  const indexPath = path.join(staticPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    console.log(`✅ 找到 index.html: ${indexPath}`);
+  } else {
+    console.warn(`⚠️  未找到 index.html: ${indexPath}`);
+    console.warn(`   请确保 index.html 文件存在于项目根目录`);
+  }
+  
+  app.use(express.static(staticPath, {
+    // 设置 index 文件，确保可以访问 index.html
+    index: 'index.html',
+    // 当文件不存在时，不返回错误，继续到下一个中间件
+    fallthrough: true
+  }));
+} else {
+  console.warn(`⚠️  静态文件目录不存在: ${staticPath}`);
+  console.warn(`   请检查路径是否正确，或使用 Nginx 提供静态文件`);
+  console.warn(`   当前工作目录: ${process.cwd()}`);
+  console.warn(`   __dirname: ${__dirname}`);
+}
+
+// 404错误处理（静态文件服务之后，处理所有未匹配的请求）
+app.use((req, res, next) => {
+  // 如果是 API 请求，返回 JSON 格式的 404
+  if (req.path.startsWith('/api/')) {
+    return notFoundHandler(req, res);
+  }
+  // 如果是静态文件请求，尝试返回 index.html（用于 SPA 路由）
+  if (req.accepts('html')) {
+    // 检查 index.html 是否存在
+    const indexPath = path.join(staticPath, 'index.html');
+    const fs = require('fs');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+  }
+  // 其他情况返回 404
+  notFoundHandler(req, res);
+});
 
 // 全局错误处理
 app.use(errorHandler);
@@ -153,10 +199,12 @@ const startServer = async () => {
       console.log('🚨 [Server] 警报数据:', JSON.stringify(data, null, 2));
       // data 可能是 { patient, assessment } 或 { patient, risk_level, assessment_id }
       // 统一格式：确保有 patient 字段
+      // 注意：使用兼容旧版本 Node.js 的写法（不使用可选链操作符）
+      const assessment = data.assessment || {};
       const alertData = {
-        patient: data.patient || data.assessment?.patient_name || '未知患者',
-        risk_level: data.risk_level || data.assessment?.risk_level || 'unknown',
-        assessment_id: data.assessment_id || data.assessment?.id || null,
+        patient: data.patient || assessment.patient_name || '未知患者',
+        risk_level: data.risk_level || assessment.risk_level || 'unknown',
+        assessment_id: data.assessment_id || assessment.id || null,
         ...data
       };
       sseService.pushHighRiskAlert(alertData);
