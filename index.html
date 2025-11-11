@@ -1832,7 +1832,7 @@
                     formatter: function(params) {
                         const level = Object.keys(riskMap).find(k => riskMap[k].name === params.name);
                         const fullName = level ? riskMap[level].fullName : params.name;
-                        return `${fullName}<br/>数量: ${params.value} (${params.percent}%)`;
+                        return `${fullName}<br/>数量: <b>${params.value}</b> (${params.percent}%)`;
                     },
                     backgroundColor: 'rgba(30, 64, 175, 0.95)',
                     borderColor: 'rgba(96, 165, 250, 0.5)',
@@ -1847,11 +1847,10 @@
                     top: 'center',
                     itemGap: 10,
                     itemWidth: 18,
-                    itemHeight: 18,
+                    itemHeight: 12,
                     textStyle: {
                         color: T.textSoft,
-                        fontSize: fontSize.legend,
-                        padding: [0, 0, 0, 5]
+                        fontSize: fontSize.legend
                     }
                 },
                 series: [{
@@ -1866,6 +1865,10 @@
                         { value: riskMap['critical'].value, name: riskMap['critical'].name, itemStyle: { color: riskMap['critical'].color } },
                         { value: riskMap['invalid'].value, name: riskMap['invalid'].name, itemStyle: { color: riskMap['invalid'].color } }
                     ].filter(item => item.value > 0),  // 只显示有数据的项
+                    itemStyle: {
+                        shadowBlur: 12,
+                        shadowColor: 'rgba(59, 130, 246, 0.35)'
+                    },
                     emphasis: {
                         itemStyle: {
                             shadowBlur: 20,
@@ -1883,8 +1886,9 @@
                     },
                     animationType: 'scale',
                     animationEasing: 'elasticOut',
+                    animationDuration: 900,
                     animationDelay: function (idx) {
-                        return idx * 200;
+                        return idx * 60;
                     }
                 }]
             };
@@ -2425,17 +2429,23 @@
             const option = {
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{b}: {c} ({d}%)',
+                    formatter: function(params) {
+                        return `${params.name}<br/>数量: <b>${params.value}</b> (${params.percent}%)`;
+                    },
                     backgroundColor: 'rgba(30, 64, 175, 0.95)',
                     borderColor: 'rgba(96, 165, 250, 0.5)',
                     textStyle: {
-                        color: '#fff'
+                        color: '#fff',
+                        fontSize: fontSize.tooltip
                     }
                 },
                 legend: {
                     orient: 'vertical',
-                    right: 10,
+                    right: '5%',
                     top: 'center',
+                    itemGap: 10,
+                    itemWidth: 18,
+                    itemHeight: 12,
                     textStyle: {
                         color: T.textSoft,
                         fontSize: fontSize.legend
@@ -2450,8 +2460,8 @@
                         name: type,
                         itemStyle: {
                             color: colors[index % colors.length],
-                            shadowBlur: 10,
-                            shadowColor: 'rgba(59, 130, 246, 0.5)'
+                            shadowBlur: 12,
+                            shadowColor: 'rgba(59, 130, 246, 0.35)'
                         }
                     })),
                     emphasis: {
@@ -2464,19 +2474,16 @@
                         scaleSize: 10
                     },
                     label: {
-                        color: '#fff',
-                        fontSize: fontSize.legend,
-                        formatter: '{b}\n{d}%'
+                        show: false  // 隐藏饼图上的标签，保持与DET等级分布一致
                     },
                     labelLine: {
-                        lineStyle: {
-                            color: 'rgba(255, 255, 255, 0.5)'
-                        }
+                        show: false  // 隐藏标签线
                     },
                     animationType: 'scale',
                     animationEasing: 'elasticOut',
+                    animationDuration: 900,
                     animationDelay: function (idx) {
-                        return idx * 150;
+                        return idx * 60;
                     }
                 }]
             };
