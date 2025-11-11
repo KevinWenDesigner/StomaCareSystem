@@ -5,8 +5,15 @@ window.DASHBOARD_CONFIG = {
     // 后端API地址（本地开发）
     apiBaseUrl: 'http://localhost:3000/api',
     
-    // 数据刷新间隔（毫秒）
-    refreshInterval: 30000,  // 30秒
+    // WebSocket 地址（用于实时推送）
+    // 开发环境使用 ws:// (非加密)
+    websocketUrl: 'ws://localhost:3000/ws',
+    
+    // 数据刷新间隔（毫秒）- WebSocket 模式下此值仅用于兜底
+    refreshInterval: 60000,  // 60秒（WebSocket 断开时的兜底轮询）
+    
+    // 是否启用 WebSocket 实时推送
+    enableWebSocket: true,
     
     // 是否启用调试模式
     debug: true,

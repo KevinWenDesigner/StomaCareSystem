@@ -1,6 +1,7 @@
 const SymptomDiary = require('../models/SymptomDiary');
 const response = require('../utils/response');
 const validator = require('../utils/validator');
+const dataEmitter = require('../utils/eventEmitter');
 
 class DiaryController {
   // 创建症状日记
@@ -26,6 +27,14 @@ class DiaryController {
       
       const diaryId = await SymptomDiary.create(diaryData);
       const diary = await SymptomDiary.findById(diaryId);
+      
+      // 🔔 触发 WebSocket 事件推送
+      console.log('📔 症状日记创建成功，触发 WebSocket 推送...');
+      dataEmitter.emitDiaryCreated({
+        id: diary.id,
+        patient_id: diary.patient_id,
+        diary_date: diary.diary_date
+      });
       
       return response.created(res, diary);
     } catch (error) {

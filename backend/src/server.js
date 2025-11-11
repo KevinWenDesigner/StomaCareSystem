@@ -2,18 +2,32 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const http = require('http');
+
+// 首先加载环境变量
 require('dotenv').config();
+
+// 在加载其他模块之前设置 NODE_ENV 默认值
+// 这样可以确保路由文件加载时能正确判断环境
+if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'development';
+}
+
+// 环境变量
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV;
+
+// 输出环境信息（用于调试）
+console.log(`[Server] 当前环境: NODE_ENV = "${NODE_ENV}"`);
 
 const db = require('./config/database');
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
+const websocketService = require('./services/websocketService');
+const dataEmitter = require('./utils/eventEmitter');
 
 // 创建Express应用
 const app = express();
-
-// 环境变量
-const PORT = process.env.PORT || 3000;
-const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // 中间件配置
 // CORS 配置 - 允许前端跨域访问
@@ -95,13 +109,72 @@ const startServer = async () => {
       process.exit(1);
     }
     
+    // 创建 HTTP 服务器
+    const server = http.createServer(app);
+    
+    // 初始化 WebSocket 服务
+    websocketService.initialize(server);
+    websocketService.startHeartbeat();
+    
+    // 监听数据变更事件并推送到 WebSocket 客户端
+    console.log('🔧 注册事件监听器...');
+    
+    dataEmitter.on(dataEmitter.EVENTS.DASHBOARD_REFRESH, (data) => {
+      console.log('📊 [Server] Dashboard 数据变更，推送更新...');
+      console.log('📊 [Server] 数据:', JSON.stringify(data, null, 2));
+      websocketService.pushDashboardUpdate(data.type || data.action || 'manual', data);
+    });
+    
+    dataEmitter.on(dataEmitter.EVENTS.ASSESSMENT_CREATED, (assessment) => {
+      console.log('📝 [Server] 新评估创建，推送通知...');
+      console.log('📝 [Server] 评估数据:', JSON.stringify(assessment, null, 2));
+      websocketService.pushNewAssessment(assessment);
+      
+      // 如果是高危患者，发送警报
+      if (assessment.risk_level === 'critical' || assessment.risk_level === 'poor') {
+        console.log('🚨 [Server] 检测到高危患者，发送警报...');
+        websocketService.pushHighRiskAlert({
+          patient: assessment.patient_name,
+          risk_level: assessment.risk_level,
+          assessment_id: assessment.id
+        });
+      }
+    });
+    
+    dataEmitter.on(dataEmitter.EVENTS.ASSESSMENT_REVIEWED, (assessment) => {
+      console.log('👩‍⚕️ [Server] 评估审核事件，推送通知...');
+      console.log('👩‍⚕️ [Server] 审核数据:', JSON.stringify(assessment, null, 2));
+      websocketService.pushDashboardUpdate('assessment', { type: 'assessment', action: 'reviewed', data: assessment });
+    });
+    
+    dataEmitter.on(dataEmitter.EVENTS.HIGH_RISK_ALERT, (data) => {
+      console.log('🚨 [Server] 高危患者警报，推送通知...');
+      console.log('🚨 [Server] 警报数据:', JSON.stringify(data, null, 2));
+      // data 可能是 { patient, assessment } 或 { patient, risk_level, assessment_id }
+      // 统一格式：确保有 patient 字段
+      const alertData = {
+        patient: data.patient || data.assessment?.patient_name || '未知患者',
+        risk_level: data.risk_level || data.assessment?.risk_level || 'unknown',
+        assessment_id: data.assessment_id || data.assessment?.id || null,
+        ...data
+      };
+      websocketService.pushHighRiskAlert(alertData);
+    });
+    
+    console.log('✅ 事件监听器注册完成');
+    console.log(`   - DASHBOARD_REFRESH: ${dataEmitter.listenerCount(dataEmitter.EVENTS.DASHBOARD_REFRESH)} 个监听器`);
+    console.log(`   - ASSESSMENT_CREATED: ${dataEmitter.listenerCount(dataEmitter.EVENTS.ASSESSMENT_CREATED)} 个监听器`);
+    console.log(`   - ASSESSMENT_REVIEWED: ${dataEmitter.listenerCount(dataEmitter.EVENTS.ASSESSMENT_REVIEWED)} 个监听器`);
+    console.log(`   - HIGH_RISK_ALERT: ${dataEmitter.listenerCount(dataEmitter.EVENTS.HIGH_RISK_ALERT)} 个监听器`);
+    
     // 启动HTTP服务
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log('');
       console.log('='.repeat(50));
       console.log('🚀 造口护理系统后端服务已启动');
       console.log('='.repeat(50));
-      console.log(`📍 服务地址: http://localhost:${PORT}`);
+      console.log(`📍 HTTP 服务: http://localhost:${PORT}`);
+      console.log(`📡 WebSocket 服务: ws://localhost:${PORT}/ws`);
       console.log(`🌍 环境: ${NODE_ENV}`);
       console.log(`⏰ 启动时间: ${new Date().toLocaleString('zh-CN')}`);
       console.log('='.repeat(50));

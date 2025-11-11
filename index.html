@@ -1351,6 +1351,38 @@
                 transform: scale(1);
             }
         }
+
+        /* WebSocket 警报动画 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(500px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(500px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5);
+            }
+            50% {
+                box-shadow: 0 8px 48px rgba(239, 68, 68, 0.8);
+            }
+        }
     </style>
 </head>
 <body>
@@ -2611,11 +2643,49 @@
             }
         }
 
+        // 时间更新定时器
+        let timeUpdateInterval = null;
+
         // 更新时间显示
         function updateTimeDisplay() {
+            const updateTimeElement = document.getElementById('updateTime');
+            if (!updateTimeElement) return;
+            
             const now = new Date();
             const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-            document.getElementById('updateTime').textContent = `最后更新: ${timeStr}`;
+            
+            // 如果有 WebSocket 连接状态，则同时显示
+            if (window.wsConnectionStatus) {
+                if (window.wsConnectionStatus.isError) {
+                    updateTimeElement.innerHTML = `${window.wsConnectionStatus.icon} ${window.wsConnectionStatus.text}`;
+                    updateTimeElement.style.color = '#ef4444';
+                } else {
+                    updateTimeElement.innerHTML = `${window.wsConnectionStatus.icon} ${window.wsConnectionStatus.text} | 最后更新: ${timeStr}`;
+                    updateTimeElement.style.color = '#60a5fa';
+                }
+            } else {
+                updateTimeElement.textContent = `最后更新: ${timeStr}`;
+                updateTimeElement.style.color = '#60a5fa';
+            }
+        }
+
+        // 启动实时时间更新
+        function startTimeUpdate() {
+            // 立即更新一次
+            updateTimeDisplay();
+            // 每秒更新一次
+            if (timeUpdateInterval) {
+                clearInterval(timeUpdateInterval);
+            }
+            timeUpdateInterval = setInterval(updateTimeDisplay, 1000);
+        }
+
+        // 停止时间更新
+        function stopTimeUpdate() {
+            if (timeUpdateInterval) {
+                clearInterval(timeUpdateInterval);
+                timeUpdateInterval = null;
+            }
         }
 
         // 加载所有数据
@@ -2793,6 +2863,293 @@
             testDiv.innerHTML += '<br><strong>测试完成</strong>';
         }
 
+        // WebSocket 客户端管理
+        class WebSocketClient {
+            constructor() {
+                this.ws = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 10;
+                this.reconnectDelay = 3000; // 初始重连延迟 3 秒
+                this.isManualClose = false;
+                this.heartbeatInterval = null;
+            }
+
+            /**
+             * 连接 WebSocket 服务器
+             */
+            connect() {
+                if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+                    console.log('⚠️ WebSocket 已连接或正在连接中');
+                    return;
+                }
+
+                // 优先使用配置文件中的 websocketUrl，否则自动推导
+                let wsUrl;
+                if (window.DASHBOARD_CONFIG && window.DASHBOARD_CONFIG.websocketUrl) {
+                    wsUrl = window.DASHBOARD_CONFIG.websocketUrl;
+                } else {
+                    // 兜底：从 apiBaseUrl 自动推导 WebSocket URL
+                    wsUrl = CONFIG.apiBaseUrl.replace('http', 'ws').replace('/api', '/ws');
+                }
+                
+                const token = CONFIG.token;
+                const url = token ? `${wsUrl}?token=${token}` : wsUrl;
+
+                console.log('📡 正在连接 WebSocket...', url);
+
+                try {
+                    this.ws = new WebSocket(url);
+                    this.setupEventHandlers();
+                } catch (error) {
+                    console.error('❌ WebSocket 连接失败:', error);
+                    this.handleReconnect();
+                }
+            }
+
+            /**
+             * 设置事件处理器
+             */
+            setupEventHandlers() {
+                this.ws.onopen = () => {
+                    console.log('✅ WebSocket 已连接');
+                    this.reconnectAttempts = 0;
+                    this.reconnectDelay = 3000;
+                    this.startHeartbeat();
+                    
+                    // 显示连接状态
+                    this.updateConnectionStatus(true);
+                };
+
+                this.ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        this.handleMessage(message);
+                    } catch (error) {
+                        console.error('❌ 消息解析失败:', error);
+                    }
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('❌ WebSocket 错误:', error);
+                };
+
+                this.ws.onclose = (event) => {
+                    console.log('❌ WebSocket 已断开', event.code, event.reason);
+                    this.stopHeartbeat();
+                    this.updateConnectionStatus(false);
+
+                    if (!this.isManualClose) {
+                        this.handleReconnect();
+                    }
+                };
+            }
+
+            /**
+             * 处理收到的消息
+             */
+            handleMessage(message) {
+                console.log('📨 收到消息:', message.type);
+
+                switch (message.type) {
+                    case 'connection':
+                        console.log('✅ 服务器欢迎:', message.message);
+                        break;
+
+                    case 'dashboard_update':
+                        console.log('📊 Dashboard 数据更新');
+                        // 数据变更，重新加载
+                        loadDashboardData();
+                        loadDETStageStats();
+                        break;
+
+                    case 'new_assessment':
+                        console.log('📝 新评估通知');
+                        // 播放通知音效（可选）
+                        this.playNotificationSound();
+                        // 刷新数据
+                        loadDashboardData();
+                        loadDETStageStats();
+                        break;
+
+                    case 'high_risk_alert':
+                        console.log('🚨 高危患者警报');
+                        // 显示醒目提示
+                        this.showHighRiskAlert(message.data);
+                        // 刷新数据
+                        loadDashboardData();
+                        break;
+
+                    case 'pong':
+                        // 心跳响应
+                        break;
+
+                    default:
+                        console.log('未知消息类型:', message.type);
+                }
+            }
+
+            /**
+             * 发送消息
+             */
+            send(data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                } else {
+                    console.warn('⚠️ WebSocket 未连接，无法发送消息');
+                }
+            }
+
+            /**
+             * 启动心跳
+             */
+            startHeartbeat() {
+                this.heartbeatInterval = setInterval(() => {
+                    this.send({ type: 'ping', timestamp: new Date().toISOString() });
+                }, 30000); // 每 30 秒发送一次心跳
+            }
+
+            /**
+             * 停止心跳
+             */
+            stopHeartbeat() {
+                if (this.heartbeatInterval) {
+                    clearInterval(this.heartbeatInterval);
+                    this.heartbeatInterval = null;
+                }
+            }
+
+            /**
+             * 处理重连
+             */
+            handleReconnect() {
+                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                    console.error('❌ WebSocket 重连失败，已达最大尝试次数');
+                    this.showReconnectError();
+                    return;
+                }
+
+                this.reconnectAttempts++;
+                const delay = this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1); // 指数退避
+
+                console.log(`🔄 将在 ${delay / 1000} 秒后尝试重连 (第 ${this.reconnectAttempts} 次)...`);
+
+                setTimeout(() => {
+                    this.connect();
+                }, delay);
+            }
+
+            /**
+             * 关闭连接
+             */
+            close() {
+                this.isManualClose = true;
+                this.stopHeartbeat();
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+            }
+
+            /**
+             * 更新连接状态显示（不直接修改时间显示，而是通过标志位）
+             */
+            updateConnectionStatus(connected) {
+                // 将连接状态存储到全局变量，供时间更新函数使用
+                window.wsConnectionStatus = {
+                    connected: connected,
+                    icon: connected ? '🟢' : '🔴',
+                    text: connected ? 'WebSocket 已连接' : 'WebSocket 已断开'
+                };
+                // 立即更新一次时间显示（包含连接状态）
+                updateTimeDisplay();
+            }
+
+            /**
+             * 显示高危警报
+             */
+            showHighRiskAlert(data) {
+                // 创建醒目的警报提示
+                const alert = document.createElement('div');
+                alert.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 30px;
+                    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.5);
+                    border: 2px solid rgba(255, 255, 255, 0.3);
+                    z-index: 10000;
+                    animation: slideInRight 0.5s ease-out, pulse 2s infinite;
+                    max-width: 400px;
+                `;
+                alert.innerHTML = `
+                    <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">
+                        🚨 高危患者警报
+                    </div>
+                    <div style="font-size: 1rem;">
+                        患者: ${data.patient || '未知'}<br>
+                        风险等级: ${this.getRiskLevelText(data.risk_level)}
+                    </div>
+                `;
+
+                document.body.appendChild(alert);
+
+                // 3 秒后自动移除
+                setTimeout(() => {
+                    alert.style.animation = 'slideOutRight 0.5s ease-out';
+                    setTimeout(() => alert.remove(), 500);
+                }, 3000);
+            }
+
+            /**
+             * 获取风险等级文本
+             */
+            getRiskLevelText(level) {
+                const levelMap = {
+                    'critical': '极重度-紧急',
+                    'poor': '重度-需处理',
+                    'moderate': '中度-需注意',
+                    'good': '良好-轻度皮炎',
+                    'excellent': '优秀-无皮炎'
+                };
+                return levelMap[level] || level;
+            }
+
+            /**
+             * 播放通知音效
+             */
+            playNotificationSound() {
+                // 可选：添加音效播放
+                // const audio = new Audio('/sounds/notification.mp3');
+                // audio.play().catch(e => console.log('音效播放失败:', e));
+            }
+
+            /**
+             * 显示重连错误
+             */
+            showReconnectError() {
+                // 设置错误状态，供时间更新函数使用
+                window.wsConnectionStatus = {
+                    connected: false,
+                    icon: '🔴',
+                    text: 'WebSocket 连接失败，请刷新页面',
+                    isError: true
+                };
+                // 立即更新一次时间显示（包含错误信息）
+                updateTimeDisplay();
+                // 设置错误样式
+                const updateTime = document.getElementById('updateTime');
+                if (updateTime) {
+                    updateTime.style.color = '#ef4444';
+                }
+            }
+        }
+
+        // 创建 WebSocket 客户端实例
+        const wsClient = new WebSocketClient();
+
         // 自动登录
         async function autoLogin() {
             try {
@@ -2909,15 +3266,36 @@
                 // 初始化图表
                 initCharts();
 
+                // 启动实时时间更新
+                startTimeUpdate();
+
                 // 加载数据
                 await loadDashboardData();
                 await loadDETStageStats();
 
-                // 定时刷新
-                setInterval(() => {
-                    loadDashboardData();
-                    loadDETStageStats();
-                }, CONFIG.refreshInterval);
+                // 连接 WebSocket 实时推送（如果启用）
+                const enableWebSocket = window.DASHBOARD_CONFIG?.enableWebSocket !== false; // 默认启用
+                if (enableWebSocket) {
+                    wsClient.connect();
+                    console.log('✅ 已启用 WebSocket 实时推送');
+                    
+                    // 保留轻量级定时刷新作为兜底（间隔更长）
+                    // 如果 WebSocket 连接失败，定时刷新可以确保数据不会太旧
+                    setInterval(() => {
+                        if (!wsClient.ws || wsClient.ws.readyState !== WebSocket.OPEN) {
+                            console.log('⚠️ WebSocket 未连接，使用定时刷新兜底');
+                            loadDashboardData();
+                            loadDETStageStats();
+                        }
+                    }, CONFIG.refreshInterval || 60000);
+                } else {
+                    console.log('⚠️ WebSocket 已禁用，使用定时轮询模式');
+                    // 如果禁用 WebSocket，使用传统轮询
+                    setInterval(() => {
+                        loadDashboardData();
+                        loadDETStageStats();
+                    }, CONFIG.refreshInterval || 30000);
+                }
             } catch (error) {
                 console.error('初始化失败:', error);
                 showError(`初始化失败: ${error.message}`);
@@ -2926,6 +3304,11 @@
 
         // 页面加载完成后初始化
         window.addEventListener('load', init);
+
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', () => {
+            stopTimeUpdate();
+        });
 
         // 手动刷新（按F5或点击刷新按钮）
         window.addEventListener('keydown', (e) => {

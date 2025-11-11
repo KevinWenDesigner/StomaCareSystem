@@ -12,6 +12,7 @@ const carePlanRoutes = require('./carePlanRoutes');
 const reminderRoutes = require('./reminderRoutes');
 const familyRoutes = require('./familyRoutes');
 const dashboardRoutes = require('./dashboardRoutes');
+const testRoutes = require('./testRoutes');
 
 // API健康检查
 router.get('/health', (req, res) => {
@@ -34,6 +35,9 @@ router.use('/care-plans', carePlanRoutes);
 router.use('/reminders', reminderRoutes);
 router.use('/families', familyRoutes);
 router.use('/dashboard', dashboardRoutes);
+
+// 测试路由（路由内部会检查生产环境）
+router.use('/test', testRoutes);
 
 module.exports = router;
 

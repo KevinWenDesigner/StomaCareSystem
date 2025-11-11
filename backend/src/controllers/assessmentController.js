@@ -2,6 +2,7 @@ const Assessment = require('../models/Assessment');
 const AIService = require('../services/aiService');
 const response = require('../utils/response');
 const path = require('path');
+const dataEmitter = require('../utils/eventEmitter');
 
 class AssessmentController {
   // 创建评估（上传图片并分析）
@@ -88,6 +89,28 @@ class AssessmentController {
       
       const assessmentId = await Assessment.create(assessmentData);
       const assessment = await Assessment.findById(assessmentId);
+      
+      // 🔔 触发 WebSocket 事件推送
+      console.log('📝 评估创建成功，触发 WebSocket 推送...');
+      dataEmitter.emitAssessmentCreated({
+        id: assessment.id,
+        patient_id: assessment.patient_id,
+        patient_name: assessment.patient_name,
+        risk_level: assessment.det_level,
+        det_level: assessment.det_level,
+        det_total: assessment.det_total,
+        assessment_date: assessment.assessment_date
+      });
+      
+      // 如果是高危患者，额外发送警报
+      if (assessment.det_level === 'critical' || assessment.det_level === 'poor') {
+        console.log('🚨 检测到高危患者，发送警报...');
+        dataEmitter.emitHighRiskAlert({
+          patient: assessment.patient_name,
+          risk_level: assessment.det_level,
+          assessment_id: assessment.id
+        });
+      }
       
       return response.created(res, {
         ...assessment,
@@ -230,6 +253,20 @@ class AssessmentController {
       
       if (success) {
         const updated = await Assessment.findById(id);
+        
+        // 🔔 触发 WebSocket 事件推送
+        console.log('👩‍⚕️ 护士审核完成，触发 WebSocket 推送...');
+        dataEmitter.emitAssessmentReviewed({
+          id: updated.id,
+          patient_id: updated.patient_id,
+          patient_name: updated.patient_name,
+          risk_level: updated.det_level,
+          det_level: updated.det_level,
+          nurse_review: updated.nurse_review,
+          nurse_comment: updated.nurse_comment,
+          reviewed_at: updated.reviewed_at
+        });
+        
         return response.success(res, updated, '审阅成功');
       } else {
         return response.error(res, '审阅失败');
