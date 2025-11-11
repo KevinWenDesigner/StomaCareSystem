@@ -90,8 +90,8 @@ class AssessmentController {
       const assessmentId = await Assessment.create(assessmentData);
       const assessment = await Assessment.findById(assessmentId);
       
-      // 🔔 触发 WebSocket 事件推送
-      console.log('📝 评估创建成功，触发 WebSocket 推送...');
+      // 🔔 触发实时推送事件
+      console.log('📝 评估创建成功，触发实时推送...');
       dataEmitter.emitAssessmentCreated({
         id: assessment.id,
         patient_id: assessment.patient_id,
@@ -254,8 +254,8 @@ class AssessmentController {
       if (success) {
         const updated = await Assessment.findById(id);
         
-        // 🔔 触发 WebSocket 事件推送
-        console.log('👩‍⚕️ 护士审核完成，触发 WebSocket 推送...');
+        // 🔔 触发实时推送事件
+        console.log('👩‍⚕️ 护士审核完成，触发实时推送...');
         dataEmitter.emitAssessmentReviewed({
           id: updated.id,
           patient_id: updated.patient_id,

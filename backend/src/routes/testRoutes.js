@@ -3,7 +3,7 @@ const router = express.Router();
 const dataEmitter = require('../utils/eventEmitter');
 
 /**
- * 测试路由 - 仅用于开发环境测试 WebSocket 推送
+ * 测试路由 - 仅用于开发环境测试实时推送（SSE）
  * 在生产环境中应该禁用或移除这些端点
  */
 

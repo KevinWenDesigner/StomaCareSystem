@@ -1,5 +1,5 @@
 /**
- * WebSocket 推送功能测试脚本
+ * 实时推送功能测试脚本（SSE）
  * 
  * 使用方法：
  * 1. 确保后端服务运行中: npm start 或 npm run dev
@@ -10,7 +10,7 @@
  * 工作原理：
  * - 此脚本通过 HTTP API 调用服务器端测试端点来触发事件
  * - 事件在服务器进程中触发，由服务器的事件监听器处理
- * - 服务器通过 WebSocket 将更新推送给所有连接的客户端
+ * - 服务器通过 SSE (Server-Sent Events) 将更新推送给所有连接的客户端
  * 
  * 测试端点（仅开发环境）：
  * - POST /api/test/trigger-assessment-created - 触发评估创建事件
@@ -26,7 +26,7 @@ const axios = require('axios');
 const API_BASE_URL = 'http://localhost:3000/api';
 
 console.log('='.repeat(60));
-console.log('🧪 WebSocket 推送功能测试');
+console.log('🧪 实时推送功能测试 (SSE)');
 console.log('='.repeat(60));
 console.log('');
 
@@ -124,7 +124,7 @@ setTimeout(async () => {
         });
         console.log('   ✅ API 调用成功:', response.data.message);
         console.log('   ✅ 事件已触发，大屏应该刷新数据');
-        console.log('   💡 检查后端控制台是否有 "[Server] 新评估创建，推送通知..." 日志\n');
+        console.log('   💡 检查后端控制台是否有 "[Server] 新评估创建，推送通知..." 和 "📢 SSE 广播消息" 日志\n');
     } catch (error) {
         console.error('   ❌ API 调用失败:', error.message);
         if (error.code === 'ECONNREFUSED') {
@@ -158,7 +158,7 @@ setTimeout(async () => {
         console.log('   ✅ 事件已触发，大屏应该：');
         console.log('      1. 刷新数据');
         console.log('      2. 弹出红色警报框');
-        console.log('   💡 检查后端控制台是否有 "[Server] 高危患者警报，推送通知..." 日志\n');
+        console.log('   💡 检查后端控制台是否有 "[Server] 高危患者警报，推送通知..." 和 "📢 SSE 广播消息" 日志\n');
     } catch (error) {
         console.error('   ❌ API 调用失败:', error.message, '\n');
     }
@@ -185,7 +185,7 @@ setTimeout(async () => {
         });
         console.log('   ✅ API 调用成功:', response.data.message);
         console.log('   ✅ 事件已触发，大屏应该刷新待审核列表');
-        console.log('   💡 检查后端控制台是否有 "[Server] 评估审核事件，推送通知..." 日志\n');
+        console.log('   💡 检查后端控制台是否有 "[Server] 评估审核事件，推送通知..." 和 "📢 SSE 广播消息" 日志\n');
     } catch (error) {
         console.error('   ❌ API 调用失败:', error.message, '\n');
     }
@@ -208,7 +208,7 @@ setTimeout(async () => {
         });
         console.log('   ✅ API 调用成功:', response.data.message);
         console.log('   ✅ 事件已触发，大屏应该立即刷新所有数据');
-        console.log('   💡 检查后端控制台是否有 "[Server] Dashboard 数据变更，推送更新..." 和 "📢 广播消息" 日志\n');
+        console.log('   💡 检查后端控制台是否有 "[Server] Dashboard 数据变更，推送更新..." 和 "📢 SSE 广播消息" 日志\n');
     } catch (error) {
         console.error('   ❌ API 调用失败:', error.message, '\n');
     }
@@ -239,7 +239,7 @@ setTimeout(() => {
         }, i * 1000);
     }
     console.log('   预期效果：3个红色警报框依次弹出');
-    console.log('   💡 检查后端控制台是否有 "[Server] 高危患者警报，推送通知..." 和 "📢 广播消息" 日志\n');
+    console.log('   💡 检查后端控制台是否有 "[Server] 高危患者警报，推送通知..." 和 "📢 SSE 广播消息" 日志\n');
 }, 14000);
 
 // 测试完成
@@ -249,12 +249,13 @@ setTimeout(() => {
     console.log('='.repeat(60));
     console.log('');
     console.log('检查项：');
-    console.log('  ✓ 大屏右上角连接状态：🟢 WebSocket 已连接');
+    console.log('  ✓ 大屏右上角连接状态：🟢 SSE 已连接');
     console.log('  ✓ 数据自动刷新（无需手动刷新）');
     console.log('  ✓ 高危警报弹窗（红色渐变框）');
     console.log('  ✓ 浏览器控制台有推送日志');
+    console.log('  ✓ 后端控制台有 "📢 SSE 广播消息" 日志');
     console.log('');
-    console.log('如果以上都正常，说明 WebSocket 实时推送已成功部署！');
+    console.log('如果以上都正常，说明 SSE 实时推送已成功部署！');
     console.log('');
     console.log('💡 提示：真实场景中，这些事件会在以下情况自动触发：');
     console.log('   - 患者上传造口照片 → 创建评估');

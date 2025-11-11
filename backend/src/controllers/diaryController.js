@@ -28,8 +28,8 @@ class DiaryController {
       const diaryId = await SymptomDiary.create(diaryData);
       const diary = await SymptomDiary.findById(diaryId);
       
-      // 🔔 触发 WebSocket 事件推送
-      console.log('📔 症状日记创建成功，触发 WebSocket 推送...');
+      // 🔔 触发实时推送事件
+      console.log('📔 症状日记创建成功，触发实时推送...');
       dataEmitter.emitDiaryCreated({
         id: diary.id,
         patient_id: diary.patient_id,

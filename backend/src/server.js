@@ -23,7 +23,7 @@ console.log(`[Server] 当前环境: NODE_ENV = "${NODE_ENV}"`);
 const db = require('./config/database');
 const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
-const websocketService = require('./services/websocketService');
+const sseService = require('./services/sseService');
 const dataEmitter = require('./utils/eventEmitter');
 
 // 创建Express应用
@@ -59,6 +59,11 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 静态文件服务（前端页面）
 app.use(express.static(path.join(__dirname, '../../')));
+
+// 初始化 SSE 服务（Server-Sent Events 实时推送）
+// 在路由之前注册，确保路由优先级
+sseService.initialize(app);
+console.log('✅ 使用 SSE (Server-Sent Events) 进行实时推送');
 
 // API路由
 app.use('/api', routes);
@@ -112,28 +117,24 @@ const startServer = async () => {
     // 创建 HTTP 服务器
     const server = http.createServer(app);
     
-    // 初始化 WebSocket 服务
-    websocketService.initialize(server);
-    websocketService.startHeartbeat();
-    
-    // 监听数据变更事件并推送到 WebSocket 客户端
+    // 监听数据变更事件并推送到客户端
     console.log('🔧 注册事件监听器...');
     
     dataEmitter.on(dataEmitter.EVENTS.DASHBOARD_REFRESH, (data) => {
       console.log('📊 [Server] Dashboard 数据变更，推送更新...');
       console.log('📊 [Server] 数据:', JSON.stringify(data, null, 2));
-      websocketService.pushDashboardUpdate(data.type || data.action || 'manual', data);
+      sseService.pushDashboardUpdate(data.type || data.action || 'manual', data);
     });
     
     dataEmitter.on(dataEmitter.EVENTS.ASSESSMENT_CREATED, (assessment) => {
       console.log('📝 [Server] 新评估创建，推送通知...');
       console.log('📝 [Server] 评估数据:', JSON.stringify(assessment, null, 2));
-      websocketService.pushNewAssessment(assessment);
+      sseService.pushNewAssessment(assessment);
       
       // 如果是高危患者，发送警报
       if (assessment.risk_level === 'critical' || assessment.risk_level === 'poor') {
         console.log('🚨 [Server] 检测到高危患者，发送警报...');
-        websocketService.pushHighRiskAlert({
+        sseService.pushHighRiskAlert({
           patient: assessment.patient_name,
           risk_level: assessment.risk_level,
           assessment_id: assessment.id
@@ -144,7 +145,7 @@ const startServer = async () => {
     dataEmitter.on(dataEmitter.EVENTS.ASSESSMENT_REVIEWED, (assessment) => {
       console.log('👩‍⚕️ [Server] 评估审核事件，推送通知...');
       console.log('👩‍⚕️ [Server] 审核数据:', JSON.stringify(assessment, null, 2));
-      websocketService.pushDashboardUpdate('assessment', { type: 'assessment', action: 'reviewed', data: assessment });
+      sseService.pushDashboardUpdate('assessment', { type: 'assessment', action: 'reviewed', data: assessment });
     });
     
     dataEmitter.on(dataEmitter.EVENTS.HIGH_RISK_ALERT, (data) => {
@@ -158,7 +159,7 @@ const startServer = async () => {
         assessment_id: data.assessment_id || data.assessment?.id || null,
         ...data
       };
-      websocketService.pushHighRiskAlert(alertData);
+      sseService.pushHighRiskAlert(alertData);
     });
     
     console.log('✅ 事件监听器注册完成');
@@ -174,7 +175,7 @@ const startServer = async () => {
       console.log('🚀 造口护理系统后端服务已启动');
       console.log('='.repeat(50));
       console.log(`📍 HTTP 服务: http://localhost:${PORT}`);
-      console.log(`📡 WebSocket 服务: ws://localhost:${PORT}/ws`);
+      console.log(`📡 SSE 服务: http://localhost:${PORT}/api/sse`);
       console.log(`🌍 环境: ${NODE_ENV}`);
       console.log(`⏰ 启动时间: ${new Date().toLocaleString('zh-CN')}`);
       console.log('='.repeat(50));

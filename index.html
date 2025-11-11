@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 配置文件：开发环境用config.dev.js，生产环境用config.prod.js -->
     <!-- ⚠️ 重要：请确保加载正确的配置文件！ -->
-    <script src="config.prod.js"></script>
+    <script src="config.dev.js"></script>
     <style>
         :root{
             --bg-deep:#0a1628;
@@ -1352,7 +1352,7 @@
             }
         }
 
-        /* WebSocket 警报动画 */
+        /* 实时推送警报动画 */
         @keyframes slideInRight {
             from {
                 transform: translateX(500px);
@@ -2654,13 +2654,13 @@
             const now = new Date();
             const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
             
-            // 如果有 WebSocket 连接状态，则同时显示
-            if (window.wsConnectionStatus) {
-                if (window.wsConnectionStatus.isError) {
-                    updateTimeElement.innerHTML = `${window.wsConnectionStatus.icon} ${window.wsConnectionStatus.text}`;
+            // 如果有推送连接状态，则同时显示
+            if (window.pushConnectionStatus) {
+                if (window.pushConnectionStatus.isError) {
+                    updateTimeElement.innerHTML = `${window.pushConnectionStatus.icon} ${window.pushConnectionStatus.text}`;
                     updateTimeElement.style.color = '#ef4444';
                 } else {
-                    updateTimeElement.innerHTML = `${window.wsConnectionStatus.icon} ${window.wsConnectionStatus.text} | 最后更新: ${timeStr}`;
+                    updateTimeElement.innerHTML = `${window.pushConnectionStatus.icon} ${window.pushConnectionStatus.text} | 最后更新: ${timeStr}`;
                     updateTimeElement.style.color = '#60a5fa';
                 }
             } else {
@@ -2863,45 +2863,44 @@
             testDiv.innerHTML += '<br><strong>测试完成</strong>';
         }
 
-        // WebSocket 客户端管理
-        class WebSocketClient {
+        // SSE (Server-Sent Events) 客户端管理
+        class SSEClient {
             constructor() {
-                this.ws = null;
+                this.eventSource = null;
                 this.reconnectAttempts = 0;
                 this.maxReconnectAttempts = 10;
                 this.reconnectDelay = 3000; // 初始重连延迟 3 秒
                 this.isManualClose = false;
-                this.heartbeatInterval = null;
             }
 
             /**
-             * 连接 WebSocket 服务器
+             * 连接 SSE 服务器
              */
             connect() {
-                if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-                    console.log('⚠️ WebSocket 已连接或正在连接中');
+                if (this.eventSource && this.eventSource.readyState !== EventSource.CLOSED) {
+                    console.log('⚠️ SSE 已连接或正在连接中');
                     return;
                 }
 
-                // 优先使用配置文件中的 websocketUrl，否则自动推导
-                let wsUrl;
-                if (window.DASHBOARD_CONFIG && window.DASHBOARD_CONFIG.websocketUrl) {
-                    wsUrl = window.DASHBOARD_CONFIG.websocketUrl;
+                // 优先使用配置文件中的 sseUrl，否则自动推导
+                let sseUrl;
+                if (window.DASHBOARD_CONFIG && window.DASHBOARD_CONFIG.sseUrl) {
+                    sseUrl = window.DASHBOARD_CONFIG.sseUrl;
                 } else {
-                    // 兜底：从 apiBaseUrl 自动推导 WebSocket URL
-                    wsUrl = CONFIG.apiBaseUrl.replace('http', 'ws').replace('/api', '/ws');
+                    // 兜底：从 apiBaseUrl 自动推导 SSE URL
+                    sseUrl = CONFIG.apiBaseUrl.replace('/api', '/api/sse');
                 }
                 
                 const token = CONFIG.token;
-                const url = token ? `${wsUrl}?token=${token}` : wsUrl;
+                const url = token ? `${sseUrl}?token=${token}` : sseUrl;
 
-                console.log('📡 正在连接 WebSocket...', url);
+                console.log('📡 正在连接 SSE...', url);
 
                 try {
-                    this.ws = new WebSocket(url);
+                    this.eventSource = new EventSource(url);
                     this.setupEventHandlers();
                 } catch (error) {
-                    console.error('❌ WebSocket 连接失败:', error);
+                    console.error('❌ SSE 连接失败:', error);
                     this.handleReconnect();
                 }
             }
@@ -2910,17 +2909,16 @@
              * 设置事件处理器
              */
             setupEventHandlers() {
-                this.ws.onopen = () => {
-                    console.log('✅ WebSocket 已连接');
+                this.eventSource.onopen = () => {
+                    console.log('✅ SSE 已连接');
                     this.reconnectAttempts = 0;
                     this.reconnectDelay = 3000;
-                    this.startHeartbeat();
                     
                     // 显示连接状态
                     this.updateConnectionStatus(true);
                 };
 
-                this.ws.onmessage = (event) => {
+                this.eventSource.onmessage = (event) => {
                     try {
                         const message = JSON.parse(event.data);
                         this.handleMessage(message);
@@ -2929,17 +2927,13 @@
                     }
                 };
 
-                this.ws.onerror = (error) => {
-                    console.error('❌ WebSocket 错误:', error);
-                };
-
-                this.ws.onclose = (event) => {
-                    console.log('❌ WebSocket 已断开', event.code, event.reason);
-                    this.stopHeartbeat();
-                    this.updateConnectionStatus(false);
-
-                    if (!this.isManualClose) {
-                        this.handleReconnect();
+                this.eventSource.onerror = (error) => {
+                    console.error('❌ SSE 错误:', error);
+                    if (this.eventSource.readyState === EventSource.CLOSED) {
+                        this.updateConnectionStatus(false);
+                        if (!this.isManualClose) {
+                            this.handleReconnect();
+                        }
                     }
                 };
             }
@@ -2979,42 +2973,8 @@
                         loadDashboardData();
                         break;
 
-                    case 'pong':
-                        // 心跳响应
-                        break;
-
                     default:
                         console.log('未知消息类型:', message.type);
-                }
-            }
-
-            /**
-             * 发送消息
-             */
-            send(data) {
-                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.send(JSON.stringify(data));
-                } else {
-                    console.warn('⚠️ WebSocket 未连接，无法发送消息');
-                }
-            }
-
-            /**
-             * 启动心跳
-             */
-            startHeartbeat() {
-                this.heartbeatInterval = setInterval(() => {
-                    this.send({ type: 'ping', timestamp: new Date().toISOString() });
-                }, 30000); // 每 30 秒发送一次心跳
-            }
-
-            /**
-             * 停止心跳
-             */
-            stopHeartbeat() {
-                if (this.heartbeatInterval) {
-                    clearInterval(this.heartbeatInterval);
-                    this.heartbeatInterval = null;
                 }
             }
 
@@ -3023,7 +2983,7 @@
              */
             handleReconnect() {
                 if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-                    console.error('❌ WebSocket 重连失败，已达最大尝试次数');
+                    console.error('❌ SSE 重连失败，已达最大尝试次数');
                     this.showReconnectError();
                     return;
                 }
@@ -3043,29 +3003,34 @@
              */
             close() {
                 this.isManualClose = true;
-                this.stopHeartbeat();
-                if (this.ws) {
-                    this.ws.close();
-                    this.ws = null;
+                if (this.eventSource) {
+                    this.eventSource.close();
+                    this.eventSource = null;
                 }
             }
 
             /**
-             * 更新连接状态显示（不直接修改时间显示，而是通过标志位）
+             * 更新连接状态显示
              */
             updateConnectionStatus(connected) {
-                // 将连接状态存储到全局变量，供时间更新函数使用
-                window.wsConnectionStatus = {
+                window.pushConnectionStatus = {
                     connected: connected,
                     icon: connected ? '🟢' : '🔴',
-                    text: connected ? 'WebSocket 已连接' : 'WebSocket 已断开'
+                    text: connected ? 'SSE 已连接' : 'SSE 已断开'
                 };
-                // 立即更新一次时间显示（包含连接状态）
                 updateTimeDisplay();
             }
 
             /**
-             * 显示高危警报
+             * 播放通知音效
+             */
+            playNotificationSound() {
+                // 可以添加音效播放逻辑
+                console.log('🔔 播放通知音效');
+            }
+
+            /**
+             * 显示高危患者警报
              */
             showHighRiskAlert(data) {
                 // 创建醒目的警报提示
@@ -3084,13 +3049,25 @@
                     animation: slideInRight 0.5s ease-out, pulse 2s infinite;
                     max-width: 400px;
                 `;
+                
+                const getRiskLevelText = (level) => {
+                    const levelMap = {
+                        'critical': '极重度-紧急',
+                        'poor': '重度-需处理',
+                        'moderate': '中度-需注意',
+                        'good': '良好-轻度皮炎',
+                        'excellent': '优秀-无皮炎'
+                    };
+                    return levelMap[level] || level;
+                };
+                
                 alert.innerHTML = `
                     <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">
                         🚨 高危患者警报
                     </div>
                     <div style="font-size: 1rem;">
                         患者: ${data.patient || '未知'}<br>
-                        风险等级: ${this.getRiskLevelText(data.risk_level)}
+                        风险等级: ${getRiskLevelText(data.risk_level)}
                     </div>
                 `;
 
@@ -3104,51 +3081,28 @@
             }
 
             /**
-             * 获取风险等级文本
-             */
-            getRiskLevelText(level) {
-                const levelMap = {
-                    'critical': '极重度-紧急',
-                    'poor': '重度-需处理',
-                    'moderate': '中度-需注意',
-                    'good': '良好-轻度皮炎',
-                    'excellent': '优秀-无皮炎'
-                };
-                return levelMap[level] || level;
-            }
-
-            /**
-             * 播放通知音效
-             */
-            playNotificationSound() {
-                // 可选：添加音效播放
-                // const audio = new Audio('/sounds/notification.mp3');
-                // audio.play().catch(e => console.log('音效播放失败:', e));
-            }
-
-            /**
              * 显示重连错误
              */
             showReconnectError() {
-                // 设置错误状态，供时间更新函数使用
-                window.wsConnectionStatus = {
-                    connected: false,
-                    icon: '🔴',
-                    text: 'WebSocket 连接失败，请刷新页面',
-                    isError: true
-                };
-                // 立即更新一次时间显示（包含错误信息）
-                updateTimeDisplay();
-                // 设置错误样式
-                const updateTime = document.getElementById('updateTime');
-                if (updateTime) {
-                    updateTime.style.color = '#ef4444';
-                }
+                console.error('❌ SSE 连接失败，请刷新页面');
             }
         }
 
-        // 创建 WebSocket 客户端实例
-        const wsClient = new WebSocketClient();
+        // 创建推送客户端实例（使用 SSE）
+        const pushMethod = window.DASHBOARD_CONFIG?.pushMethod || 'sse';
+        const enableRealtimePush = window.DASHBOARD_CONFIG?.enableRealtimePush !== false;
+        
+        let pushClient = null;
+        if (enableRealtimePush) {
+            if (pushMethod === 'sse') {
+                pushClient = new SSEClient();
+                console.log('✅ 使用 SSE (Server-Sent Events) 进行实时推送');
+            } else {
+                console.log('⚠️ 使用轮询模式（pushMethod=' + pushMethod + '）');
+            }
+        } else {
+            console.log('⚠️ 实时推送已禁用');
+        }
 
         // 自动登录
         async function autoLogin() {
@@ -3273,24 +3227,28 @@
                 await loadDashboardData();
                 await loadDETStageStats();
 
-                // 连接 WebSocket 实时推送（如果启用）
-                const enableWebSocket = window.DASHBOARD_CONFIG?.enableWebSocket !== false; // 默认启用
-                if (enableWebSocket) {
-                    wsClient.connect();
-                    console.log('✅ 已启用 WebSocket 实时推送');
+                // 连接实时推送（如果启用）
+                if (pushClient && enableRealtimePush) {
+                    pushClient.connect();
+                    console.log('✅ 已启用实时推送 (' + pushMethod + ')');
                     
                     // 保留轻量级定时刷新作为兜底（间隔更长）
-                    // 如果 WebSocket 连接失败，定时刷新可以确保数据不会太旧
+                    // 如果推送连接失败，定时刷新可以确保数据不会太旧
                     setInterval(() => {
-                        if (!wsClient.ws || wsClient.ws.readyState !== WebSocket.OPEN) {
-                            console.log('⚠️ WebSocket 未连接，使用定时刷新兜底');
+                        let isConnected = false;
+                        if (pushMethod === 'sse' && pushClient) {
+                            isConnected = pushClient.eventSource && pushClient.eventSource.readyState === EventSource.OPEN;
+                        }
+                        
+                        if (!isConnected) {
+                            console.log('⚠️ SSE 未连接，使用定时刷新兜底');
                             loadDashboardData();
                             loadDETStageStats();
                         }
                     }, CONFIG.refreshInterval || 60000);
                 } else {
-                    console.log('⚠️ WebSocket 已禁用，使用定时轮询模式');
-                    // 如果禁用 WebSocket，使用传统轮询
+                    console.log('⚠️ 实时推送已禁用，使用定时轮询模式');
+                    // 如果禁用推送，使用传统轮询
                     setInterval(() => {
                         loadDashboardData();
                         loadDETStageStats();

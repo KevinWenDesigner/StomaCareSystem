@@ -2,10 +2,16 @@
  * PM2 配置文件
  * 
  * 使用方法：
- *   启动: pm2 start ecosystem.config.js
+ *   开发环境启动: pm2 start ecosystem.config.js --env development
+ *   测试环境启动: pm2 start ecosystem.config.js --env test
+ *   生产环境启动: pm2 start ecosystem.config.js --env production
+ *   或直接启动（默认开发环境）: pm2 start ecosystem.config.js
+ *   
  *   重启: pm2 restart ecosystem.config.js
  *   停止: pm2 stop ecosystem.config.js
  *   删除: pm2 delete ecosystem.config.js
+ *   查看日志: pm2 logs stoma-care-backend
+ *   查看状态: pm2 status
  */
 
 module.exports = {
@@ -17,19 +23,25 @@ module.exports = {
       // 入口文件
       script: './src/server.js',
       
-      // 实例数量（集群模式）
+      // 实例数量
       // 0 或 'max' = CPU核心数
       // 正数 = 指定实例数
-      instances: 2,
+      instances: 1,
       
       // 执行模式
       // 'cluster' = 集群模式（多进程，负载均衡）
-      // 'fork' = 单进程模式
-      exec_mode: 'cluster',
+      // 'fork' = 单进程模式 - 推荐用于 SSE
+      exec_mode: 'fork',
       
-      // 环境变量
+      // 环境变量（开发环境）
       env: {
         NODE_ENV: 'development',
+        PORT: 3000
+      },
+      
+      // 测试环境变量
+      env_test: {
+        NODE_ENV: 'test',
         PORT: 3000
       },
       

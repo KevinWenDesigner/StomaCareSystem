@@ -5,15 +5,19 @@ window.DASHBOARD_CONFIG = {
     // 后端API地址（本地开发）
     apiBaseUrl: 'http://localhost:3000/api',
     
-    // WebSocket 地址（用于实时推送）
-    // 开发环境使用 ws:// (非加密)
-    websocketUrl: 'ws://localhost:3000/ws',
+    // SSE 地址（Server-Sent Events，用于实时推送）
+    sseUrl: 'http://localhost:3000/api/sse',
     
-    // 数据刷新间隔（毫秒）- WebSocket 模式下此值仅用于兜底
-    refreshInterval: 60000,  // 60秒（WebSocket 断开时的兜底轮询）
+    // 数据刷新间隔（毫秒）- 推送断开时的兜底轮询
+    refreshInterval: 60000,  // 60秒（推送断开时的兜底轮询）
     
-    // 是否启用 WebSocket 实时推送
-    enableWebSocket: true,
+    // 推送方式选择：'sse' | 'polling'
+    // 'sse' - Server-Sent Events（推荐，基于 HTTP，配置简单）
+    // 'polling' - 轮询（最简单，但效率较低）
+    pushMethod: 'sse',
+    
+    // 是否启用实时推送
+    enableRealtimePush: true,
     
     // 是否启用调试模式
     debug: true,
